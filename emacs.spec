@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 20
+Release: 22
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -46,6 +46,7 @@ Patch12: emacs-21.3-lisp-textmodes-ispell-languages.patch
 Patch13: emacs-21.3-gud-libtool-fix.patch
 Patch14: emacs-xim-status-under-window-125413.patch
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
+Patch16: movemail-CAN-2005-0100.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
@@ -84,9 +85,7 @@ on a terminal.
 %package common
 Summary: Emacs common files
 Group: Applications/Editors
-Requires(post,preun): /sbin/install-info, dev
-Requires(post): /bin/ln
-Requires(post,preun): %{_sbindir}/alternatives
+PreReq: /sbin/install-info, dev, %{_sbindir}/alternatives
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -133,6 +132,8 @@ sets are included in this package.
 %patch11 -p1 -b .rpath
 %patch14 -p1 -b .StatusArea
 %patch15 -p0 -b .modifier
+%patch16 -p1 -b .fmtstr
+
 # patches 2 and 3 touch configure.in
 autoconf-2.13
 
@@ -292,6 +293,7 @@ fi
 %dir %{_libexecdir}/emacs/%{version}/*
 %{_libexecdir}/emacs/%{version}/*/fns-%{version}.1.el
 %{_datadir}/applications/gnu-emacs.desktop
+%{_datadir}/pixmaps/emacs.png 
 
 %files nox
 %defattr(-,root,root)
@@ -324,7 +326,6 @@ fi
 %exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 # %dir %{_datadir}/emacs/site-lisp/site-start.d
-%{_datadir}/pixmaps/emacs.png 
 
 %files -f el-filelist el
 %defattr(-,root,root)
@@ -333,6 +334,15 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Mon Feb 14 2005 Jens Petersen <petersen@redhat.com> - 21.3-22
+- use prereq instead of contexts for common script requirements
+  (Axel Thimm, 147791)
+- move emacs.png from common to main package
+
+* Fri Feb  4 2005 Jens Petersen <petersen@redhat.com> - 21.3-21
+- fix CAN-2005-0100 movemail vulnerability with movemail-CAN-2005-0100.patch
+  (Max Vozeler, 146701)
+
 * Fri Jan 14 2005 Jens Petersen <petersen@redhat.com> - 21.3-20
 - workaround xorg-x11 modifier key problem with
   emacs-21.3-xterm-modifiers-137868.patch (Thomas Woerner, 137868)
