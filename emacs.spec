@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 20.7
-Release: 34a
+Release: 34p
 Copyright: GPL
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
@@ -30,8 +30,9 @@ Patch9: emacs-20.6-ia64-3.patch
 Patch10: emacs-20.7-manboption.patch
 Patch11: emacs-20.7-proto.patch
 Patch12: emacs-cpp-Makefile.patch
+Patch13: emacs-20.4-ppc-config.patch
 
-Patch50: emacs-20.7-s390x.patch
+Patch50: emacs-20.7-s390.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
@@ -124,7 +125,11 @@ also need to install the emacs package in order to run Emacs.
 %patch11 -p1
 %patch12 -p1
 
-%ifarch s390 s390x
+%ifarch ppc
+%patch13 -p1 -b .ppc
+%endif
+
+%ifarch s390
 %patch50 -p1 -b .s390
 %endif
 
@@ -396,9 +401,6 @@ fi
 /usr/share/pixmaps/emacs.png 
 
 %changelog
-* Thu May  3 2001 Oliver Paukstadt <oliver.paukstadt@millenux.com>
-- ported to s390x (64 Bit)
-
 * Fri Mar 16 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - New locale.alias file for emacs-nox
 
