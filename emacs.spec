@@ -1,7 +1,8 @@
+# [for (x)emacs] -*- coding: utf-8 -*-
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 17
+Release: 18
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -21,6 +22,7 @@ Source12: php-mode-init.el
 Source13: ssl.el
 Source14: po-mode.el
 Source15: po-mode-init.el
+Patch1: emacs-21.2-pop.patch 
 Patch50: emacs-21.2-s390.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
@@ -70,6 +72,7 @@ sets are included in this package.
 
 %setup -q -b 1
 
+%patch1 -p1
 
 %ifarch s390 s390x
 %patch50 -p1 -b .s390
@@ -257,98 +260,102 @@ fi
 %dir /usr/share/emacs/%{version}/leim
 
 %changelog
-* Tue Aug 27 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-17
+* Wed Aug 28 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-18
+- Desktop file fix - add Application to make it show up
+- DNS lookup fix for pop (#64802)
+
+* Tue Aug 27 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-17
 - Fix gdb arrow when used in non-windowed mode (#56890)
 
-* Fri Aug  9 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-16
+* Fri Aug  9 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-16
 - Handle UTF-8 input (#70855).
 
-* Tue Aug  6 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-15
+* Tue Aug  6 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-15
 - Don't use canna by default (# 70870)
 
-* Thu Aug  1 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-14
+* Thu Aug  1 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-14
 - Fixes to desktop file (add encoding, add missing a ";")
 - Update s390 patch
 
-* Wed Jul 24 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-13
+* Wed Jul 24 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-13
 - rpm -> rpmbuild for rpmspec mode (#68185)
 
-* Mon Jul 22 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-12
+* Mon Jul 22 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-12
 - desktop file changes (#69385)
 
-* Mon Jul  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-11
+* Mon Jul  8 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-11
 - Fix php-mode to not initialize on e.g.  foophp.c (#67592)
 
-* Thu Jun 27 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-10
+* Thu Jun 27 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-10
 - Downgrade po-mode
 
 * Fri Jun 21 2002 Tim Powers <timp@redhat.com>
 - automated rebuild
 
-* Mon Jun 17 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-8
+* Mon Jun 17 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-8
 - #66808
 
-* Wed May 29 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-7
+* Wed May 29 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-7
 - Rebuild
 
-* Mon May 20 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-6
+* Mon May 20 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-6
 - Prereq dev
 
-* Thu May 16 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-5
+* Thu May 16 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-5
 - Update the elisp manual and po-mode
 
-* Tue May  7 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-4
+* Tue May  7 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-4
 - php-mode 1.0.2
 
-* Thu Apr 25 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-3
+* Thu Apr 25 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-3
 - Update po-mode to the one from gettext 0.11.1
 
-* Mon Apr  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-2
+* Mon Apr  8 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-2
 - Tweak mouse init process (#59757)
 
-* Mon Mar 18 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-1
+* Mon Mar 18 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.2-1
 - 21.2
 
-* Fri Mar  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.95-1
+* Fri Mar  8 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1.95-1
 - 21.1.95
 
-* Fri Feb  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.90-2
+* Fri Feb  8 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1.90-2
 - Upgrade po-mode to the version bundled with gettext 0.11
 - Upgrade rpm-spec-mode to 0.11h
 
-* Thu Jan 31 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.90-1
+* Thu Jan 31 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1.90-1
 - 21.1.90
 
-* Fri Jan 18 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.80-2
+* Fri Jan 18 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1.80-2
 - Add ebrowse
 - Set transient-mode to t in /etc/skel/.emacs
 
-* Mon Jan 14 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.80-1
+* Mon Jan 14 2002 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1.80-1
 - 21.1.80
 
 * Wed Jan 09 2002 Tim Powers <timp@redhat.com>
 - automated rebuild
 
-* Thu Dec  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-3
+* Thu Dec  6 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-3
 - Increase recursive-load-depth-limit from 10 to 50
 
-* Wed Dec  5 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-2
+* Wed Dec  5 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-2
 - Make it conflict with old versions of gettext
 
-* Thu Nov 29 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-1
+* Thu Nov 29 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-1
 - rpm-spec-mode 0.11h, should fix #56748
 
-* Tue Nov  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.4
+* Tue Nov  6 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-0.4
 - php mode 1.0.1. Should fix some speedbar problems.
 
-* Tue Oct 23 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.3
+* Tue Oct 23 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-0.3
 - Minor cleanups
 - add ssl.el
 
-* Mon Oct 22 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.2
+* Mon Oct 22 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-0.2
 - Add more files from the libexec directory (#54874, #54875)
 
-* Sun Oct 21 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.1
+* Sun Oct 21 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 21.1-0.1
 - 21.1
 - Build on IA64 again - the default config now handles it
 - Drop all old patches
@@ -358,45 +365,45 @@ fi
   Simplify build procedure to match. 
 - Update php-mode to 1.0.0
 
-* Mon Oct 15 2001 Trond Eivind Glomsrød <teg@redhat.com> 20.7-43
+* Mon Oct 15 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 20.7-43
 - Add php-mode 0.9.9
 - Add URL (#54603)
 - don't run autoconf/libtoolize during build - they're broken
 - don't build on IA64 until they are fixed
 
-* Sun Sep 16 2001 Trond Eivind Glomsrød <teg@redhat.com> 20.7-42
+* Sun Sep 16 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com> 20.7-42
 - Update python-mode to the version in the python 2.2a3
 - Include po-mode in emacs, instead of including in gettext
 
-* Mon Jul 30 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Jul 30 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Minor fix to make-mode fontify regexp (#50010)
 - Build without emacs being installed (#49085)
 
-* Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Jun 19 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Much cleaner site-start.d sourcing
 - Add more build dependencies
 - Add the emacs lisp reference info pages (RFE #44577)
 - Don't require tamago - just plug it in for Japanese support
 
-* Mon Jun 18 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Jun 18 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Add Xaw3d-devel to buildrequires (#44736)
 
 * Mon Jun 18 2001 Florian La Roche <Florian.LaRoche@redhat.de>
 - merged s390x patch from <oliver.paukstadt@millenux.com>
 
-* Mon Jun  4 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Jun  4 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - New rpm-spec-mode.el, which fixes #43323
 
 * Thu Apr 26 2001 Florian La Roche <Florian.LaRoche@redhat.de>
 - fix linker problem on s390 (fix by Than Ngo than@redhat.com)
 
-* Wed Apr 25 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed Apr 25 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Make sure that mwheel is initialized for XEmacs (#37451)
 
-* Fri Mar 16 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri Mar 16 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - New locale.alias file for emacs-nox
 
-* Tue Mar  6 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Mar  6 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - update rpm-spec-mode.el to 0.11e - this should fix #30702
 
 * Fri Feb 16 2001 Preston Brown <pbrown@redhat.com>
@@ -408,7 +415,7 @@ fi
 * Thu Jan 24 2001 Yukihiro Nakai <ynakai@redhat.com>
 - Fix the fontset problem when creating a new frame.
 
-* Thu Jan 18 2001 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Jan 18 2001 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - add Japanese support from Yukihiro Nakai <ynakai@redhat.com>
 
 * Thu Jan 04 2001 Preston Brown <pbrown@redhat.com>
@@ -417,16 +424,16 @@ fi
 * Wed Dec 27 2000 Tim Powers <timp@redhat.com>
 - bzipped sources to conserve space
 
-* Mon Dec 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Dec 18 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - add /usr/share/emacs/locale.alias , which had gone AWOL
 - update rpm-spec-mode to 0.11a, fresh from the author
   (Stig Bjorlykke <stigb@tihlde.org>). The changes we made 
   are integrated.
 
-* Fri Dec 15 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri Dec 15 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - prereq fileutils for emacs-nox
 
-* Mon Dec 11 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Dec 11 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - do locale.alias fix for emacs-nox only, as it somehow
   broke the subject line in gnus. Weird.
 - update to gnus 5.8.7
@@ -434,7 +441,7 @@ fi
 * Fri Dec 08 2000 Than Ngo <than@redhat.com>
 - add support s390 machine
 
-* Thu Dec 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Dec 07 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - add rpm-spec-mode after modifying (use Red Hat groups,
   from /usr/share/doc/rpm-version/GROUPS) and fixing
   colours(don't specify "yellow" on "bright") Also, 
@@ -443,47 +450,47 @@ fi
 - add mwheel 
 - use it, in /etc/skel/.emacs
 
-* Thu Nov 30 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Nov 30 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - add /usr/share/emacs/site-lisp/site-start.d
 - change site-start.el so files in the above directory
   are automatically run on startup
 - don't set the ispell name in site-start.el, use the
   above directory instead  
 
-* Thu Oct 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Oct 19 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - fix icon name in the .desktop file
 - don't have site-start.el "noreplace"
 - load psgml-init (if present) in the default site-start.el
   to avoid psgml modifying the file
 
-* Tue Oct 17 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Oct 17 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - new and better emacs.desktop file
 
-* Tue Oct 10 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Oct 10 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - remove ctags.1 and etags.1 from the emacs etc directory
   (#18011)
 - fix the emacs-nox not to use the locale.alias in XFree86
   (#18548)... copy it into /usr/share/emacs and patch
   the startup files to use it. Argh.
 
-* Wed Oct 04 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed Oct 04 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - fix initialization of python mode (require it before
   customizing it)
 
 * Fri Sep 22 2000 Bill Nottingham <notting@redhat.com>
 - don't use bcopy without a prototype
 
-* Thu Aug 24 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Aug 24 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - define MAIL_USE_LOCKF 
 - remove setgid on movemail
 
-* Mon Aug 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Aug 07 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - add /usr/share/emacs/site-lisp/subdirs.el (#15639)
 
-* Tue Jul 25 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Jul 25 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - remove "-b" option from manpage
 
-* Fri Jul 21 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri Jul 21 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - remove Japanese support
 
 * Mon Jul 17 2000 Matt Wilson <msw@redhat.com>
@@ -492,13 +499,13 @@ fi
 * Wed Jul 12 2000 Prospector <bugzilla@redhat.com>
 - automatic rebuild
 
-* Fri Jul 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri Jul 07 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - fix some typos in spec file
 
-* Sun Jul 02 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Sun Jul 02 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - make /etc/skel/.emacs 0644
 
-* Wed Jun 28 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed Jun 28 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - include python mode and change in site-start.el related to this
 - some changes to the default .emacs 
 
@@ -507,11 +514,11 @@ fi
   bug that causes crashes in the garbage collector
 - removed all the nox Japanese packages
 
-* Mon Jun 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon Jun 19 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - include site-start.el as a a config file
 - add aspell support via the above
 
-* Fri Jun 16 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri Jun 16 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - (from MSW) different compression on IA64 to avoid hangs
 - remove etags/ctags - use a separate package. Disable patch1
 
@@ -520,13 +527,13 @@ fi
 - fixed a missing escaped " in a wc string
 - merge japanese support to head of development
 
-* Tue Jun 13 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Jun 13 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Version 20.7
 - Add requirement for final newline to the default .emacs
 - redid the Xaw3d patch
 - checked all patches, discarded those we've upstreamed
 
-* Wed Jun 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed Jun 07 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - use %%{_mandir} and %%{_infodir}
 
 * Fri Jun  2 2000 Bill Nottingham <notting@redhat.com>
@@ -535,40 +542,40 @@ fi
 * Mon May 22 2000 Bill Nottingham <notting@redhat.com>
 - add another ia64 patch
 
-* Fri May 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Fri May 19 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - Disabled the compile patch for 20.6
 
 * Thu May 18 2000 Bill Nottingham <notting@redhat.com>
 - add in ia64 patch
 
-* Thu May 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu May 18 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - don't apply the unexelf patch - use a new unexelf.c file
   from the 21 source tree (this will go into the 20.7 tree)
 
-* Wed May 17 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Wed May 17 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - added patch by jakub to make it work with glibc2.2
 
-* Mon May 08 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Mon May 08 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - fixed a problem with ange-ftp and kerberized ftp
 
 * Mon May 08 2000 Bernhard Rosenkraenzer <bero@redhat.com>
 - rebuild with new Xaw3d
 
-* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - let the build system handle gzipping man pages and stripping
 - added patch to increase keyboard buffer size
 
-* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - gzip man pages
 
-* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - added a security patch from RUS-CERT, which fixes 
   bugs mentioned in "Advisory 200004-01: GNU Emacs 20"
 
-* Tue Apr 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Tue Apr 18 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - patched to detect bash2 scripts. 
 
-* Thu Apr 06 2000 Trond Eivind Glomsrød <teg@redhat.com>
+* Thu Apr 06 2000 Trond Eivind GlomsrÃ¸d <teg@redhat.com>
 - removed configuraton file status from /usr/share/pixmaps/emacs.png
 
 * Fri Mar 24 2000 Bernhard Rosenkraenzer <bero@redhat.com>

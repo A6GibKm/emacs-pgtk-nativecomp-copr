@@ -29,7 +29,7 @@ Path=
 Type=Application
 Terminal=0
 MapNotify=false
-Categories=TextEditor;Development;X-Red-Hat-Base;
+Categories=TextEditor;Development;X-Red-Hat-Base;Application;
 Encoding=UTF-8
 
 
