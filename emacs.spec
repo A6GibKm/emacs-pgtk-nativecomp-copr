@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 11
+Release: 12
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -18,8 +18,7 @@ Source6: site-start.el
 Source7: http://www.python.org/emacs/python-mode/python-mode.el
 Source8: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
 Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
-# 1.0.2 - http://prdownloads.sourceforge.net/php-mode/php-mode-102.el
-Source11: http://prdownloads.sourceforge.net/php-mode/php-mode.el
+Source11: http://prdownloads.sourceforge.net/php-mode/php-mode-1.1.0.tgz
 Source12: php-mode-init.el
 Source13: ssl.el
 Source16: python-mode-init.el
@@ -42,8 +41,8 @@ Patch7: emacs-21.2-alloc-blockinput-83600.patch
 Patch8: browse-url-htmlview-84262.patch
 Patch9: emacs-21.3-ppc64.patch
 Patch10: editfns.c-Fformat-multibyte-davej.patch
+Patch11: emacs-21.3-no-rpath.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
-Prereq: /sbin/install-info, dev
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: ncurses, zlib
@@ -81,6 +80,8 @@ on a terminal.
 %package common
 Summary: Emacs common files
 Group: Applications/Editors
+Requires(post,preun): /sbin/install-info, dev
+Requires(post): /bin/ln
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -105,7 +106,6 @@ Emacs packages or see some elisp examples.
 %package leim
 Summary: Emacs Lisp files for input methods for international characters.
 Group: Applications/Editors
-Requires: emacs = %{version}
 
 %description leim
 The emacs-leim package contains Emacs Lisp code for input methods for
@@ -126,6 +126,7 @@ sets are included in this package.
 %patch7 -p1 -b .block
 %patch9 -p1 -b .ppc64
 %patch10 -p1 -b .multibyte
+%patch11 -p1 -b .rpath
 
 ## Lisp patches
 # remove game we can't ship
@@ -135,6 +136,16 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %patch8 -p1
 # patches 2 and 3 touch configure.in
 autoconf-2.13
+
+# install rest of site-lisp files
+( cd site-lisp
+  cp %SOURCE7 %SOURCE8 %SOURCE13 %SOURCE20 %SOURCE21 .
+  # xemacs compat patch for rpm-spec-mode
+  patch < %SOURCE18
+  # fix po-auto-replace-revision-date nil
+  patch < %SOURCE23
+  tar zxvf %SOURCE11
+)
 
 # add rfc1345 input method (default for UTF-8 lang env)
 cp -pi %SOURCE27 leim/quail
@@ -154,13 +165,6 @@ rm src/emacs-%{version}.*
 
 TOPDIR=${PWD}
 %define emacsbatch ${TOPDIR}/src/emacs -batch --no-init-file --no-site-file
-
-# setup site-lisp files
-cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE20 %SOURCE21 site-lisp
-# xemacs compat patch
-patch -d site-lisp < %SOURCE18
-# fix po-auto-replace-revision-date nil
-patch -d site-lisp < %SOURCE23
 
 # make sure patched lisp files get byte-compiled
 %emacsbatch -f batch-byte-recompile-directory lisp
@@ -196,9 +200,10 @@ chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
 
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
-install -m 0644 %SOURCE6 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.el
-install -m 0644 %SOURCE26 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+%define site_lisp $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+mkdir -p %{site_lisp}
+install -m 0644 %SOURCE6 %{site_lisp}/site-start.el
+install -m 0644 %SOURCE26 %{site_lisp}
 
 mv $RPM_BUILD_ROOT%{_bindir}/{etags,etags.emacs}
 mv $RPM_BUILD_ROOT%{_mandir}/man1/{ctags.1,gctags.1}
@@ -212,10 +217,10 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 install -m 0644 %SOURCE4 $RPM_BUILD_ROOT%{_datadir}/pixmaps/
 
 # install site-lisp files
-install -m 0644 site-lisp/*.el{,c} $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/
+install -m 0644 site-lisp/*.el{,c} %{site_lisp}
 
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
-install -m 0644 $RPM_SOURCE_DIR/*-init.el $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
+mkdir -p %{site_lisp}/site-start.d
+install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
 
 # default initialization file
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
@@ -227,8 +232,8 @@ tar jxf %{SOURCE10}
   install -m 644 elisp elisp-* $RPM_BUILD_ROOT%{_infodir} )
 
 ( cd Mule-UCS-%{muleucs_ver}/lisp
-  mkdir %buildroot%{_datadir}/emacs/site-lisp/Mule-UCS
-  cp -p *.el *.elc %buildroot%{_datadir}/emacs/site-lisp/Mule-UCS )
+  mkdir %{site_lisp}/Mule-UCS
+  cp -p *.el *.elc %{site_lisp}/Mule-UCS )
 
 #
 # create file lists
@@ -251,7 +256,7 @@ cat leim-*-files > leim-filelist
 %clean
 rm -rf $RPM_BUILD_ROOT
    
-%define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget elisp
+%define info_files ada-mode autotype ccmode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
 %post common
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
@@ -318,6 +323,21 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Thu Apr 15 2004 Jens Petersen <petersen@redhat.com> - 21.3-12
+- update php-mode to 1.1.0
+- add emacs-21.3-no-rpath.patch so that /usr/X11R6/lib is not rpath'ed
+- require /bin/ln for %%post (Tim Waugh, 119817)
+- move prereq for dev and /sbin/install-info to emacs-common
+- leim no longer requires emacs
+- use source site-lisp dir in %%prep to setup site files
+- define and use site_lisp for buildroot in %%install
+- default ispell dictionary to "english" for CJK locale
+- add comment to top of site-start.el about load order
+- turn on auto-compression-mode in default.el (114808)
+- set require-final-newline with setq (David Olsson,119141)
+  and remove redundant next-line-add-newlines setting
+- update info_file list (Reuben Thomas,114729)
+
 * Wed Mar 16 2004 Mike A. Harris <mharris@redhat.com> 21.3-11
 - Removed bogus Requires: XFree86-libs that was added in 21.3-8, as rpm
   find-requires will automatically pick up the dependancies on any runtime
@@ -328,11 +348,11 @@ fi
 - rebuilt
 
 * Sat Jan 24 2004 Jens Petersen <petersen@redhat.com> - 21.3-9
-- base emacs package now only contains emacs binary built with X support
 - bring back emacs-nox subpackage (emacs built without X support) (#113001)
   [suggested by Frank Kruchio]
+- base emacs package now only contains emacs binary built with X support
+  and no longer obsoletes emacs-nox
 - all the common files required by emacs and emacs-nox are now in emacs-common
-- emacs no longer obsoletes emacs-nox
 - update php-mode.el to 1.0.5
 - add missing rfc1345.el leim input method
 - update po-compat.el to version in gettext-0.13.1
