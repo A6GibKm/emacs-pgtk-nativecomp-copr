@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 12
+Release: 14
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -160,6 +160,7 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 %endif
 
 %__make %{?_smp_mflags}
+
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
 
@@ -323,6 +324,13 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Fri Apr 30 2004 Jens Petersen <petersen@redhat.com> - 21.3-13
+- unset focus-follows-mouse in default.el to make switching frames work for
+  click-to-focus (Theodore Belding,114736)
+
 * Thu Apr 15 2004 Jens Petersen <petersen@redhat.com> - 21.3-12
 - update php-mode to 1.1.0
 - add emacs-21.3-no-rpath.patch so that /usr/X11R6/lib is not rpath'ed

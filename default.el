@@ -9,6 +9,8 @@
 
 (when window-system
   ;; enable wheelmouse support by default
-  (mwheel-install))
+  (mwheel-install)
+  ;; make switching frames works properly under the default click-to-focus
+  (setq focus-follows-mouse nil))
 
 (auto-compression-mode t)
