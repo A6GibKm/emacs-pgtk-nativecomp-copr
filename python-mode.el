@@ -2,13 +2,13 @@
 
 ;; Copyright (C) 1992,1993,1994  Tim Peters
 
-;; Author: 1995-1998 Barry A. Warsaw
+;; Author: 1995-2001 Barry A. Warsaw
 ;;         1992-1994 Tim Peters
 ;; Maintainer: python-mode@python.org
 ;; Created:    Feb 1992
 ;; Keywords:   python languages oop
 
-(defconst py-version "3.105"
+(defconst py-version "$Revision: 4.6 $"
   "`python-mode' version number.")
 
 ;; This software is provided as-is, without express or implied
@@ -25,30 +25,34 @@
 ;; and is the current maintainer.  Tim's now back but disavows all
 ;; responsibility for the mode.  Smart Tim :-)
 
-;; This version of python-mode.el is no longer compatible with Emacs
-;; 18.  I am striving to maintain compatibility with the X/Emacs 19
-;; lineage but as time goes on that becomes more and more difficult.
-;; I current recommend that you upgrade to the latest stable released
-;; version of your favorite branch: Emacs 20.3 or better, or XEmacs
-;; 20.4 or better (XEmacs 21.0 is in beta testing as of this writing
-;; 27-Oct-1998 appears to work fine with this version of
-;; python-mode.el).  Even Windows users should be using at least
-;; NTEmacs 20.3, and XEmacs 21.0 will work very nicely on Windows when
-;; it is released.
+;; pdbtrack support contributed by Ken Manheimer, April 2001.
+
+;; This version of python-mode.el has only been tested with XEmacs
+;; 21.1.14 and Emacs 20.7 as these are the latest versions of these
+;; Emacsen as of this writing (11-Apr-2001).  I have no intent to test
+;; it with earlier Emacsen, but I will accept patches if they are
+;; small and reasonable.  Please use the SourceForge Python project to
+;; submit bugs or patches:
+;;
+;;     http://sourceforge.net/projects/python
 
 ;; FOR MORE INFORMATION:
 
-;; For more information on installing python-mode.el, especially with
-;; respect to compatibility information, please see
-;;
+;; There is some information on python-mode.el at
+
 ;;     http://www.python.org/emacs/python-mode/
 ;;
-;; This site also contains links to other packages that you might find 
-;; useful, such as pdb interfaces, OO-Browser links, etc.
+;; but this link is fairly out of date, due to the current difficulty
+;; in updating that site. It does contain links to other packages that
+;; you might find useful, such as pdb interfaces, OO-Browser links,
+;; etc.  Eventually, we'll be able to update it much more easily.
 
 ;; BUG REPORTING:
 
-;; To submit bug reports, use C-c C-b.  Please include a complete, but
+;; As mentioned above, please use the SourceForge Python project for
+;; submitting bug reports or patches.  The old recommendation, to use
+;; C-c C-b will still work, but those reports have a higher chance of
+;; getting buried in my mailbox.  Please include a complete, but
 ;; concise code sample and a recipe for reproducing the bug.  Send
 ;; suggestions and other comments to python-mode@python.org.
 
@@ -56,40 +60,11 @@
 ;; doubtful that a texinfo manual would be very useful, but if you
 ;; want to contribute one, I'll certainly accept it!
 
-;; TO DO LIST:
-
-;; - Better integration with pdb.py and gud-mode for debugging.
-;; - Rewrite according to GNU Emacs Lisp standards.
-;; - have py-execute-region on indented code act as if the region is
-;;   left justified.  Avoids syntax errors.
-;; - add a py-goto-block-down, bound to C-c C-d
-
 ;;; Code:
 
 (require 'comint)
 (require 'custom)
-(eval-when-compile
-  (require 'cl)
-  (if (not (and (condition-case nil
-		    (require 'custom)
-		  (error nil))
-		;; Stock Emacs 19.34 has a broken/old Custom library
-		;; that does more harm than good.  Fortunately, it is
-		;; missing defcustom
-		(fboundp 'defcustom)))
-      (error "STOP! STOP! STOP! STOP!
-
-The Custom library was not found or is out of date.  A more current
-version is required.  Please download and install the latest version
-of the Custom library from:
-
-    <http://www.dina.kvl.dk/~abraham/custom/>
-
-See the Python Mode home page for details:
-
-    <http://www.python.org/emacs/python-mode>
-")))
-
+(require 'cl)
 
 
 ;; user definable variables
@@ -145,6 +120,14 @@ mode buffer is visited during an Emacs session.  After that, use
   "*Amount of offset per level of indentation.
 `\\[py-guess-indent-offset]' can usually guess a good value when
 you're editing someone else's Python code."
+  :type 'integer
+  :group 'python)
+
+(defcustom py-continuation-offset 4
+  "*Additional amount of offset to give for some continuation lines.
+Continuation lines are those that immediately follow a backslash
+terminated line.  Only those continuation lines for a block opening
+statement are given this extra offset."
   :type 'integer
   :group 'python)
 
@@ -276,6 +259,22 @@ When non-nil, arguments are printed."
   :group 'python)
 (make-variable-buffer-local 'py-indent-offset)
 
+(defcustom py-pdbtrack-do-tracking-p t
+  "*Controls whether the pdbtrack feature is enabled or not.
+When non-nil, pdbtrack is enabled in all comint-based buffers,
+e.g. shell buffers and the *Python* buffer.  When using pdb to debug a
+Python program, pdbtrack notices the pdb prompt and displays the
+source file and line that the program is stopped at, much the same way
+as gud-mode does for debugging C programs with gdb."
+  :type 'boolean
+  :group 'python)
+(make-variable-buffer-local 'py-pdbtrack-do-tracking-p)
+
+(defcustom py-pdbtrack-minor-mode-string " PDB"
+  "*String to use in the minor mode list when pdbtrack is enabled."
+  :type 'string
+  :group 'python)
+
 ;; Not customizable
 (defvar py-master-file nil
   "If non-nil, execute the named file instead of the buffer's file.
@@ -299,13 +298,6 @@ buffer is prepended to come up with a file name.")
 
 (defconst py-emacs-features
   (let (features)
-   ;; NTEmacs 19.34.6 has a broken make-temp-name; it always returns
-   ;; the same string.
-   (let ((tmp1 (make-temp-name ""))
-	 (tmp2 (make-temp-name "")))
-     (if (string-equal tmp1 tmp2)
-	 (push 'broken-temp-names features)))
-   ;; return the features
    features)
   "A list of features extant in the Emacs you are using.
 There are many flavors of Emacs out there, with different levels of
@@ -319,7 +311,7 @@ support for features needed by `python-mode'.")
 			  "from"     "global"   "if"      "import"
 			  "in"       "is"       "lambda"  "not"
 			  "or"       "pass"     "print"   "raise"
-			  "return"   "while"
+			  "return"   "while"    "yield"
 			  )
 			"\\|"))
 	(kw2 (mapconcat 'identity
@@ -332,6 +324,8 @@ support for features needed by `python-mode'.")
      ;; block introducing keywords with immediately following colons.
      ;; Yes "except" is in both lists.
      (cons (concat "\\b\\(" kw2 "\\)[ \n\t(]") 1)
+     ;; `as' but only in "import foo as bar"
+     '("[ \t]*\\(\\bfrom\\b.*\\)?\\bimport\\b.*\\b\\(as\\)\\b" . 2)
      ;; classes
      '("\\bclass[ \t]+\\([a-zA-Z_]+[a-zA-Z0-9_]*\\)"
        1 font-lock-type-face)
@@ -346,6 +340,9 @@ support for features needed by `python-mode'.")
 (defvar py-file-queue nil
   "Queue of Python temp files awaiting execution.
 Currently-active file is at the head of the list.")
+
+(defvar py-pdbtrack-is-tracking-p nil)
+
 
 
 ;; Constants
@@ -428,6 +425,17 @@ Currently-active file is at the head of the list.")
   "[ \t]+File \"\\([^\"]+\\)\", line \\([0-9]+\\)"
   "Regular expression that describes tracebacks.")
 
+;; pdbtrack contants
+(defconst py-pdbtrack-stack-entry-regexp
+  "> \\([^(]+\\)(\\([0-9]+\\))[?a-zA-Z0-9_]+()"
+  "Regular expression pdbtrack uses to find a stack trace entry.")
+
+(defconst py-pdbtrack-input-prompt "\n[(<]?pdb[>)]? "
+  "Regular expression pdbtrack uses to recognize a pdb prompt.")
+
+(defconst py-pdbtrack-track-range 10000
+  "Max number of characters from end of buffer to search for stack entry.")
+
 
 
 ;; Major mode boilerplate
@@ -489,6 +497,7 @@ Currently-active file is at the head of the list.")
   ;; Miscellaneous
   (define-key py-mode-map "\C-c:"     'py-guess-indent-offset)
   (define-key py-mode-map "\C-c\t"    'py-indent-region)
+  (define-key py-mode-map "\C-c\C-d"  'py-pdbtrack-toggle-stack-tracking)
   (define-key py-mode-map "\C-c\C-n"  'py-next-statement)
   (define-key py-mode-map "\C-c\C-p"  'py-previous-statement)
   (define-key py-mode-map "\C-c\C-u"  'py-goto-block-up)
@@ -1091,6 +1100,70 @@ This function is appropriate for `comint-output-filter-functions'."
 	  (py-execute-file pyproc (car py-file-queue))))
     ))
 
+(defun py-pdbtrack-overlay-arrow (activation)
+  "Activate or de arrow at beginning-of-line in current buffer."
+  ;; This was derived/simplified from edebug-overlay-arrow
+  (cond (activation
+	 (setq overlay-arrow-position (make-marker))
+	 (setq overlay-arrow-string "=>")
+	 (set-marker overlay-arrow-position (py-point 'bol) (current-buffer))
+	 (setq py-pdbtrack-is-tracking-p t))
+	(overlay-arrow-position
+	 (setq overlay-arrow-position nil)
+	 (setq py-pdbtrack-is-tracking-p nil))
+	))
+
+(defun py-pdbtrack-track-stack-file (text)
+  "Show the file indicated by the pdb stack entry line, in a separate window.
+
+Activity is disabled if the buffer-local variable
+`py-pdbtrack-do-tracking-p' is nil.
+
+We depend on the pdb input prompt matching `py-pdbtrack-input-prompt'
+at the beginning of the line."
+  ;; Instead of trying to piece things together from partial text
+  ;; (which can be almost useless depending on Emacs version), we
+  ;; monitor to the point where we have the next pdb prompt, and then
+  ;; check all text from comint-last-input-end to process-mark.
+  ;;
+  ;; KLM: It might be nice to provide an optional override, so this
+  ;; routine could be fed debugger output strings as the text
+  ;; argument, for deliberate application elsewhere.
+  ;;
+  ;; KLM: We're very conservative about clearing the overlay arrow, to
+  ;; minimize residue.  This means, for instance, that executing other
+  ;; pdb commands wipes out the highlight.
+  (let* ((origbuf (current-buffer))
+	 (currproc (get-buffer-process origbuf)))
+    (if (not (and currproc py-pdbtrack-do-tracking-p))
+        (py-pdbtrack-overlay-arrow nil)
+      (let* (;(origdir default-directory)
+             (procmark (process-mark currproc))
+             (block (buffer-substring (max comint-last-input-end
+                                           (- procmark
+                                              py-pdbtrack-track-range))
+                                      procmark))
+             fname lineno)
+        (if (not (string-match (concat py-pdbtrack-input-prompt "$") block))
+            (py-pdbtrack-overlay-arrow nil)
+          (if (not (string-match
+                    (concat ".*" py-pdbtrack-stack-entry-regexp ".*")
+                    block))
+              (py-pdbtrack-overlay-arrow nil)
+            (setq fname (match-string 1 block)
+                  lineno (match-string 2 block))
+            (if (file-exists-p fname)
+                (progn
+                  (find-file-other-window fname)
+                  (goto-line (string-to-int lineno))
+                  (message "pdbtrack: line %s, file %s" lineno fname)
+                  (py-pdbtrack-overlay-arrow t)
+                  (pop-to-buffer origbuf t) )
+              (if (= (elt fname 0) ?\<)
+                  (message "pdbtrack: (Non-file source: '%s')" fname)
+                (message "pdbtrack: File not found: %s" fname))
+              )))))))
+
 (defun py-postprocess-output-buffer (buf)
   "Highlight exceptions found in BUF.
 If an exception occurred return t, otherwise return nil.  BUF must exist."
@@ -1227,6 +1300,9 @@ filter."
     (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
     (add-hook 'comint-output-filter-functions
 	      'py-comint-output-filter-function)
+    ;; pdbtrack
+    (add-hook 'comint-output-filter-functions 'py-pdbtrack-track-stack-file)
+    (setq py-pdbtrack-do-tracking-p t)
     (set-syntax-table py-mode-syntax-table)
     (use-local-map py-shell-map)
     ))
@@ -1278,11 +1354,24 @@ is inserted at the end.  See also the command `py-clear-queue'."
 			 (format "python-%d-%d" sn pid)
 		       (format "python-%d" sn)))
 		 (make-temp-name "python-")))
-	 (file (expand-file-name temp py-temp-directory)))
-    (write-region start end file nil 'nomsg)
+	 (file (expand-file-name temp py-temp-directory))
+	 (cur (current-buffer))
+	 (buf (get-buffer-create file)))
+    ;; Write the contents of the buffer, watching out for indented regions.
+    (save-excursion
+      (goto-char start)
+      (let ((needs-if (/= (py-point 'bol) (py-point 'boi))))
+	(set-buffer buf)
+	(when needs-if
+	  (insert "if 1:\n"))
+	(insert-buffer-substring cur start end)))
     (cond
      ;; always run the code in its own asynchronous subprocess
      (async
+      ;; User explicitly wants this to run in its own async subprocess
+      (save-excursion
+	(set-buffer buf)
+	(write-region (point-min) (point-max) file nil 'nomsg))
       (let* ((buf (generate-new-buffer-name py-output-buffer))
 	     ;; TBD: a horrible hack, but why create new Custom variables?
 	     (arg (if (string-equal py-which-bufname "Python")
@@ -1290,11 +1379,15 @@ is inserted at the end.  See also the command `py-clear-queue'."
 	(start-process py-which-bufname buf py-which-shell arg file)
 	(pop-to-buffer buf)
 	(py-postprocess-output-buffer buf)
+	;; TBD: clean up the temporary file!
 	))
      ;; if the Python interpreter shell is running, queue it up for
      ;; execution there.
      (proc
       ;; use the existing python shell
+      (save-excursion
+	(set-buffer buf)
+	(write-region (point-min) (point-max) file nil 'nomsg))
       (if (not py-file-queue)
 	  (py-execute-file proc file)
 	(message "File %s queued for execution" file))
@@ -1306,7 +1399,10 @@ is inserted at the end.  See also the command `py-clear-queue'."
 			 (if (string-equal py-which-bufname "JPython")
 			     " -" ""))))
 	;; otherwise either run it synchronously in a subprocess
-	(shell-command-on-region start end cmd py-output-buffer)
+	(save-excursion
+	  (set-buffer buf)
+	  (shell-command-on-region (point-min) (point-max)
+				   cmd py-output-buffer))
 	;; shell-command-on-region kills the output buffer if it never
 	;; existed and there's no output from the command
 	(if (not (get-buffer py-output-buffer))
@@ -1316,8 +1412,12 @@ is inserted at the end.  See also the command `py-clear-queue'."
 	    (pop-to-buffer py-output-buffer)
 	    (if err-p
 		(pop-to-buffer py-exception-buffer)))
-	  )))
-     )))
+	  ))
+      ;; TBD: delete the buffer
+      )
+     )
+    ;; Clean up after ourselves.
+    (kill-buffer buf)))
 
 
 ;; Code execution commands
@@ -1708,7 +1808,8 @@ dedenting."
 	      ;; chunk of non-whitespace characters on base line, + 1 more
 	      ;; column
 	      (end-of-line)
-	      (setq endpos (point)  searching t)
+	      (setq endpos (point)
+		    searching t)
 	      (back-to-indentation)
 	      (setq startpos (point))
 	      ;; look at all "=" from left to right, stopping at first
@@ -1733,7 +1834,12 @@ dedenting."
 		  (progn
 		    (goto-char startpos)
 		    (skip-chars-forward "^ \t\n")))
-	      (1+ (current-column))))))
+	      ;; if this is a continuation for a block opening
+	      ;; statement, add some extra offset.
+	      (+ (current-column) (if (py-statement-opens-block-p)
+				      py-continuation-offset 0)
+		 1)
+	      ))))
 
        ;; not on a continuation line
        ((bobp) (current-indentation))
@@ -2465,6 +2571,29 @@ A `nomenclature' is a fancy way of saying AWordWithMixedCaseNotUnderscores."
 
 
 
+;; pdbtrack functions
+(defun py-pdbtrack-toggle-stack-tracking (arg)
+  (interactive "P")
+  (if (not (get-buffer-process (current-buffer)))
+      (error "No process associated with buffer '%s'" (current-buffer)))
+  ;; missing or 0 is toggle, >0 turn on, <0 turn off
+  (if (or (not arg)
+	  (zerop (setq arg (prefix-numeric-value arg))))
+      (setq py-pdbtrack-do-tracking-p (not py-pdbtrack-do-tracking-p))
+    (setq py-pdbtrack-do-tracking-p (> arg 0)))
+  (message "%sabled Python's pdbtrack"
+           (if py-pdbtrack-do-tracking-p "En" "Dis")))
+
+(defun turn-on-pdbtrack ()
+  (interactive)
+  (py-pdbtrack-toggle-stack-tracking 1))
+
+(defun turn-off-pdbtrack ()
+  (interactive)
+  (py-pdbtrack-toggle-stack-tracking 0))
+
+
+
 ;; Documentation functions
 
 ;; dump the long form of the mode blurb; does the usual doc escapes,
@@ -2775,7 +2904,7 @@ local bindings to py-newline-and-indent."))
   "Return the parse state at point (see `parse-partial-sexp' docs)."
   (save-excursion
     (let ((here (point))
-	  pps done)
+	  in-listcomp pps done)
       (while (not done)
 	;; back up to the first preceding line (if any; else start of
 	;; buffer) that begins with a popular Python keyword, or a
@@ -2784,6 +2913,13 @@ local bindings to py-newline-and-indent."))
 	;; at a non-zero nesting level.  It may be slow for people who
 	;; write huge code blocks or huge lists ... tough beans.
 	(re-search-backward py-parse-state-re nil 'move)
+	;; Watch out for landing inside a list comprehension
+	(save-excursion
+	  (if (and (looking-at "[ \t]*\\<\\(if\\|for\\)\\>")
+		   (py-safe (progn (up-list -1) t))
+		   (eq (char-after) ?\[))
+	      (setq in-listcomp (point))
+	    (setq in-listcomp nil)))
 	(beginning-of-line)
 	;; In XEmacs, we have a much better way to test for whether
 	;; we're in a triple-quoted string or not.  Emacs does not
@@ -2806,6 +2942,9 @@ local bindings to py-newline-and-indent."))
 	  ;; XEmacs
 	  (setq done (or (not (buffer-syntactic-context))
 			 (bobp)))
+	  (when in-listcomp
+	    (goto-char in-listcomp)
+	    (setq done nil))
 	  (when done
 	    (setq pps (parse-partial-sexp (point) here)))
 	  ))
@@ -2842,12 +2981,16 @@ If nesting level is zero, return nil."
   "Go to the beginning of the triple quoted string we find ourselves in.
 DELIM is the TQS string delimiter character we're searching backwards
 for."
-  (let ((skip (and delim (make-string 1 delim))))
+  (let ((skip (and delim (make-string 1 delim)))
+	(continue t))
     (when skip
       (save-excursion
-	(py-safe (search-backward skip))
-	(if (and (eq (char-before) delim)
-		 (eq (char-before (1- (point))) delim))
+	(while continue
+	  (py-safe (search-backward skip))
+	  (setq continue (and (not (bobp))
+			      (= (char-before) ?\\))))
+	(if (and (= (char-before) delim)
+		 (= (char-before (1- (point))) delim))
 	    (setq skip (make-string 3 delim))))
       ;; we're looking at a triple-quoted string
       (py-safe (search-backward skip)))))
@@ -3097,6 +3240,12 @@ These are Python temporary files awaiting execution."
 
 ;; arrange to kill temp files when Emacs exists
 (add-hook 'kill-emacs-hook 'py-kill-emacs-hook)
+(add-hook 'comint-output-filter-functions 'py-pdbtrack-track-stack-file)
+
+;; Add a designator to the minor mode strings
+(or (assq 'py-pdbtrack-minor-mode-string minor-mode-alist)
+    (push '(py-pdbtrack-is-tracking-p py-pdbtrack-minor-mode-string)
+	  minor-mode-alist))
 
 
 

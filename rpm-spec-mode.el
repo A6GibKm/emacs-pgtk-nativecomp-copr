@@ -4,7 +4,7 @@
 
 ;; Author:   Stig Bjørlykke, <stigb@tihlde.org>
 ;; Keywords: unix, languages
-;; Version:  0.11g
+;; Version:  0.11h
 
 ;; This file is not yet part of FSF Emacs or XEmacs.
 
@@ -407,7 +407,7 @@ the package."
 (defvar rpm-spec-font-lock-keywords
   '(
     ("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
-    ("^\\([a-zA-Z0-9]+\\)\\(\([a-zA-Z0-9]+\)\\):"
+    ("^\\([a-zA-Z0-9]+\\)\\(\([a-zA-Z0-9,]+\)\\):"
      (1 rpm-spec-tag-face)
      (2 rpm-spec-ghost-face))
     ("^\\([a-zA-Z0-9]+\\):" 1 rpm-spec-tag-face)

@@ -1,8 +1,9 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
-Version: 20.7
-Release: 41
+Version: 21.1
+Release: 2.7
 License: GPL
+URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
 Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.bz2
@@ -10,37 +11,25 @@ Source3: emacs.desktop
 Source4: emacs.png
 Source5: dotemacs
 Source6: site-start.el
-Source7: http://www.python.org/emacs/python-mode/python-mode.el
-# From /usr/X11R6/lib/X11/locale/locale.alias
-Source8: emacs.locale.alias
-Source11: http://www.tihlde.org/~stigb/rpm-spec-mode.el
-Source12: mwheel.el
-Source13: lisp-startup-localealias.patch
-Source14: ftp://ftp.gnus.org/pub/gnus/gnus-5.8.8-compiled.tar.bz2
-Source15: emacs-asian.tar.bz2
-Source16: ftp://ftp.gnu.org/gnus/emacs/elisp-manual-21-2.6.tar.bz2
-Patch0: emacs-20.7-xaw3d.patch
-Patch2: emacs-20.3-tmprace.patch
-Patch3: emacs-20.3-linkscr.patch
-Patch4: emacs-20.4-nmhlocation.patch
-Patch5: emacs-20.5-loadup.patch
-Patch6: emacs-20.6-kbdbuffer.patch
-Patch7: emacs-20.6-ia64.patch
-Patch8: emacs-20.6-ia64-2.patch
-Patch9: emacs-20.6-ia64-3.patch
-Patch10: emacs-20.7-manboption.patch
-Patch11: emacs-20.7-proto.patch
-Patch12: emacs-cpp-Makefile.patch
-Patch13: emacs-20.7-makeregexp.patch
-
+# From Python-2.2a3
+Source7: python-mode.el
+Source8: http://www.tihlde.org/~stigb/rpm-spec-mode.el
+Source9: emacs-asian.tar.bz2
+Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.7.tar.bz2
+# 1.0.0 - http://prdownloads.sourceforge.net/php-mode/php-mode-100.el
+Source11: php-mode.el
+Source12: php-mode-init.el
+Source13: ssl.el
+Source14: po-mode.el
+Source15: po-mode-init.el
+Patch0: emacs-21.1-recloadlimit.patch
 Patch50: emacs-20.7-s390.patch
-
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
 BuildRequires: Xaw3d-devel glibc-devel gcc XFree86-devel bzip2 ncurses-devel
-BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-devel
-# temporary hack.  roll tamago into base emacs package
-#Requires: tamago
+BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-devel 
+Obsoletes: emacs-nox emacs-X11
+Conflicts: gettext < 0.10.40
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -50,7 +39,7 @@ without leaving the editor.
 
 This package includes the libraries you need to run the Emacs editor,
 You also need to install the actual Emacs program package (emacs-nox or
-emacs-X11).  Install emacs-nox if you are not going to use the X
+emacs-X11). Install emacs-nox if you are not going to use the X
 Window System; install emacs-X11 if you will be using X.
 
 %package el
@@ -78,54 +67,12 @@ user must press in order to input a particular character in a
 non-English character set. Input methods for many different character
 sets are included in this package.
 
-%package nox
-Summary: The Emacs text editor without support for the X Window System.
-Group: Applications/Editors
-Requires: emacs
-Prereq: fileutils
-
-%description nox
-Emacs-nox is the Emacs text editor program without support for the X
-Window System.
-
-You need to install this package only if you plan on exclusively using
-Emacs without the X Window System (emacs-X11 will work both in X and
-out of X, but emacs-nox will only work outside of X).  You'll also
-need to install the emacs package in order to run Emacs.
-
-%package X11
-Summary: The Emacs text editor for the X Window System.
-Group: Applications/Editors
-Requires: emacs
-
-%description X11
-Emacs-X11 includes the Emacs text editor program for use with the X
-Window System (it provides support for the mouse and other GUI
-elements). Emacs-X11 will also run Emacs outside of X, but it has a
-larger memory footprint than the 'non-X' Emacs package (emacs-nox).
-
-Install emacs-X11 if you're going to use Emacs with the X Window
-System.  You should also install emacs-X11 if you're going to run
-Emacs both with and without X (it will work fine both ways). You'll
-also need to install the emacs package in order to run Emacs.
-
 %prep
 
 %setup -q -b 1
 
 %patch0 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
+
 
 %ifarch s390 s390x
 %patch50 -p1 -b .s390
@@ -133,50 +80,22 @@ also need to install the emacs package in order to run Emacs.
 
 %build
 
-PUREDEF="-DNCURSES_OSPEED_T"
-XPUREDEF="-DNCURSES_OSPEED_T"
-libtoolize --force --copy
-autoconf
-CONFOPTS="--mandir=%{_mandir} --infodir=%{_infodir} --prefix=/usr --libexecdir=/usr/lib --sharedstatedir=/var --with-gcc --with-pop"
+export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
+#to find installinfo
+export PATH="$PATH:/sbin:/usr/sbin"
 
-BuildEmacs() {
-    dir=$1
-    configflags=$2
-    [ -d build-$1 ] && rm -rf build-$1
-    mkdir build-$1 && cd build-$1
-    CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS $PUREDEF" LDFLAGS=-s \
-      ../configure ${CONFOPTS} $2 ${RPM_ARCH}-redhat-linux-gnu
-    # blarg
-    echo "#include <string.h>"  >> src/config.h
-    make 
-    cd ..
-}
+%configure --with-gcc --with-pop --with-sound
+make
 
 
-#Build binary with X support
-BuildEmacs withx "--with-x-toolkit"
-
-%define recompile build-withx/src/emacs -batch --no-init-file --no-site-file -f batch-byte-compile
-
-#change the locale.alias for the nox builds
-#patch lisp/startup.el %SOURCE10
-#rm -fv lisp/startup.elc
-#%{recompile} lisp/startup.el
-
-#Build binary without X support
-BuildEmacs nox "--with-x=no"
-
-#change the locale.alias back for packaging
-#patch -R lisp/startup.el %SOURCE10
-#rm -fv lisp/startup.elc
-#%{recompile} lisp/startup.el
+%define recompile src/emacs -batch --no-init-file --no-site-file -f batch-byte-compile
 
 # recompile patched .el files
 %{recompile} lisp/mail/mh-utils.el lisp/progmodes/make-mode.el
 
-# bytecompile python-mode, mwheel and rpm-spec-mode
-cp %SOURCE7 %SOURCE11 %SOURCE12 .
-%{recompile} python-mode.el mwheel.el rpm-spec-mode.el
+# bytecompile python-mode, ssl, php-mode and rpm-spec-mode
+cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE14 .
+%{recompile} python-mode.el rpm-spec-mode.el php-mode.el ssl.el po-mode.el
 
 
 
@@ -186,51 +105,20 @@ mkdir -p $RPM_BUILD_ROOT/usr
 mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d
 
 mkdir -p $RPM_BUILD_ROOT/%{_infodir}
-make install  -C build-withx \
-	prefix=$RPM_BUILD_ROOT/usr \
-	libexecdir=$RPM_BUILD_ROOT/usr/lib \
-	sharedstatedir=$RPM_BUILD_ROOT/var \
-	mandir=$RPM_BUILD_ROOT/%{_mandir} \
-	infodir=$RPM_BUILD_ROOT/%{_infodir}
 
-# install the locale file
-install -m 644 %SOURCE8 $RPM_BUILD_ROOT/usr/share/emacs/locale.alias
+%makeinstall
 
 #install lisp files for Japanese and other Asian languages
 pushd $RPM_BUILD_ROOT
-tar --use-compress-program=bzip2 -xf %{SOURCE15}
-popd
-
-# We want a newer gnus
-tar --use-compress-program=bzip2 -xf %{SOURCE14}
-pushd gnus-5.8.8
-#PATH=$RPM_BUILD_ROOT/usr/bin:$PATH ./configure 
-#make
-
-rm -f $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/*
-install -m 644 lisp/* $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/
-rm -f $RPM_BUILD_ROOT/%{_infodir}/gnus*
-install -m 644 texi/{gnus,gnus-?,gnus-??} $RPM_BUILD_ROOT/%{_infodir}
+tar --use-compress-program=bzip2 -xf %{SOURCE9}
 popd
 
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
 gzip -9nf $RPM_BUILD_ROOT/%{_infodir}/*
 
-
-#change the locale.alias for this one and regenerate
-# Do it this way, using the macro here seems to confuse RPM
-patch lisp/startup.el %SOURCE13
-
-rm -fv lisp/startup.elc
-%{recompile} lisp/startup.el
-rm -f build-nox/src/emacs-%{version}*
-make -C build-nox
-install -c -m755 build-nox/src/emacs $RPM_BUILD_ROOT/usr/bin/emacs-nox
-
-install -c -m755 build-nox/src/emacs $RPM_BUILD_ROOT/usr/bin/emacs-nox
 install -m 644 %SOURCE6 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.el
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/emacs/site-lisp
+mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/site-lisp
 
 mv $RPM_BUILD_ROOT%{_mandir}/man1/ctags.1 $RPM_BUILD_ROOT%{_mandir}/man1/gctags.1
 mv $RPM_BUILD_ROOT/usr/bin/ctags $RPM_BUILD_ROOT/usr/bin/gctags
@@ -242,11 +130,14 @@ install -c -m 0644 %SOURCE3 $RPM_BUILD_ROOT/etc/X11/applnk/Applications/
 mkdir -p $RPM_BUILD_ROOT/usr/share/pixmaps
 install -c -m 0644 %SOURCE4 $RPM_BUILD_ROOT/usr/share/pixmaps/
 
-install -c -m644 build-nox/etc/DOC-* $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
+mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
+install -c -m644 etc/DOC-* $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
 
-# Python mode, mwheel and rpm-spec mode
+# Python mode, php mode and rpm-spec mode
 
-install -c -m0644 python-mode.el python-mode.elc mwheel.el mwheel.elc rpm-spec-mode.el rpm-spec-mode.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
+install -c -m0644 po-mode.el po-mode.elc php-mode.el php-mode.elc python-mode.el python-mode.elc rpm-spec-mode.el rpm-spec-mode.elc ssl.el ssl.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
+install -m0644 %SOURCE12 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d/php-mode-init.el
+install -m0644 %SOURCE15 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d/po-mode-init.el
 
 # default initialization file
 mkdir -p $RPM_BUILD_ROOT/etc/skel
@@ -263,17 +154,15 @@ rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*ctags*
 rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc/ctags*
 
 # The elisp reference manual
-bzcat %{SOURCE16} | tar xf -
-pushd elisp-manual-21-2.6
+bzcat %{SOURCE10} | tar xf -
+pushd elisp-manual-21-2.7
 install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT/%{_infodir}
 popd
 
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
-  -name '*.elc' -print | sed "s^$RPM_BUILD_ROOT^^" > core-filelist
+find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp -type f\
+  -not -name '*.el' -print | sed "s^$RPM_BUILD_ROOT^^" > core-filelist
 find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
   -type d -printf "%%%%dir %%p\n" | sed "s^$RPM_BUILD_ROOT^^" >> core-filelist
-find $RPM_BUILD_ROOT/usr/lib/emacs/%{version} -type f | \
-  sed "s^$RPM_BUILD_ROOT^^" | grep -v movemail >> core-filelist
 
 # Include .el files which lack a corresponding byte compiled form
 for I in `find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
@@ -284,8 +173,8 @@ for I in `find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
 done >> core-filelist
 
 # Include all non elisp files which emacs installs
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp -type f | \
-  sed "s^$RPM_BUILD_ROOT^^" | grep -v "\.el\(c\)\?$" >> core-filelist
+#find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp -type f | \
+#  sed "s^$RPM_BUILD_ROOT^^" | grep -v "\.el\(c\)\?$" >> core-filelist
 
 
 find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/leim \
@@ -310,8 +199,6 @@ find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/leim \
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-rm -rf build-nox
-rm -rf build-withx
    
 %define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget elisp
 %post
@@ -327,65 +214,47 @@ for f in %{info_files}; do
 done
 fi
 
-%triggerin nox -- emacs-X11
-if [ -L /usr/bin/emacs ]; then
-  rm /usr/bin/emacs
-fi
-
-%triggerpostun nox -- emacs-X11
-[ $2 = 0 ] || exit 0
-if [ ! -L /usr/bin/emacs ]; then
-  ln -sf emacs-nox /usr/bin/emacs
-fi
-
-%post nox
-if [ ! -x /usr/bin/emacs -a ! -L /usr/bin/emacs ]; then
-  ln -sf emacs-nox /usr/bin/emacs
-fi
-
-%postun nox
-[ $1 = 0 ] || exit 0
-if [ -L /usr/bin/emacs ]; then
-  rm /usr/bin/emacs
-fi
 
 %files -f core-filelist
 %defattr(-,root,root)
 %config(noreplace) /etc/skel/.emacs
-%doc etc/NEWS BUGS README etc/FAQ
+%doc etc/NEWS BUGS README 
 /usr/bin/b2m
 /usr/bin/emacsclient
 /usr/bin/etags
 /usr/bin/rcs-checkin
 %{_mandir}/*/*
 %{_infodir}/*
-/usr/share/emacs/locale.alias
 /usr/share/emacs/site-lisp/python-mode.elc
-/usr/share/emacs/site-lisp/mwheel.elc
+/usr/share/emacs/site-lisp/php-mode.elc
+/usr/share/emacs/site-lisp/po-mode.elc
 /usr/share/emacs/site-lisp/rpm-spec-mode.elc
+/usr/share/emacs/site-lisp/ssl.elc
 /usr/share/emacs/site-lisp/subdirs.el
-
 /usr/share/emacs/site-lisp/site-start.d/lang.emacs.el
+/usr/share/emacs/site-lisp/site-start.d/php-mode-init.el
+/usr/share/emacs/site-lisp/site-start.d/po-mode-init.el
 /usr/share/emacs/site-lisp/lang
-
-%dir /usr/lib/emacs
-%dir /usr/lib/emacs/site-lisp
-%dir /usr/lib/emacs/%{version}
-%dir /usr/lib/emacs/%{version}/*
-%attr(0755,root,root) /usr/lib/emacs/%{version}/*/movemail
-
+%dir /usr/share/emacs
 %dir /usr/share/emacs/site-lisp
+%dir /usr/share/emacs/%{version}
+%dir /usr/share/emacs/%{version}/*
+/usr/share/emacs/%{version}/etc/*
+/usr/libexec/emacs/%{version}/*/*
+%attr(0755,root,root) /usr/libexec/emacs/%{version}/*/movemail
 %attr(0644,root,root) %config /usr/share/emacs/site-lisp/site-start.el
 %dir /usr/share/emacs/site-lisp/site-start.d
-%dir /usr/share/emacs/%{version}
-%dir /usr/share/emacs/%{version}/site-lisp
-%dir /usr/share/emacs/%{version}/leim
-/usr/share/emacs/%{version}/etc
+%attr(755,root,root) /usr/bin/emacs
+%attr(755,root,root) /usr/bin/emacs-%{version}
+%config(noreplace) /etc/X11/applnk/Applications/emacs.desktop
+/usr/share/pixmaps/emacs.png 
 
 %files -f el-filelist el
 %defattr(-,root,root)
 /usr/share/emacs/site-lisp/python-mode.el
-/usr/share/emacs/site-lisp/mwheel.el
+/usr/share/emacs/site-lisp/php-mode.el
+/usr/share/emacs/site-lisp/po-mode.el
+/usr/share/emacs/site-lisp/ssl.el
 /usr/share/emacs/site-lisp/rpm-spec-mode.el
 
 %files -f leim-filelist leim
@@ -393,18 +262,46 @@ fi
 /usr/share/emacs/%{version}/leim/leim-list.el
 %dir /usr/share/emacs/%{version}/leim
 
-%files nox
-%defattr(-,root,root)
-/usr/bin/emacs-nox
-
-%files X11
-%defattr(-,root,root)
-%attr(755,root,root) /usr/bin/emacs
-%attr(755,root,root) /usr/bin/emacs-%{version}
-%config(noreplace) /etc/X11/applnk/Applications/emacs.desktop
-/usr/share/pixmaps/emacs.png 
-
 %changelog
+* Thu Dec  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-2.7
+- Increase recursive-load-depth-limit from 10 to 50
+
+* Wed Dec  5 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-2
+- Make it conflict with old versions of gettext
+
+* Thu Nov 29 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-1
+- rpm-spec-mode 0.11h, should fix #56748
+
+* Tue Nov  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.4
+- php mode 1.0.1. Should fix some speedbar problems.
+
+* Tue Oct 23 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.3
+- Minor cleanups
+- add ssl.el
+
+* Mon Oct 22 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.2
+- Add more files from the libexec directory (#54874, #54875)
+
+* Sun Oct 21 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-0.1
+- 21.1
+- Build on IA64 again - the default config now handles it
+- Drop all old patches
+- Misc cleanups
+- Update the elisp manual to 21-2.7
+- Deprecate the emacs-nox and emacs-X11 subpackages. 
+  Simplify build procedure to match. 
+- Update php-mode to 1.0.0
+
+* Mon Oct 15 2001 Trond Eivind Glomsrød <teg@redhat.com> 20.7-43
+- Add php-mode 0.9.9
+- Add URL (#54603)
+- don't run autoconf/libtoolize during build - they're broken
+- don't build on IA64 until they are fixed
+
+* Sun Sep 16 2001 Trond Eivind Glomsrød <teg@redhat.com> 20.7-42
+- Update python-mode to the version in the python 2.2a3
+- Include po-mode in emacs, instead of including in gettext
+
 * Mon Jul 30 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - Minor fix to make-mode fontify regexp (#50010)
 - Build without emacs being installed (#49085)
