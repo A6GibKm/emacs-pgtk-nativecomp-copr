@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 16
+Release: 17
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -276,7 +276,7 @@ if [ "$1" = 0 ]; then
     /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
       --section="GNU Emacs" 2> /dev/null || :
   done
-  alternatives --remove %{_bindir}/etags %{_bindir}/etags.emacs
+  alternatives --remove etags %{_bindir}/etags.emacs
 fi
 
 %files
@@ -329,6 +329,9 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Mon Oct 18 2004 Jens Petersen <petersen@redhat.com> - 21.3-17
+- fix etag alternatives removal when uninstalling (Karsten Hopp, 136137)
+
 * Fri Oct 15 2004 Jens Petersen <petersen@redhat.com> - 21.3-16
 - do not setup frame-title-format in default.el, since it will override
   setting by users (Henrik Bakken, 134520)
