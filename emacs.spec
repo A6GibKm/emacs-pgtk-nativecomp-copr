@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 22
+Release: 23
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -50,8 +50,7 @@ Patch16: movemail-CAN-2005-0100.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
-Requires: ncurses, zlib
-Requires: Xaw3d, libpng, libjpeg, libungif, libtiff, fonts-xorg-75dpi
+Requires: fonts-xorg-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -70,7 +69,6 @@ This package provides an emacs binary with support for X windows.
 %package nox
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
-Requires: ncurses, zlib
 Requires: emacs-common = %{version}-%{release}
 
 %description nox
@@ -202,8 +200,8 @@ rm -rf $RPM_BUILD_ROOT
 %__make %{?_smp_mflags}
 
 # install the emacs without X
-install -m 0755 src/emacs $RPM_BUILD_ROOT%{_bindir}/emacs-nox
 install -m 0755 src/emacs-%{version}.2 $RPM_BUILD_ROOT%{_bindir}/emacs-nox-%{version}
+ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{,-%{version}}
 install -m 0644 etc/DOC-%{version}.2 $RPM_BUILD_ROOT%{_datadir}/emacs/%{version}/etc/
 install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/
 
@@ -259,7 +257,7 @@ rm -f *-filelist {common,el,leim}-*-files
 )
 
 # put the lists together after filtering  ./usr to /usr
-perl -pi -e "s|\.%{_prefix}|%{_prefix}|" *-files
+sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
 cat common-*-files > common-filelist
 cat el-*-files > el-filelist
 cat leim-*-files > leim-filelist
@@ -334,6 +332,11 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Feb 16 2005 Jens Petersen <petersen@redhat.com> - 21.3-23
+- install %{_bindir}/emacs-nox as a hardlink of the versioned binary
+- drop explicit lib requirements
+- use sed instead of perl to fix up filelists
+
 * Mon Feb 14 2005 Jens Petersen <petersen@redhat.com> - 21.3-22
 - use prereq instead of contexts for common script requirements
   (Axel Thimm, 147791)
