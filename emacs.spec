@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 25
+Release: 26
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -344,6 +344,9 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Mar  9 2005 Jens Petersen <petersen@redhat.com> - 21.3-26
+- rebuild with gcc 4.0
+
 * Mon Feb 28 2005 Jens Petersen <petersen@redhat.com> - 21.3-25
 - add tramp-2.1.3 to site-lisp (David Woodhouse, 149703)
   - move removal of info dir to after its installation
