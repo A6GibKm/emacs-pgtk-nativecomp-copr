@@ -329,7 +329,7 @@ fi
 %defattr(-,root,root)
 
 %changelog
-* Fri Oct 29 2004 Jens Petersen <petersen@redhat.com>
+* Thu Nov  4 2004 Jens Petersen <petersen@redhat.com> - 21.3-18
 - require fonts-xorg-75dpi to prevent empty boxes at startup due to missing
   fonts (Johannes Kaiser, 137060)
 - turn on emacs again in the desktop menu (132567)
