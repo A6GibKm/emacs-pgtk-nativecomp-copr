@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 9
+Release: 11
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -47,7 +47,7 @@ Prereq: /sbin/install-info, dev
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: ncurses, zlib
-Requires: XFree86-libs, Xaw3d, libpng, libjpeg, libungif, libtiff
+Requires: Xaw3d, libpng, libjpeg, libungif, libtiff
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -318,6 +318,15 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Mar 16 2004 Mike A. Harris <mharris@redhat.com> 21.3-11
+- Removed bogus Requires: XFree86-libs that was added in 21.3-8, as rpm
+  find-requires will automatically pick up the dependancies on any runtime
+  libraries, and such hard coded requires is not X11 implementation
+  agnostic (#118471)
+
+* Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Sat Jan 24 2004 Jens Petersen <petersen@redhat.com> - 21.3-9
 - base emacs package now only contains emacs binary built with X support
 - bring back emacs-nox subpackage (emacs built without X support) (#113001)
