@@ -355,7 +355,7 @@ the package."
          "---"
          ["Go to section..."        rpm-mouse-goto-section  :keys "C-c g"]
          ["Forward section"         rpm-forward-section           t]
-         ["Backward sectoin"        rpm-backward-section          t]
+         ["Backward section"        rpm-backward-section          t]
          "---"
          ["Add changelog entry..."  rpm-add-change-log-entry      t]
          ["Increase release-tag"    rpm-increase-release-tag      t]
@@ -781,7 +781,7 @@ leave point at previous location."
 (defun rpm-build (buildoptions)
   "Build this rpm-package."
   (setq rpm-buffer-name
-        (concat "*rpm " buildoptions " "
+        (concat "*rpmbuild " buildoptions " "
                 (file-name-nondirectory buffer-file-name) "*"))
   (rpm-process-check rpm-buffer-name)
   (if (get-buffer rpm-buffer-name)
@@ -815,61 +815,62 @@ leave point at previous location."
     (set-buffer (get-buffer rpm-buffer-name))
     (goto-char (point-max)))
   (let ((process
-         (apply 'start-process "rpm" rpm-buffer-name "rpm" buildoptions)))
+         (apply 'start-process "rpmbuild" rpm-buffer-name "rpmbuild"
+                buildoptions)))
     (if (and rpm-spec-sign-gpg (not rpm-no-gpg))
         (let ((rpm-passwd-cache (read-passwd "GPG passphrase: ")))
           (process-send-string process (concat rpm-passwd-cache "\n"))))
     (set-process-filter process 'rpm-command-filter)))
 
 (defun rpm-build-bp (&optional arg)
-  "Run a `rpm -bp'."
+  "Run a `rpmbuild -bp'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message "Cannot run `rpm -bp' with --short-circuit")
+      (message "Cannot run `rpmbuild -bp' with --short-circuit")
     (setq rpm-no-gpg t)
     (rpm-build "-bp")))
 
 (defun rpm-build-bl (&optional arg)
-  "Run a `rpm -bl'."
+  "Run a `rpmbuild -bl'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message "Cannot run `rpm -bl' with --short-circuit")
+      (message "Cannot run `rpmbuild -bl' with --short-circuit")
     (setq rpm-no-gpg t)
     (rpm-build "-bl")))
 
 (defun rpm-build-bc (&optional arg)
-  "Run a `rpm -bc'."
+  "Run a `rpmbuild -bc'."
   (interactive "p")
   (setq rpm-no-gpg t)
   (rpm-build "-bc"))
 
 (defun rpm-build-bi (&optional arg)
-  "Run a `rpm -bi'."
+  "Run a `rpmbuild -bi'."
   (interactive "p")
   (setq rpm-no-gpg t)
   (rpm-build "-bi"))
 
 (defun rpm-build-bb (&optional arg)
-  "Run a `rpm -bb'."
+  "Run a `rpmbuild -bb'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message "Cannot run `rpm -bb' with --short-circuit")
+      (message "Cannot run `rpmbuild -bb' with --short-circuit")
     (setq rpm-no-gpg nil)
     (rpm-build "-bb")))
 
 (defun rpm-build-bs (&optional arg)
-  "Run a `rpm -bs'."
+  "Run a `rpmbuild -bs'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message "Cannot run `rpm -bs' with --short-circuit")
+      (message "Cannot run `rpmbuild -bs' with --short-circuit")
     (setq rpm-no-gpg nil)
     (rpm-build "-bs")))
 
 (defun rpm-build-ba (&optional arg)
-  "Run a `rpm -ba'."
+  "Run a `rpmbuild -ba'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message "Cannot run `rpm -ba' with --short-circuit")
+      (message "Cannot run `rpmbuild -ba' with --short-circuit")
     (setq rpm-no-gpg nil)
     (rpm-build "-ba")))
 

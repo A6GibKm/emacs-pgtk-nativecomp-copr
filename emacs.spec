@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 2a
+Release: 15
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -13,21 +13,22 @@ Source5: dotemacs
 Source6: site-start.el
 Source7: python-mode.el
 Source8: http://www.tihlde.org/~stigb/rpm-spec-mode.el
-Source9: emacs-asian.tar.bz2
-Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.7.tar.bz2
-# 1.0.0 - http://prdownloads.sourceforge.net/php-mode/php-mode-100.el
+Source9: emacs-asian-0.2.tar.bz2
+Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
+# 1.0.2 - http://prdownloads.sourceforge.net/php-mode/php-mode-102.el
 Source11: php-mode.el
 Source12: php-mode-init.el
 Source13: ssl.el
 Source14: po-mode.el
 Source15: po-mode-init.el
-Patch50: emacs-20.7-s390.patch
+Patch50: emacs-21.2-s390.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
-BuildRequires: Xaw3d-devel glibc-devel gcc XFree86-devel bzip2 ncurses-devel
+BuildRequires: glibc-devel gcc XFree86-devel bzip2 ncurses-devel
 BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-devel 
 Obsoletes: emacs-nox emacs-X11
 Conflicts: gettext < 0.10.40
+Prereq: dev
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -80,8 +81,6 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 #to find installinfo
 export PATH="$PATH:/sbin:/usr/sbin"
 
-autoconf
-
 %configure --with-gcc --with-pop --with-sound
 make
 
@@ -123,8 +122,8 @@ mv $RPM_BUILD_ROOT/usr/bin/ctags $RPM_BUILD_ROOT/usr/bin/gctags
 
 
 # GNOME / KDE files
-mkdir -p $RPM_BUILD_ROOT/etc/X11/applnk/Applications
-install -c -m 0644 %SOURCE3 $RPM_BUILD_ROOT/etc/X11/applnk/Applications/
+mkdir -p $RPM_BUILD_ROOT/usr/share/applications
+install -c -m 0644 %SOURCE3 $RPM_BUILD_ROOT/usr/share/applications/gnu-emacs.desktop
 mkdir -p $RPM_BUILD_ROOT/usr/share/pixmaps
 install -c -m 0644 %SOURCE4 $RPM_BUILD_ROOT/usr/share/pixmaps/
 
@@ -153,7 +152,7 @@ rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc/ctags*
 
 # The elisp reference manual
 bzcat %{SOURCE10} | tar xf -
-pushd elisp-manual-21-2.7
+pushd elisp-manual-21-2.8
 install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT/%{_infodir}
 popd
 
@@ -239,7 +238,7 @@ fi
 %attr(0755,root,root) /usr/libexec/emacs/%{version}/*/movemail
 %attr(0644,root,root) %config /usr/share/emacs/site-lisp/site-start.el
 %dir /usr/share/emacs/site-lisp/site-start.d
-%config(noreplace) /etc/X11/applnk/Applications/emacs.desktop
+%config(noreplace) /usr/share/applications/gnu-emacs.desktop
 /usr/share/pixmaps/emacs.png 
 
 %files -f el-filelist el
@@ -256,6 +255,46 @@ fi
 %dir /usr/share/emacs/%{version}/leim
 
 %changelog
+* Tue Aug  6 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-15
+- Don't use canna by default (# 70870)
+
+* Thu Aug  1 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-14
+- Fixes to desktop file (add encoding, add missing a ";")
+- Update s390 patch
+
+* Wed Jul 24 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-13
+- rpm -> rpmbuild for rpmspec mode (#68185)
+
+* Mon Jul 22 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-12
+- desktop file changes (#69385)
+
+* Mon Jul  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-11
+- Fix php-mode to not initialize on e.g.  foophp.c (#67592)
+
+* Thu Jun 27 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-10
+- Downgrade po-mode
+
+* Fri Jun 21 2002 Tim Powers <timp@redhat.com>
+- automated rebuild
+
+* Mon Jun 17 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-8
+- #66808
+
+* Wed May 29 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-7
+- Rebuild
+
+* Mon May 20 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-6
+- Prereq dev
+
+* Thu May 16 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-5
+- Update the elisp manual and po-mode
+
+* Tue May  7 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-4
+- php-mode 1.0.2
+
+* Thu Apr 25 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-3
+- Update po-mode to the one from gettext 0.11.1
+
 * Mon Apr  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-2
 - Tweak mouse init process (#59757)
 
