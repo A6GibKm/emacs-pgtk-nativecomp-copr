@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 2
+Release: 2a
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -79,6 +79,8 @@ sets are included in this package.
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 #to find installinfo
 export PATH="$PATH:/sbin:/usr/sbin"
+
+autoconf
 
 %configure --with-gcc --with-pop --with-sound
 make
