@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 14
+Release: 15
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -42,6 +42,8 @@ Patch8: browse-url-htmlview-84262.patch
 Patch9: emacs-21.3-ppc64.patch
 Patch10: editfns.c-Fformat-multibyte-davej.patch
 Patch11: emacs-21.3-no-rpath.patch
+Patch12: emacs-21.3-lisp-textmodes-ispell-languages.patch
+Patch13: emacs-21.3-gud-libtool-fix.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
@@ -82,6 +84,7 @@ Summary: Emacs common files
 Group: Applications/Editors
 Requires(post,preun): /sbin/install-info, dev
 Requires(post): /bin/ln
+Requires(post,preun): %{_sbindir}/alternatives
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -127,6 +130,8 @@ sets are included in this package.
 %patch9 -p1 -b .ppc64
 %patch10 -p1 -b .multibyte
 %patch11 -p1 -b .rpath
+# patches 2 and 3 touch configure.in
+autoconf-2.13
 
 ## Lisp patches
 # remove game we can't ship
@@ -134,8 +139,10 @@ sets are included in this package.
 rm lisp/finder-inf.el lisp/play/tetris.el*
 # make browse-url default to htmlview not netscape
 %patch8 -p1
-# patches 2 and 3 touch configure.in
-autoconf-2.13
+# fix names of aspell language dictionaries
+%patch12 -p1
+# fix running gdb with libtool
+%patch13 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -208,8 +215,7 @@ install -m 0644 %SOURCE26 %{site_lisp}
 
 mv $RPM_BUILD_ROOT%{_bindir}/{etags,etags.emacs}
 mv $RPM_BUILD_ROOT%{_mandir}/man1/{ctags.1,gctags.1}
-mv $RPM_BUILD_ROOT%{_bindir}/{ctags,ctags.emacs}
-ln -s ctags.emacs $RPM_BUILD_ROOT%{_bindir}/gctags
+mv $RPM_BUILD_ROOT%{_bindir}/{ctags,gctags}
 
 # GNOME / KDE files
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
@@ -258,20 +264,20 @@ cat leim-*-files > leim-filelist
 rm -rf $RPM_BUILD_ROOT
    
 %define info_files ada-mode autotype ccmode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
+
 %post common
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
 done
-
-# make etags a symlink to etags.emacs if etags doesn't exist
-[ -e %{_bindir}/etags ] || ln -s etags.emacs %{_bindir}/etags
+alternatives --install %{_bindir}/etags etags %{_bindir}/etags.emacs 80
 
 %preun common
 if [ "$1" = 0 ]; then
-for f in %{info_files}; do
-  /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
-    --section="GNU Emacs" 2> /dev/null || :
-done
+  for f in %{info_files}; do
+    /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
+      --section="GNU Emacs" 2> /dev/null || :
+  done
+  alternatives --remove %{_bindir}/etags %{_bindir}/etags.emacs
 fi
 
 %files
@@ -282,6 +288,7 @@ fi
 %{_datadir}/emacs/%{version}/etc/DOC-%{version}.1
 %dir %{_libexecdir}/emacs/%{version}/*
 %{_libexecdir}/emacs/%{version}/*/fns-%{version}.1.el
+%{_datadir}/applications/gnu-emacs.desktop
 
 %files nox
 %defattr(-,root,root)
@@ -314,7 +321,6 @@ fi
 %exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 # %dir %{_datadir}/emacs/site-lisp/site-start.d
-%{_datadir}/applications/gnu-emacs.desktop
 %{_datadir}/pixmaps/emacs.png 
 
 %files -f el-filelist el
@@ -324,6 +330,19 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Sep 29 2004 Jens Petersen <petersen@redhat.com> - 21.3-15
+- cleanup and update .desktop file
+- make emacs not appear in the desktop menu (Seth Nickell,132567)
+- move the desktop file from -common to main package
+- go back to using just gctags for ctags
+- etags is now handled by alternatives (92256)
+- improve the default frame title by prefixing the buffer name
+  (Christopher Beland, 128110)
+- fix the names of some European aspell languages with
+  emacs-21.3-lisp-textmodes-ispell-languages.patch (David Jansen, 122618)
+- fixing running "libtool gdb program" in gud with
+  emacs-21.3-gud-libtool-fix.patch (Dave Malcolm, 130955)
+
 * Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
 
