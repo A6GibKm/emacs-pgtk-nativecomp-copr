@@ -332,8 +332,8 @@ fi
 
 %changelog
 * Mon Nov 29 2004 Jens Petersen <petersen@redhat.com> - 21.3-19
-- put XIM status under the window for now to stop httx from dying (125413):
-  add emacs-xim-status-under-window-125413.patch
+- prefer XIM status under-the-window for now to stop xft httx from dying
+  (125413): add emacs-xim-status-under-window-125413.patch
 - default diff to unified format in .emacs
 
 * Thu Nov  4 2004 Jens Petersen <petersen@redhat.com> - 21.3-18
