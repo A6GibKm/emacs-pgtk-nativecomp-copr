@@ -11,6 +11,9 @@
   ;; enable wheelmouse support by default
   (mwheel-install)
   ;; make switching frames works properly under the default click-to-focus
-  (setq focus-follows-mouse nil))
+  (setq focus-follows-mouse nil)
+  ;; default to better frame titles
+  (setq frame-title-format
+	(concat  "%b - emacs@" system-name)))
 
 (auto-compression-mode t)
