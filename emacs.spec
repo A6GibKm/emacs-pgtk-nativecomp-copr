@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 19
+Release: 20
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -45,6 +45,7 @@ Patch11: emacs-21.3-no-rpath.patch
 Patch12: emacs-21.3-lisp-textmodes-ispell-languages.patch
 Patch13: emacs-21.3-gud-libtool-fix.patch
 Patch14: emacs-xim-status-under-window-125413.patch
+Patch15: emacs-21.3-xterm-modifiers-137868.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
@@ -131,6 +132,7 @@ sets are included in this package.
 %patch10 -p1 -b .multibyte
 %patch11 -p1 -b .rpath
 %patch14 -p1 -b .StatusArea
+%patch15 -p0 -b .modifier
 # patches 2 and 3 touch configure.in
 autoconf-2.13
 
@@ -331,6 +333,10 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Fri Jan 14 2005 Jens Petersen <petersen@redhat.com> - 21.3-20
+- workaround xorg-x11 modifier key problem with
+  emacs-21.3-xterm-modifiers-137868.patch (Thomas Woerner, 137868)
+
 * Mon Nov 29 2004 Jens Petersen <petersen@redhat.com> - 21.3-19
 - prefer XIM status under-the-window for now to stop xft httx from dying
   (125413): add emacs-xim-status-under-window-125413.patch
