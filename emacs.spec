@@ -1,8 +1,7 @@
-%define enable_japanese 1
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 20.7
-Release: 14j3
+Release: 17
 Copyright: GPL
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
@@ -12,12 +11,11 @@ Source4: emacs.png
 Source5: dotemacs
 Source6: site-start.el
 Source7: http://www.python.org/emacs/python-mode/python-mode.el
-Source10: lisp-startup-localealias.patch
-# for Japanese
-#Source100: emacs.wmconfig
-Source101: dotemacs-j
-Source102: dotemacs.el-j
-
+# From /usr/X11R6/lib/X11/locale/locale.alias
+Source8: emacs.locale.alias
+Source9: startup.el
+Source10: startup.elc
+#Source10: lisp-startup-localealias.patch
 Patch0: emacs-20.7-xaw3d.patch
 Patch2: emacs-20.3-tmprace.patch
 Patch3: emacs-20.3-linkscr.patch
@@ -28,22 +26,7 @@ Patch7: emacs-20.6-ia64.patch
 Patch8: emacs-20.6-ia64-2.patch
 Patch9: emacs-20.6-ia64-3.patch
 Patch10: emacs-20.7-manboption.patch
-
-# for Japanese
-Patch100: ftp://ftp.ki.nu/pub/emcws/emcws-%{version}-20000614
-Patch101: emacs-20.4-xim-19990816.diff
-Patch102: emacs-20.4-fontset-19990915.diff
-Patch103: emacs-20.7-rhwnn6.patch
-
-%if %{enable_japanese}
-BuildRequires: Wnn6-SDK-devel, Canna-devel
-Obsoletes: mule-base, mule-canna , mule-wnn6 , mule ,emacs-X11-Canna,emacs-X11-Wnn4,emacs-X11-Wnn6, emacs-nox-Canna, emacs-nox-Wnn4,emacs-nox-Wnn6
-%endif
-
-%ifarch ia64
-%define _payload_compression  w3.gzdio
-%endif
-
+Patch11: emacs-20.7-proto.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
 
@@ -101,7 +84,7 @@ install the emacs package in order to run Emacs.
 %package X11
 Summary: The Emacs text editor for the X Window System.
 Group: Applications/Editors
-Requires: emacs, XFree86-jpfonts
+Requires: emacs
 
 %description X11
 Emacs-X11 includes the Emacs text editor program for use with the X
@@ -129,12 +112,10 @@ also need to install the emacs package in order to run Emacs.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
-%if %{enable_japanese}
-%patch100 -p1
-%patch101 -p1
-%patch102 -p0
-%patch103 -p1
-%endif
+%patch11 -p1
+
+cp -f %{SOURCE9} lisp/startup.el
+cp -f %{SOURCE10} lisp/startup.elc
 
 %build
 
@@ -142,11 +123,7 @@ PUREDEF="-DNCURSES_OSPEED_T"
 XPUREDEF="-DNCURSES_OSPEED_T"
 libtoolize --force --copy
 autoconf
-%if %{enable_japanese}
-CONFOPTS="--mandir=%{_mandir} --infodir=%{_infodir} --prefix=/usr --libexecdir=/usr/lib --sharedstatedir=/var --with-gcc --with-pop --with-wnn6 --with-wnn-includes=/usr/include/wnn6 --with-canna --with-canna-includes=/usr/canna/include --with-canna-libraries=/usr/lib"
-%else
 CONFOPTS="--mandir=%{_mandir} --infodir=%{_infodir} --prefix=/usr --libexecdir=/usr/lib --sharedstatedir=/var --with-gcc --with-pop"
-%endif
 
 BuildEmacs() {
     dir=$1
@@ -155,6 +132,8 @@ BuildEmacs() {
     mkdir build-$1 && cd build-$1
     CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS $PUREDEF" LDFLAGS=-s \
       ../configure ${CONFOPTS} $2 ${RPM_ARCH}-redhat-linux-gnu
+    # blarg
+    echo "#include <string.h>"  >> src/config.h
     make 
     cd ..
 }
@@ -172,7 +151,6 @@ BuildEmacs withx "--with-x-toolkit"
 
 #Build binary without X support
 BuildEmacs nox "--with-x=no"
-
 
 #change the locale.alias back for packaging
 #patch -R lisp/startup.el %SOURCE10
@@ -197,6 +175,9 @@ make install  -C build-withx \
 	sharedstatedir=$RPM_BUILD_ROOT/var \
 	mandir=$RPM_BUILD_ROOT/%{_mandir} \
 	infodir=$RPM_BUILD_ROOT/%{_infodir}
+
+# install the locale file
+install -m 644 %SOURCE8 $RPM_BUILD_ROOT/usr/share/emacs/locale.alias
 
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
 gzip -9nf $RPM_BUILD_ROOT/%{_infodir}/*
@@ -225,11 +206,8 @@ install -c -m0644 python-mode.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
 
 # default initialization file
 mkdir -p $RPM_BUILD_ROOT/etc/skel
-%if %{enable_japanese}
-install -c -m0644 %SOURCE102 $RPM_BUILD_ROOT/etc/skel/.emacs.el
-%else
 install -c -m0644 %SOURCE5 $RPM_BUILD_ROOT/etc/skel/.emacs
-%endif
+
 #
 # create file lists
 #
@@ -238,6 +216,7 @@ install -c -m0644 %SOURCE5 $RPM_BUILD_ROOT/etc/skel/.emacs
 
 rm -f $RPM_BUILD_ROOT/usr/bin/{ctags,etags}
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*tags*
+rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/{etags,ctags}*
 
 
 find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
@@ -324,11 +303,7 @@ fi
 
 %files -f core-filelist
 %defattr(-,root,root)
-%if %{enable_japanese}
-%config(noreplace) /etc/skel/.emacs.el
-%else
 %config(noreplace) /etc/skel/.emacs
-%endif
 %doc etc/NEWS BUGS README etc/FAQ
 /usr/bin/b2m
 /usr/bin/emacsclient
@@ -337,6 +312,7 @@ fi
 %{_infodir}/*
 /usr/share/emacs/site-lisp/python-mode.elc
 /usr/share/emacs/site-lisp/subdirs.el
+/usr/share/emacs/locale.alias
 
 %dir /usr/lib/emacs
 %dir /usr/lib/emacs/site-lisp
@@ -372,27 +348,31 @@ fi
 /usr/share/pixmaps/emacs.png 
 
 %changelog
-* Wed Sep 13 2000 ISHIKAWA Mutsumi <ishikawa@redhat.com>
-- update /etc/skel/.emacs.el file
+* Tue Oct 10 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- remove ctags.1 and etags.1 from the emacs etc directory
+  (#18011)
+- fix the emacs-nox not to use the locale.alias in XFree86
+  (#18548)... copy it into /usr/share/emacs and patch
+  the startup files to use it. Argh.
 
-* Wed Sep 13 2000 ISHIKAWA Mutsumi <ishikawa@redhat.com>
-- emacs-nox requires XFree86-jpfonts, so fix.
-  only emacs-X11 requires XFree86-jpfonts.
+* Wed Oct 04 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- fix initialization of python mode (require it before
+  customizing it)
 
-* Wed Sep 13 2000 ISHIKAWA Mutsumi <ishikawa@redhat.com>
-- inport emacs-cws changes to support Japanese input methods
+* Fri Sep 22 2000 Bill Nottingham <notting@redhat.com>
+- don't use bcopy without a prototype
 
-* Thu Aug 24 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu Aug 24 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - define MAIL_USE_LOCKF 
 - remove setgid on movemail
 
-* Mon Aug 07 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Mon Aug 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - add /usr/share/emacs/site-lisp/subdirs.el (#15639)
 
-* Tue Jul 25 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Tue Jul 25 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - remove "-b" option from manpage
 
-* Fri Jul 21 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Fri Jul 21 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - remove Japanese support
 
 * Mon Jul 17 2000 Matt Wilson <msw@redhat.com>
@@ -401,13 +381,13 @@ fi
 * Wed Jul 12 2000 Prospector <bugzilla@redhat.com>
 - automatic rebuild
 
-* Fri Jul 07 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Fri Jul 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - fix some typos in spec file
 
-* Sun Jul 02 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Sun Jul 02 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - make /etc/skel/.emacs 0644
 
-* Wed Jun 28 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Wed Jun 28 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - include python mode and change in site-start.el related to this
 - some changes to the default .emacs 
 
@@ -416,11 +396,11 @@ fi
   bug that causes crashes in the garbage collector
 - removed all the nox Japanese packages
 
-* Mon Jun 19 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Mon Jun 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - include site-start.el as a a config file
 - add aspell support via the above
 
-* Fri Jun 16 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Fri Jun 16 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - (from MSW) different compression on IA64 to avoid hangs
 - remove etags/ctags - use a separate package. Disable patch1
 
@@ -429,13 +409,13 @@ fi
 - fixed a missing escaped " in a wc string
 - merge japanese support to head of development
 
-* Tue Jun 13 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Tue Jun 13 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - Version 20.7
 - Add requirement for final newline to the default .emacs
 - redid the Xaw3d patch
 - checked all patches, discarded those we've upstreamed
 
-* Wed Jun 07 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Wed Jun 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - use %%{_mandir} and %%{_infodir}
 
 * Fri Jun  2 2000 Bill Nottingham <notting@redhat.com>
@@ -444,40 +424,40 @@ fi
 * Mon May 22 2000 Bill Nottingham <notting@redhat.com>
 - add another ia64 patch
 
-* Fri May 19 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Fri May 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - Disabled the compile patch for 20.6
 
 * Thu May 18 2000 Bill Nottingham <notting@redhat.com>
 - add in ia64 patch
 
-* Thu May 18 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu May 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - don't apply the unexelf patch - use a new unexelf.c file
   from the 21 source tree (this will go into the 20.7 tree)
 
-* Wed May 17 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Wed May 17 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - added patch by jakub to make it work with glibc2.2
 
-* Mon May 08 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Mon May 08 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - fixed a problem with ange-ftp and kerberized ftp
 
 * Mon May 08 2000 Bernhard Rosenkraenzer <bero@redhat.com>
 - rebuild with new Xaw3d
 
-* Thu Apr 20 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - let the build system handle gzipping man pages and stripping
 - added patch to increase keyboard buffer size
 
-* Thu Apr 20 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - gzip man pages
 
-* Thu Apr 20 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - added a security patch from RUS-CERT, which fixes 
   bugs mentioned in "Advisory 200004-01: GNU Emacs 20"
 
-* Tue Apr 18 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Tue Apr 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - patched to detect bash2 scripts. 
 
-* Thu Apr 06 2000 Trond Eivind Glomsrd <teg@redhat.com>
+* Thu Apr 06 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - removed configuraton file status from /usr/share/pixmaps/emacs.png
 
 * Fri Mar 24 2000 Bernhard Rosenkraenzer <bero@redhat.com>

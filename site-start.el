@@ -2,6 +2,7 @@
 (setq-default ispell-program-name "aspell") 
 
 ;; Add python support
+(require 'python-mode)
 (setq auto-mode-alist
       (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist
