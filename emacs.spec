@@ -1,11 +1,12 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 
 %define muleucs_ver current
+%define tramp_ver 2.1.3
 
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 24
+Release: 25
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -32,6 +33,8 @@ Source24: ftp://ftp.m17n.org/pub/mule/Mule-UCS/test/Mule-UCS-%{muleucs_ver}.tar.
 Source25: lang-coding-systems-init.el
 Source26: default.el
 Source27: rfc1345.el
+Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
+Source29: tramp-init.el
 Patch2: emacs-21.2-s390.patch
 Patch3: emacs-21.2-x86_64.patch
 Patch4: emacs-21.2-sticky-bit-80049.patch
@@ -117,7 +120,7 @@ non-English character set. Input methods for many different character
 sets are included in this package.
 
 %prep
-%setup -q -b 1 -a 24
+%setup -q -b 1 -a 24 -a 28
 
 %patch2 -p1 -b .s390
 %patch3 -p1 -b .hammer
@@ -185,6 +188,10 @@ TOPDIR=${PWD}
 ( cd Mule-UCS-%{muleucs_ver}
   %{emacsbatch} -l mucs-comp.el )
 
+( cd tramp-%{tramp_ver}
+  ./configure --with-emacs=${TOPDIR}/src/emacs
+  make )
+
 %install
 rm -rf $RPM_BUILD_ROOT
 
@@ -208,9 +215,8 @@ install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/
 # make sure movemail isn't setgid
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
 
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
-
 %define site_lisp $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+
 mkdir -p %{site_lisp}
 install -m 0644 %SOURCE6 %{site_lisp}/site-start.el
 install -m 0644 %SOURCE26 %{site_lisp}
@@ -235,14 +241,20 @@ install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
 install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 
+( cd Mule-UCS-%{muleucs_ver}/lisp
+  mkdir %{site_lisp}/Mule-UCS
+  cp -p *.el *.elc %{site_lisp}/Mule-UCS )
+
+( cd tramp-%{tramp_ver}
+  %makeinstall lispdir=%{site_lisp}/tramp )
+
 # elisp reference manual
 tar jxf %{SOURCE10}
 ( cd elisp-manual-21-2.8
   install -m 644 elisp elisp-* $RPM_BUILD_ROOT%{_infodir} )
 
-( cd Mule-UCS-%{muleucs_ver}/lisp
-  mkdir %{site_lisp}/Mule-UCS
-  cp -p *.el *.elc %{site_lisp}/Mule-UCS )
+# after everything is installed, remove info dir
+rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
 #
 # create file lists
@@ -324,7 +336,6 @@ fi
 %exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
-# %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %files -f el-filelist el
 %defattr(-,root,root)
@@ -333,12 +344,17 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Mon Feb 28 2005 Jens Petersen <petersen@redhat.com> - 21.3-25
+- add tramp-2.1.3 to site-lisp (David Woodhouse, 149703)
+  - move removal of info dir to after its installation
+  - add tramp-init.el to put tramp into load-path
+
 * Thu Feb 24 2005 Jens Petersen <petersen@redhat.com> - 21.3-24
-- mark default.el (noreplace) config (Pawel Salek, 149310)
-- only set keyboard-coding-system in xterm's to fix problem with inputting
+- mark default.el as a noreplace config file (Pawel Salek, 149310)
+- only set keyboard-coding-system in xterms to fix problem with input
   Latin characters becoming prefixes and making emacs loop
   (Eddahbi Karim, 126007)
-- make emacs-el also own its lisp directories
+- make emacs-el own its lisp directories
 - run latex-mode-hook in latex-mode (Martin Biely, 144083)
   - add emacs-21.3-latex-mode-hook-144083.patch
 
