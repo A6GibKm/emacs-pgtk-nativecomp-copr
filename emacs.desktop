@@ -30,4 +30,3 @@ Terminal=false
 Categories=Application;Development;TextEditor;X-Red-Hat-Base;
 Encoding=UTF-8
 StartupWMClass=Emacs
-NoDisplay=true

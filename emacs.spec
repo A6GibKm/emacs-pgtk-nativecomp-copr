@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 17
+Release: 18
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -48,7 +48,7 @@ Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: ncurses, zlib
-Requires: Xaw3d, libpng, libjpeg, libungif, libtiff
+Requires: Xaw3d, libpng, libjpeg, libungif, libtiff, fonts-xorg-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -329,6 +329,11 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Fri Oct 29 2004 Jens Petersen <petersen@redhat.com>
+- require fonts-xorg-75dpi to prevent empty boxes at startup due to missing
+  fonts (Johannes Kaiser, 137060)
+- turn on emacs again in the desktop menu (132567)
+
 * Mon Oct 18 2004 Jens Petersen <petersen@redhat.com> - 21.3-17
 - fix etag alternatives removal when uninstalling (Karsten Hopp, 136137)
 
