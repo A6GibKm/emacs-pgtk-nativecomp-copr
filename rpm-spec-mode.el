@@ -4,7 +4,7 @@
 
 ;; Author:   Stig Bjørlykke, <stigb@tihlde.org>
 ;; Keywords: unix, languages
-;; Version:  0.11e
+;; Version:  0.11g
 
 ;; This file is not yet part of FSF Emacs or XEmacs.
 
@@ -97,6 +97,13 @@ timecheck age."
   "Interpret given string as `arch-vendor-os'.
 Set the macros _target, _target_arch and _target_os accordingly"
   :type 'string
+  :group 'rpm-spec)
+
+(defcustom rpm-completion-ignore-case t
+  "*Non-nil means that case differences are ignored during completion.
+A value of nil means that case is significant.
+This is used during Tempo template completion."
+  :type 'boolean
   :group 'rpm-spec)
 
 (defcustom rpm-spec-clean nil
@@ -325,7 +332,6 @@ the package."
   (define-key rpm-spec-mode-map "\C-cxt" 'rpm-toggle-test)
   ;;May be better to have movement commands on \C-ck, and build on \C-c\C-k
   (define-key rpm-spec-mode-map "\C-c\C-i" 'rpm-insert-tag)
-  (define-key rpm-spec-mode-map "\C-u\C-c\C-i" 'rpm-change-tag)
   (define-key rpm-spec-mode-map "\C-c\C-n" 'rpm-forward-section)
   (define-key rpm-spec-mode-map "\C-c\C-p" 'rpm-backward-section)
   (define-key rpm-spec-mode-map "\C-c\C-t" 'rpm-insert-true-prefix)
@@ -560,12 +566,18 @@ with no args, if that value is non-nil."
   (rpm-insert-f "%docdir " dirname))
 
 ;;------------------------------------------------------------
+(defun rpm-completing-read (prompt table &optional pred require init hist)
+  "Read from the minibuffer, with completion.
+Like `completing-read', but the variable `rpm-completion-ignore-case'
+controls whether case is significant."
+  (let ((completion-ignore-case rpm-completion-ignore-case))
+    (completing-read prompt table pred require init hist)))
 
 (defun rpm-insert (&optional what file-completion)
   "Insert given tag.  Use file-completion if argument is t."
   (beginning-of-line)
   (if (not what)
-      (setq what (completing-read "Tag: " rpm-tags-list)))
+      (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
   (if (string-match "^%" what)
       (setq read-text (concat "Packagename for " what ": ")
             insert-text (concat what " "))
@@ -610,7 +622,7 @@ with no args, if that value is non-nil."
   "Update given tag."
   (save-excursion
     (if (not what)
-        (setq what (completing-read "Tag: " rpm-tags-list)))
+        (setq what (rpm-completing-read "Tag: " rpm-tags-list)))
     (cond
      ((string-equal what "Group")
       (rpm-change-group))
@@ -642,7 +654,7 @@ with no args, if that value is non-nil."
 
 (defun rpm-insert-group (group)
   "Insert Group tag."
-  (interactive (list (completing-read "Group: " rpm-group-tags-list)))
+  (interactive (list (rpm-completing-read "Group: " rpm-group-tags-list)))
   (beginning-of-line)
   (insert "Group: " group "\n"))
 
@@ -654,14 +666,16 @@ with no args, if that value is non-nil."
     (if (search-forward-regexp "^Group: \\(.*\\)$" nil t)
         (replace-match
          (concat "Group: "
-                 (insert (completing-read "Group: " rpm-group-tags-list
+                 (insert (rpm-completing-read "Group: " rpm-group-tags-list
                                           nil nil (match-string 1)))))
       (message "Group tag not found..."))))
 
 (defun rpm-insert-tag (&optional arg)
-  "Insert a tag."
+  "Insert or change a tag."
   (interactive "p")
-  (rpm-insert))
+  (if current-prefix-arg
+      (rpm-change)
+    (rpm-insert)))
 
 (defun rpm-change-tag (&optional arg)
   "Change a tag."
@@ -728,7 +742,7 @@ Go to beginning of current section."
 (defun rpm-goto-section (section)
   "Move point to the beginning of the specified section; 
 leave point at previous location."
-  (interactive (list (completing-read "Section: " rpm-section-list)))
+  (interactive (list (rpm-completing-read "Section: " rpm-section-list)))
   (push-mark)
   (goto-char (point-min))
   (or 
@@ -980,10 +994,10 @@ command."
         (let ((release (1+ (string-to-int (match-string 1)))))
           (setq release (concat (int-to-string release) (match-string 2)))
           (replace-match (concat "Release: " release))
-          (message (concat "Release tag changed to " release "."))))
-    (if (search-forward-regexp "^Release:[ \t]*%{?\\([^}]*\\)}?$" nil t)
-        (rpm-increase-release-with-macros)
-      (message "No Release tag found..."))))
+          (message (concat "Release tag changed to " release ".")))
+		(if (search-forward-regexp "^Release:[ \t]*%{?\\([^}]*\\)}?$" nil t)
+			 (rpm-increase-release-with-macros)
+		  (message "No Release tag found...")))))
 
 ;;------------------------------------------------------------
 

@@ -1,8 +1,8 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 20.7
-Release: 34p
-Copyright: GPL
+Release: 40
+License: GPL
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
 Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.bz2
@@ -13,11 +13,12 @@ Source6: site-start.el
 Source7: http://www.python.org/emacs/python-mode/python-mode.el
 # From /usr/X11R6/lib/X11/locale/locale.alias
 Source8: emacs.locale.alias
-Source11: rpm-spec-mode.el
+Source11: http://www.tihlde.org/~stigb/rpm-spec-mode.el
 Source12: mwheel.el
 Source13: lisp-startup-localealias.patch
 Source14: ftp://ftp.gnus.org/pub/gnus/gnus-5.8.8.tar.bz2
 Source15: emacs-asian.tar.bz2
+Source16: ftp://ftp.gnu.org/gnus/emacs/elisp-manual-21-2.6.tar.bz2
 Patch0: emacs-20.7-xaw3d.patch
 Patch2: emacs-20.3-tmprace.patch
 Patch3: emacs-20.3-linkscr.patch
@@ -30,14 +31,15 @@ Patch9: emacs-20.6-ia64-3.patch
 Patch10: emacs-20.7-manboption.patch
 Patch11: emacs-20.7-proto.patch
 Patch12: emacs-cpp-Makefile.patch
-Patch13: emacs-20.4-ppc-config.patch
 
 Patch50: emacs-20.7-s390.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
+BuildRequires: Xaw3d-devel glibc-devel gcc XFree86-devel bzip2 ncurses-devel
+BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-devel
 # temporary hack.  roll tamago into base emacs package
-Requires: tamago
+#Requires: tamago
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -125,11 +127,7 @@ also need to install the emacs package in order to run Emacs.
 %patch11 -p1
 %patch12 -p1
 
-%ifarch ppc
-%patch13 -p1 -b .ppc
-%endif
-
-%ifarch s390
+%ifarch s390 s390x
 %patch50 -p1 -b .s390
 %endif
 
@@ -264,6 +262,11 @@ rm -f $RPM_BUILD_ROOT/usr/bin/ctags
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*ctags*
 rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc/ctags*
 
+# The elisp reference manual
+bzcat %{SOURCE16} | tar xf -
+pushd elisp-manual-21-2.6
+install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT/%{_infodir}
+popd
 
 find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
   -name '*.elc' -print | sed "s^$RPM_BUILD_ROOT^^" > core-filelist
@@ -310,7 +313,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf build-nox
 rm -rf build-withx
    
-%define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget
+%define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget elisp
 %post
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
@@ -397,10 +400,31 @@ fi
 %defattr(-,root,root)
 %attr(755,root,root) /usr/bin/emacs
 %attr(755,root,root) /usr/bin/emacs-%{version}
-%config /etc/X11/applnk/Applications/emacs.desktop
+%config(noreplace) /etc/X11/applnk/Applications/emacs.desktop
 /usr/share/pixmaps/emacs.png 
 
 %changelog
+* Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- Much cleaner site-start.d sourcing
+- Add more build dependencies
+- Add the emacs lisp reference info pages (RFE #44577)
+- Don't require tamago - just plug it in for Japanese support
+
+* Mon Jun 18 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- Add Xaw3d-devel to buildrequires (#44736)
+
+* Mon Jun 18 2001 Florian La Roche <Florian.LaRoche@redhat.de>
+- merged s390x patch from <oliver.paukstadt@millenux.com>
+
+* Mon Jun  4 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- New rpm-spec-mode.el, which fixes #43323
+
+* Thu Apr 26 2001 Florian La Roche <Florian.LaRoche@redhat.de>
+- fix linker problem on s390 (fix by Than Ngo than@redhat.com)
+
+* Wed Apr 25 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- Make sure that mwheel is initialized for XEmacs (#37451)
+
 * Fri Mar 16 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - New locale.alias file for emacs-nox
 
