@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 16
+Release: 17
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -229,6 +229,8 @@ fi
 /usr/share/emacs/site-lisp/site-start.d/php-mode-init.el
 /usr/share/emacs/site-lisp/site-start.d/po-mode-init.el
 /usr/share/emacs/site-lisp/lang
+/usr/share/emacs/%{version}/site-lisp/subdirs.el
+
 %dir /usr/share/emacs
 %dir /usr/share/emacs/site-lisp
 %dir /usr/share/emacs/%{version}
@@ -255,6 +257,9 @@ fi
 %dir /usr/share/emacs/%{version}/leim
 
 %changelog
+* Tue Aug 27 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-17
+- Fix gdb arrow when used in non-windowed mode (#56890)
+
 * Fri Aug  9 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-16
 - Handle UTF-8 input (#70855).
 
