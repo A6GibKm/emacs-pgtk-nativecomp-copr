@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 15
+Release: 16
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -97,7 +97,6 @@ This package contains all the common files needed by emacs or emacs-nox.
 %package el
 Summary: Emacs Lisp source files included with Emacs.
 Group: Applications/Editors
-Requires: emacs = %{version}
 
 %description el
 Emacs-el contains the emacs-elisp sources for many of the elisp
@@ -330,6 +329,14 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Fri Oct 15 2004 Jens Petersen <petersen@redhat.com> - 21.3-16
+- do not setup frame-title-format in default.el, since it will override
+  setting by users (Henrik Bakken, 134520)
+- emacs-el no longer requires emacs for the sake of -nox users
+  (Lars Hupfeldt Nielsen, 134479)
+- condition calling of global-font-lock-mode in default .emacs
+  in case xemacs should happen to load it
+
 * Wed Sep 29 2004 Jens Petersen <petersen@redhat.com> - 21.3-15
 - cleanup and update .desktop file
 - make emacs not appear in the desktop menu (Seth Nickell,132567)
