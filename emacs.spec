@@ -5,7 +5,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 23
+Release: 24
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -259,7 +259,7 @@ rm -f *-filelist {common,el,leim}-*-files
 # put the lists together after filtering  ./usr to /usr
 sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
 cat common-*-files > common-filelist
-cat el-*-files > el-filelist
+cat el-*-files common-lisp-dir-files > el-filelist
 cat leim-*-files > leim-filelist
 
 %clean
@@ -322,6 +322,7 @@ fi
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
 %exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
+%attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 # %dir %{_datadir}/emacs/site-lisp/site-start.d
 
@@ -332,6 +333,15 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Thu Feb 24 2005 Jens Petersen <petersen@redhat.com> - 21.3-24
+- mark default.el (noreplace) config (Pawel Salek, 149310)
+- only set keyboard-coding-system in xterm's to fix problem with inputting
+  Latin characters becoming prefixes and making emacs loop
+  (Eddahbi Karim, 126007)
+- make emacs-el also own its lisp directories
+- run latex-mode-hook in latex-mode (Martin Biely, 144083)
+  - add emacs-21.3-latex-mode-hook-144083.patch
+
 * Fri Feb 18 2005 Jens Petersen <petersen@redhat.com> - 21.3-23
 - install %{_bindir}/emacs-nox as a hardlink of the versioned binary
 - drop explicit lib requirements
