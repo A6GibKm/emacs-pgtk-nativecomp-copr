@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
-Version: 21.1
-Release: 2.7
+Version: 21.2
+Release: 1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -11,7 +11,6 @@ Source3: emacs.desktop
 Source4: emacs.png
 Source5: dotemacs
 Source6: site-start.el
-# From Python-2.2a3
 Source7: python-mode.el
 Source8: http://www.tihlde.org/~stigb/rpm-spec-mode.el
 Source9: emacs-asian.tar.bz2
@@ -22,7 +21,6 @@ Source12: php-mode-init.el
 Source13: ssl.el
 Source14: po-mode.el
 Source15: po-mode-init.el
-Patch0: emacs-21.1-recloadlimit.patch
 Patch50: emacs-20.7-s390.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
@@ -70,8 +68,6 @@ sets are included in this package.
 %prep
 
 %setup -q -b 1
-
-%patch0 -p1
 
 
 %ifarch s390 s390x
@@ -219,10 +215,7 @@ fi
 %defattr(-,root,root)
 %config(noreplace) /etc/skel/.emacs
 %doc etc/NEWS BUGS README 
-/usr/bin/b2m
-/usr/bin/emacsclient
-/usr/bin/etags
-/usr/bin/rcs-checkin
+/usr/bin/*
 %{_mandir}/*/*
 %{_infodir}/*
 /usr/share/emacs/site-lisp/python-mode.elc
@@ -244,8 +237,6 @@ fi
 %attr(0755,root,root) /usr/libexec/emacs/%{version}/*/movemail
 %attr(0644,root,root) %config /usr/share/emacs/site-lisp/site-start.el
 %dir /usr/share/emacs/site-lisp/site-start.d
-%attr(755,root,root) /usr/bin/emacs
-%attr(755,root,root) /usr/bin/emacs-%{version}
 %config(noreplace) /etc/X11/applnk/Applications/emacs.desktop
 /usr/share/pixmaps/emacs.png 
 
@@ -263,7 +254,30 @@ fi
 %dir /usr/share/emacs/%{version}/leim
 
 %changelog
-* Thu Dec  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-2.7
+* Mon Mar 18 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-1
+- 21.2
+
+* Fri Mar  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.95-1
+- 21.1.95
+
+* Fri Feb  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.90-2
+- Upgrade po-mode to the version bundled with gettext 0.11
+- Upgrade rpm-spec-mode to 0.11h
+
+* Thu Jan 31 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.90-1
+- 21.1.90
+
+* Fri Jan 18 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.80-2
+- Add ebrowse
+- Set transient-mode to t in /etc/skel/.emacs
+
+* Mon Jan 14 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.1.80-1
+- 21.1.80
+
+* Wed Jan 09 2002 Tim Powers <timp@redhat.com>
+- automated rebuild
+
+* Thu Dec  6 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-3
 - Increase recursive-load-depth-limit from 10 to 50
 
 * Wed Dec  5 2001 Trond Eivind Glomsrød <teg@redhat.com> 21.1-2
