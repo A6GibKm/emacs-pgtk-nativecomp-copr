@@ -201,7 +201,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # install the emacs without X
 install -m 0755 src/emacs-%{version}.2 $RPM_BUILD_ROOT%{_bindir}/emacs-nox-%{version}
-ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{,-%{version}}
+ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{-%{version},}
 install -m 0644 etc/DOC-%{version}.2 $RPM_BUILD_ROOT%{_datadir}/emacs/%{version}/etc/
 install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/
 
@@ -332,7 +332,7 @@ fi
 %defattr(-,root,root)
 
 %changelog
-* Wed Feb 16 2005 Jens Petersen <petersen@redhat.com> - 21.3-23
+* Fri Feb 18 2005 Jens Petersen <petersen@redhat.com> - 21.3-23
 - install %{_bindir}/emacs-nox as a hardlink of the versioned binary
 - drop explicit lib requirements
 - use sed instead of perl to fix up filelists
