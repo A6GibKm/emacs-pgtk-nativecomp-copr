@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 26
+Release: 27
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -37,12 +37,13 @@ Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
 Source29: tramp-init.el
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
-Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Buildrequires: xorg-x11-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: fonts-xorg-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
 Requires: emacs-common = %{version}-%{release}
+PreReq: %{_sbindir}/alternatives
 Obsoletes: emacs-X11
 Conflicts: gettext < 0.10.40
 Patch2: emacs-21.2-s390.patch
@@ -61,6 +62,7 @@ Patch14: emacs-xim-status-under-window-125413.patch
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
 Patch16: movemail-CAN-2005-0100.patch
 Patch17: emacs-21.3-gcc4.patch
+Patch18: emacs-21.3-latex-mode-hook-144083.patch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -74,6 +76,7 @@ This package provides an emacs binary with support for X windows.
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
 Requires: emacs-common = %{version}-%{release}
+PreReq: %{_sbindir}/alternatives
 
 %description nox
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -150,6 +153,8 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %patch12 -p1
 # fix running gdb with libtool
 %patch13 -p1
+# run latex-mode-hook
+%patch18 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -204,13 +209,16 @@ rm -rf $RPM_BUILD_ROOT
 
 %makeinstall
 
+# bindir/emacs handled by alternatives
+rm $RPM_BUILD_ROOT%{_bindir}/emacs
+
 # rebuild without X support
 %configure --without-x
 %__make %{?_smp_mflags}
 
 # install the emacs without X
 install -m 0755 src/emacs-%{version}.2 $RPM_BUILD_ROOT%{_bindir}/emacs-nox-%{version}
-ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{-%{version},}
+#ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{-%{version},}
 install -m 0644 etc/DOC-%{version}.2 $RPM_BUILD_ROOT%{_datadir}/emacs/%{version}/etc/
 install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/
 
@@ -281,6 +289,23 @@ rm -rf $RPM_BUILD_ROOT
    
 %define info_files ada-mode autotype ccmode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
 
+%post
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 50
+
+%post nox
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-nox-%{version} 20
+
+%postun
+if [ $1 -eq 0 ]; then
+  alternatives --remove emacs %{_bindir}/emacs-%{version}
+fi
+
+%postun nox
+if [ $1 -eq 0 ]; then
+  alternatives --remove emacs %{_bindir}/emacs-nox-%{version}
+fi
+
+
 %post common
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
@@ -298,8 +323,8 @@ fi
 
 %files
 %defattr(-,root,root)
-%{_bindir}/emacs
 %{_bindir}/emacs-%{version}
+%dir %{_datadir}/emacs/%{version}
 %dir %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/etc/DOC-%{version}.1
 %dir %{_libexecdir}/emacs/%{version}/*
@@ -309,8 +334,8 @@ fi
 
 %files nox
 %defattr(-,root,root)
-%{_bindir}/emacs-nox
 %{_bindir}/emacs-nox-%{version}
+%dir %{_datadir}/emacs/%{version}
 %dir %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/etc/DOC-%{version}.2
 %dir %{_libexecdir}/emacs/%{version}/*
@@ -320,9 +345,7 @@ fi
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
-%exclude %{_bindir}/emacs
 %exclude %{_bindir}/emacs-%{version}
-%exclude %{_bindir}/emacs-nox
 %exclude %{_bindir}/emacs-nox-%{version}
 %{_bindir}/*
 %{_mandir}/*/*
@@ -346,6 +369,16 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Apr  6 2005 Jens Petersen <petersen@redhat.com> - 21.3-27
+- use alternatives to switch _bindir/emacs between emacs and emacs-nox
+  (Henning Schmiedehausen, #151067)
+  - remove emacs and emacs-nox from bindir
+  - prereq alternatives for emacs and emacs-nox
+  - add post and postun scripts to handle alternatives
+- buildrequire xorg-x11-devel instead of XFree86-devel
+- really include and apply emacs-21.3-latex-mode-hook-144083.patch
+- make emacs and emacs-nox own _datadir/emacs/version too
+
 * Wed Mar  9 2005 Jens Petersen <petersen@redhat.com> - 21.3-26
 - rebuild with gcc 4.0
   - add emacs-21.3-gcc4.patch for emacsclient
