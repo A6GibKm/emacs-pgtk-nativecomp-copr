@@ -8,3 +8,18 @@
 (setq interpreter-mode-alist
       (cons '("python" . python-mode)
             interpreter-mode-alist))
+
+;; run functions from the /usr/share/emacs/site-lisp/site-start.d directory
+;; Files in this directory ending with ".el" are run on startup
+
+(let (list)
+  (setq list (directory-files "/usr/share/emacs/site-lisp/site-start.d" t "\\.el$"))
+  (while list
+    (load-file (car list))
+    (setq list (cdr list)))
+  )
+
+;; Use the rpm-spec-mode for spec files
+(require 'rpm-spec-mode)
+(setq auto-mode-alist
+      (cons '("\\.spec$" . rpm-spec-mode) auto-mode-alist))

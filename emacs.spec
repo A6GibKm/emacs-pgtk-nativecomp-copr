@@ -1,11 +1,11 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 20.7
-Release: 17tc1
+Release: 34
 Copyright: GPL
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
-Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.gz
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
+Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.bz2
 Source3: emacs.desktop
 Source4: emacs.png
 Source5: dotemacs
@@ -13,13 +13,11 @@ Source6: site-start.el
 Source7: http://www.python.org/emacs/python-mode/python-mode.el
 # From /usr/X11R6/lib/X11/locale/locale.alias
 Source8: emacs.locale.alias
-Source9: startup.el
-Source10: startup.elc
-#Source10: lisp-startup-localealias.patch
-# By CLE {
-Source20: emacs20-xim-20000713.tar.gz
-Source21: emacs.sh-cle
-# }
+Source11: rpm-spec-mode.el
+Source12: mwheel.el
+Source13: lisp-startup-localealias.patch
+Source14: ftp://ftp.gnus.org/pub/gnus/gnus-5.8.8.tar.bz2
+Source15: emacs-asian.tar.bz2
 Patch0: emacs-20.7-xaw3d.patch
 Patch2: emacs-20.3-tmprace.patch
 Patch3: emacs-20.3-linkscr.patch
@@ -31,10 +29,15 @@ Patch8: emacs-20.6-ia64-2.patch
 Patch9: emacs-20.6-ia64-3.patch
 Patch10: emacs-20.7-manboption.patch
 Patch11: emacs-20.7-proto.patch
+Patch12: emacs-cpp-Makefile.patch
+Patch13: emacs-20.4-ppc-config.patch
+
+Patch50: emacs-20.7-s390.patch
+
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info
-Packager: Red Hat, Inc. <http://bugzilla.redhat.com/bugzilla>
-Vendor: Red Hat, Inc.
+# temporary hack.  roll tamago into base emacs package
+Requires: tamago
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -77,6 +80,7 @@ character sets are included in this package.
 Summary: The Emacs text editor without support for the X Window System.
 Group: Applications/Editors
 Requires: emacs
+Prereq: fileutils
 
 %description nox
 Emacs-nox is the Emacs text editor program without support for
@@ -119,17 +123,15 @@ also need to install the emacs package in order to run Emacs.
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
 
-cp -f %{SOURCE9} lisp/startup.el
-cp -f %{SOURCE10} lisp/startup.elc
+%ifarch ppc
+%patch13 -p1 -b .ppc
+%endif
 
-# By CLE {
-tar zxvf %SOURCE20
-patch -s -p1 < emacs20-xim-20000713/emacs20-xim-20000713.diff
-
-# clean out remnants of patching
-find . -name "*.orig" -or -name "*~" -exec rm -f {} \;
-# }
+%ifarch s390
+%patch50 -p1 -b .s390
+%endif
 
 %build
 
@@ -174,13 +176,16 @@ BuildEmacs nox "--with-x=no"
 # recompile patched .el files
 %{recompile} lisp/mail/mh-utils.el
 
-# bytecompile python-mode
-cp %SOURCE7 .
-%{recompile} python-mode.el
+# bytecompile python-mode, mwheel and rpm-spec-mode
+cp %SOURCE7 %SOURCE11 %SOURCE12 .
+%{recompile} python-mode.el mwheel.el rpm-spec-mode.el
+
+
 
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr
+mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d
 
 mkdir -p $RPM_BUILD_ROOT/%{_infodir}
 make install  -C build-withx \
@@ -193,8 +198,36 @@ make install  -C build-withx \
 # install the locale file
 install -m 644 %SOURCE8 $RPM_BUILD_ROOT/usr/share/emacs/locale.alias
 
+#install lisp files for Japanese and other Asian languages
+pushd $RPM_BUILD_ROOT
+tar --use-compress-program=bzip2 -xf %{SOURCE15}
+popd
+
+# We want a newer gnus
+tar --use-compress-program=bzip2 -xf %{SOURCE14}
+pushd gnus-5.8.8
+PATH=$RPM_BUILD_ROOT/usr/bin:$PATH ./configure 
+make
+
+rm -f $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/*
+install -m 644 lisp/* $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/
+rm -f $RPM_BUILD_ROOT/%{_infodir}/gnus*
+install -m 644 texi/{gnus,gnus-?,gnus-??} $RPM_BUILD_ROOT/%{_infodir}
+popd
+
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
 gzip -9nf $RPM_BUILD_ROOT/%{_infodir}/*
+
+
+#change the locale.alias for this one and regenerate
+# Do it this way, using the macro here seems to confuse RPM
+patch lisp/startup.el %SOURCE13
+
+rm -fv lisp/startup.elc
+%{recompile} lisp/startup.el
+rm -f build-nox/src/emacs-%{version}*
+make -C build-nox
+install -c -m755 build-nox/src/emacs $RPM_BUILD_ROOT/usr/bin/emacs-nox
 
 install -c -m755 build-nox/src/emacs $RPM_BUILD_ROOT/usr/bin/emacs-nox
 install -m 644 %SOURCE6 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.el
@@ -213,29 +246,23 @@ install -c -m 0644 %SOURCE4 $RPM_BUILD_ROOT/usr/share/pixmaps/
 
 install -c -m644 build-nox/etc/DOC-* $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
 
-# Python mode
+# Python mode, mwheel and rpm-spec mode
 
-install -c -m0644 python-mode.el $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
-install -c -m0644 python-mode.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
+install -c -m0644 python-mode.el python-mode.elc mwheel.el mwheel.elc rpm-spec-mode.el rpm-spec-mode.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
 
 # default initialization file
 mkdir -p $RPM_BUILD_ROOT/etc/skel
 install -c -m0644 %SOURCE5 $RPM_BUILD_ROOT/etc/skel/.emacs
 
-# By CLE {
-rm -f $RPM_BUILD_ROOT/usr/bin/emacs
-cp -f %SOURCE21 $RPM_BUILD_ROOT/usr/bin/emacs
-# }
-
 #
 # create file lists
 #
 
-# Remove etags, ctags
+# Remove ctags
 
-rm -f $RPM_BUILD_ROOT/usr/bin/{ctags,etags}
-rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*tags*
-rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/{etags,ctags}*
+rm -f $RPM_BUILD_ROOT/usr/bin/ctags
+rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*ctags*
+rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc/ctags*
 
 
 find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
@@ -286,14 +313,14 @@ rm -rf build-withx
 %define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget
 %post
 for f in %{info_files}; do
-  /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs"
+  /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
 done
 
 %preun
 if [ "$1" = 0 ]; then
 for f in %{info_files}; do
   /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
-    --section="GNU Emacs"
+    --section="GNU Emacs" 2> /dev/null || :
 done
 fi
 
@@ -319,19 +346,24 @@ if [ -L /usr/bin/emacs ]; then
   rm /usr/bin/emacs
 fi
 
-
 %files -f core-filelist
 %defattr(-,root,root)
 %config(noreplace) /etc/skel/.emacs
 %doc etc/NEWS BUGS README etc/FAQ
 /usr/bin/b2m
 /usr/bin/emacsclient
+/usr/bin/etags
 /usr/bin/rcs-checkin
 %{_mandir}/*/*
 %{_infodir}/*
-/usr/share/emacs/site-lisp/python-mode.elc
-/usr/share/emacs/site-lisp/subdirs.el
 /usr/share/emacs/locale.alias
+/usr/share/emacs/site-lisp/python-mode.elc
+/usr/share/emacs/site-lisp/mwheel.elc
+/usr/share/emacs/site-lisp/rpm-spec-mode.elc
+/usr/share/emacs/site-lisp/subdirs.el
+
+/usr/share/emacs/site-lisp/site-start.d/lang.emacs.el
+/usr/share/emacs/site-lisp/lang
 
 %dir /usr/lib/emacs
 %dir /usr/lib/emacs/site-lisp
@@ -340,8 +372,8 @@ fi
 %attr(0755,root,root) /usr/lib/emacs/%{version}/*/movemail
 
 %dir /usr/share/emacs/site-lisp
-%attr(0644,root,root) %config(noreplace) /usr/share/emacs/site-lisp/site-start.el
-
+%attr(0644,root,root) %config /usr/share/emacs/site-lisp/site-start.el
+%dir /usr/share/emacs/site-lisp/site-start.d
 %dir /usr/share/emacs/%{version}
 %dir /usr/share/emacs/%{version}/site-lisp
 %dir /usr/share/emacs/%{version}/leim
@@ -350,6 +382,8 @@ fi
 %files -f el-filelist el
 %defattr(-,root,root)
 /usr/share/emacs/site-lisp/python-mode.el
+/usr/share/emacs/site-lisp/mwheel.el
+/usr/share/emacs/site-lisp/rpm-spec-mode.el
 
 %files -f leim-filelist leim
 %defattr(-,root,root)
@@ -363,10 +397,76 @@ fi
 %defattr(-,root,root)
 %attr(755,root,root) /usr/bin/emacs
 %attr(755,root,root) /usr/bin/emacs-%{version}
-%config(missingok) /etc/X11/applnk/Applications/emacs.desktop
+%config /etc/X11/applnk/Applications/emacs.desktop
 /usr/share/pixmaps/emacs.png 
 
 %changelog
+* Fri Mar 16 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- New locale.alias file for emacs-nox
+
+* Tue Mar  6 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- update rpm-spec-mode.el to 0.11e - this should fix #30702
+
+* Fri Feb 16 2001 Preston Brown <pbrown@redhat.com>
+- require tamago, or japanese cannot be input (#27932).
+
+* Sat Jan 27 2001 Jakub Jelinek <jakub@redhat.com>
+- Preprocess Makefiles as if they were assembly, not C source.
+
+* Thu Jan 24 2001 Yukihiro Nakai <ynakai@redhat.com>
+- Fix the fontset problem when creating a new frame.
+
+* Thu Jan 18 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- add Japanese support from Yukihiro Nakai <ynakai@redhat.com>
+
+* Thu Jan 04 2001 Preston Brown <pbrown@redhat.com>
+- do not remove etags, only ctags, per Tom Tromey's suggestion.
+
+* Wed Dec 27 2000 Tim Powers <timp@redhat.com>
+- bzipped sources to conserve space
+
+* Mon Dec 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- add /usr/share/emacs/locale.alias , which had gone AWOL
+- update rpm-spec-mode to 0.11a, fresh from the author
+  (Stig Bjorlykke <stigb@tihlde.org>). The changes we made 
+  are integrated.
+
+* Fri Dec 15 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- prereq fileutils for emacs-nox
+
+* Mon Dec 11 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- do locale.alias fix for emacs-nox only, as it somehow
+  broke the subject line in gnus. Weird.
+- update to gnus 5.8.7
+
+* Fri Dec 08 2000 Than Ngo <than@redhat.com>
+- add support s390 machine
+
+* Thu Dec 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- add rpm-spec-mode after modifying (use Red Hat groups,
+  from /usr/share/doc/rpm-version/GROUPS) and fixing
+  colours(don't specify "yellow" on "bright") Also, 
+  use gpg, not pgp.
+- use it (site-start.el)
+- add mwheel 
+- use it, in /etc/skel/.emacs
+
+* Thu Nov 30 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- add /usr/share/emacs/site-lisp/site-start.d
+- change site-start.el so files in the above directory
+  are automatically run on startup
+- don't set the ispell name in site-start.el, use the
+  above directory instead  
+
+* Thu Oct 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- fix icon name in the .desktop file
+- don't have site-start.el "noreplace"
+- load psgml-init (if present) in the default site-start.el
+  to avoid psgml modifying the file
+
+* Tue Oct 17 2000 Trond Eivind Glomsrød <teg@redhat.com>
+- new and better emacs.desktop file
+
 * Tue Oct 10 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - remove ctags.1 and etags.1 from the emacs etc directory
   (#18011)
