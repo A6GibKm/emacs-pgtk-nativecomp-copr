@@ -35,6 +35,16 @@ Source26: default.el
 Source27: rfc1345.el
 Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
 Source29: tramp-init.el
+Buildroot: %{_tmppath}/%{name}-%{version}-root
+BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
+Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Requires: fonts-xorg-75dpi
+%ifarch %{ix86}
+BuildRequires: setarch
+%endif
+Requires: emacs-common = %{version}-%{release}
+Obsoletes: emacs-X11
+Conflicts: gettext < 0.10.40
 Patch2: emacs-21.2-s390.patch
 Patch3: emacs-21.2-x86_64.patch
 Patch4: emacs-21.2-sticky-bit-80049.patch
@@ -50,16 +60,7 @@ Patch13: emacs-21.3-gud-libtool-fix.patch
 Patch14: emacs-xim-status-under-window-125413.patch
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
 Patch16: movemail-CAN-2005-0100.patch
-Buildroot: %{_tmppath}/%{name}-%{version}-root
-BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
-Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
-Requires: fonts-xorg-75dpi
-%ifarch %{ix86}
-BuildRequires: setarch
-%endif
-Requires: emacs-common = %{version}-%{release}
-Obsoletes: emacs-X11
-Conflicts: gettext < 0.10.40
+Patch17: emacs-21.3-gcc4.patch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -134,6 +135,7 @@ sets are included in this package.
 %patch14 -p1 -b .StatusArea
 %patch15 -p0 -b .modifier
 %patch16 -p1 -b .fmtstr
+%patch17 -p1 -b .getcwd
 
 # patches 2 and 3 touch configure.in
 autoconf-2.13
@@ -346,6 +348,7 @@ fi
 %changelog
 * Wed Mar  9 2005 Jens Petersen <petersen@redhat.com> - 21.3-26
 - rebuild with gcc 4.0
+  - add emacs-21.3-gcc4.patch for emacsclient
 
 * Mon Feb 28 2005 Jens Petersen <petersen@redhat.com> - 21.3-25
 - add tramp-2.1.3 to site-lisp (David Woodhouse, 149703)
