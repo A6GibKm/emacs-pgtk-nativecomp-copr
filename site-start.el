@@ -11,7 +11,6 @@
 ;; run functions from the /usr/share/emacs/site-lisp/site-start.d directory
 ;; Files in this directory ending with ".el" are run on startup
 
-(require 'cl) ; mapc isn't built into emacs 20
 (mapc 'load (directory-files "/usr/share/emacs/site-lisp/site-start.d" t "\\.el\\'"))
 
 ;; Use the rpm-spec-mode for spec files

@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 1
+Release: 2
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -254,6 +254,9 @@ fi
 %dir /usr/share/emacs/%{version}/leim
 
 %changelog
+* Mon Apr  8 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-2
+- Tweak mouse init process (#59757)
+
 * Mon Mar 18 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-1
 - 21.2
 
