@@ -1,21 +1,23 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 
+%define muleucs_ver current
+
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
-Version: 21.2
-Release: 33
+Version: 21.3
+Release: 7
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
-Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.bz2
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
+Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.gz
 Source3: emacs.desktop
 Source4: emacs.png
-Source5: dotemacs
+Source5: dotemacs.el
 Source6: site-start.el
 Source7: python-mode.el
 Source8: http://www.tihlde.org/~stigb/rpm-spec-mode.el
-Source9: emacs-asian-0.2.tar.bz2
+#Source9: emacs-asian-0.2.tar.bz2
 Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
 # 1.0.2 - http://prdownloads.sourceforge.net/php-mode/php-mode-102.el
 Source11: php-mode.el
@@ -28,7 +30,10 @@ Source20: po-mode.el
 Source21: po-compat.el
 Source22: po-mode-init.el
 Source23: po-mode-auto-replace-date-71264.patch
-Patch1: emacs-21.2-pop.patch 
+Source24: ftp://ftp.m17n.org/pub/mule/Mule-UCS/test/Mule-UCS-%{muleucs_ver}.tar.gz
+Source25: lang-coding-systems-init.el
+Source26: default.el
+#Patch1: emacs-21.2-pop.patch 
 Patch2: emacs-21.2-s390.patch
 Patch3: emacs-21.2-x86_64.patch
 Patch4: emacs-21.2-sticky-bit-80049.patch
@@ -36,9 +41,13 @@ Patch5: emacs-21.2-s390x.patch
 Patch6: emacs-21.2-menubar-games.patch
 Patch7: emacs-21.2-alloc-blockinput-83600.patch
 Patch8: browse-url-htmlview-84262.patch
+Patch9: emacs-21.3-ppc64.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info, dev
 BuildRequires: glibc-devel, gcc, XFree86-devel, bzip2, ncurses-devel, zlib-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+%ifarch %{ix86}
+BuildRequires: setarch
+%endif
 Obsoletes: emacs-nox, emacs-X11
 Conflicts: gettext < 0.10.40
 
@@ -47,11 +56,6 @@ Emacs is a powerful, customizable, self-documenting, modeless text
 editor. Emacs contains special code editing features, a scripting
 language (elisp), and the capability to read mail, news, and more
 without leaving the editor.
-
-This package includes the libraries you need to run the Emacs editor,
-You also need to install the actual Emacs program package (emacs-nox or
-emacs-X11). Install emacs-nox if you are not going to use the X
-Window System; install emacs-X11 if you will be using X.
 
 %package el
 Summary: The sources for elisp programs included with Emacs.
@@ -79,32 +83,40 @@ non-English character set. Input methods for many different character
 sets are included in this package.
 
 %prep
-%setup -q -b 1
-%patch1 -p1 -b .pop
+%setup -q -b 1 -a 24
+
 %patch2 -p1 -b .s390
 %patch3 -p1 -b .hammer
 %patch4 -p1 -b .sticky
 %patch5 -p1 -b .s390x
+# block input in `allocate_vectorlike' (alloc.c)
+%patch7 -p1 -b .block
+%patch9 -p1 -b .ppc64
+
+## Lisp patches
 # remove game we can't ship
 %patch6 -p1
 rm lisp/finder-inf.el lisp/play/tetris.el*
-# block input in `allocate_vectorlike' (alloc.c)
-%patch7 -p1 -b .block
 # make browse-url default to htmlview not netscape
-%patch8 -p1 -b .htmlview
+%patch8 -p1
 # patches 2 and 3 touch configure.in
 autoconf-2.13
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
-
 %configure --with-gcc --with-pop --with-sound
-make %{?_smp_mflags}
+
+# workaround #101818 (vm/break dumper problem)
+%ifarch %{ix86}
+%define __make setarch i386 make
+%endif
+
+%__make %{?_smp_mflags}
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
 # make sure patched lisp files get byte-compiled
 src/emacs -batch -f batch-byte-recompile-directory lisp
-make %{?_smp_mflags} -C lisp updates
+%__make %{?_smp_mflags} -C lisp updates
 
 %define emacsbatch src/emacs -batch --no-init-file --no-site-file
 
@@ -117,21 +129,30 @@ patch < %SOURCE18
 patch < %SOURCE23
 %{emacsbatch} -f batch-byte-compile *.el
 
+( cd Mule-UCS-%{muleucs_ver}
+  ../%{emacsbatch} -q --no-site-file -l mucs-comp.el )
+
 %install
 rm -rf $RPM_BUILD_ROOT
+
+# workaround #101818 (vm/break dumper problem)
+%ifarch %{ix86}
+%define makeinstall %{__make} prefix=%{?buildroot:%{buildroot}}%{_prefix} exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} bindir=%{?buildroot:%{buildroot}}%{_bindir} sbindir=%{?buildroot:%{buildroot}}%{_sbindir} sysconfdir=%{?buildroot:%{buildroot}}%{_sysconfdir} datadir=%{?buildroot:%{buildroot}}%{_datadir} includedir=%{?buildroot:%{buildroot}}%{_includedir} libdir=%{?buildroot:%{buildroot}}%{_libdir} libexecdir=%{?buildroot:%{buildroot}}%{_libexecdir} localstatedir=%{?buildroot:%{buildroot}}%{_localstatedir} sharedstatedir=%{?buildroot:%{buildroot}}%{_sharedstatedir} mandir=%{?buildroot:%{buildroot}}%{_mandir} infodir=%{?buildroot:%{buildroot}}%{_infodir} install
+%endif
 
 %makeinstall
 
 # make sure movemail isn't setgid
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
 
-# install lisp files for Japanese and other Asian languages
-tar jxC $RPM_BUILD_ROOT -f %{SOURCE9}
+# # install lisp files for Japanese and other Asian languages
+# tar jxC $RPM_BUILD_ROOT -f %{SOURCE9}
 
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
 install -m 0644 %SOURCE6 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.el
+install -m 0644 %SOURCE26 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
 
 mv $RPM_BUILD_ROOT%{_mandir}/man1/ctags.1 $RPM_BUILD_ROOT%{_mandir}/man1/gctags.1
 mv $RPM_BUILD_ROOT%{_bindir}/ctags $RPM_BUILD_ROOT%{_bindir}/gctags
@@ -154,9 +175,12 @@ install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 
 # elisp reference manual
 tar jxf %{SOURCE10}
-pushd elisp-manual-21-2.8
-install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT%{_infodir}
-popd
+( cd elisp-manual-21-2.8
+  install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT%{_infodir} )
+
+( cd Mule-UCS-%{muleucs_ver}/lisp
+  mkdir %buildroot%{_datadir}/emacs/site-lisp/Mule-UCS
+  cp -p *.el *.elc %buildroot%{_datadir}/emacs/site-lisp/Mule-UCS )
 
 #
 # create file lists
@@ -165,16 +189,17 @@ SRC_TOP=$PWD
 rm -f *-filelist {base,el,leim}-*-files
 pushd $RPM_BUILD_ROOT
 
-find .%{_datadir}/emacs/%{version}/lisp \( -type f -not -name '*.el' -fprint $SRC_TOP/base-lisp-none-elc-files \) -o \( -type d -fprintf $SRC_TOP/base-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-bytecomped-files -o -fprint $SRC_TOP/base-not-comped-files \) \)
+find .%{_datadir}/emacs/%{version}/lisp .%{_datadir}/emacs/site-lisp \( -type f -not -name '*.el' -fprint $SRC_TOP/base-lisp-none-elc-files \) -o \( -type d -fprintf $SRC_TOP/base-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-bytecomped-files -o -fprint $SRC_TOP/base-not-comped-files \) \)
 
 find .%{_datadir}/emacs/%{version}/leim \( -name '*.elc' -fprint $SRC_TOP/leim-elc-files \) -o \( -type d -fprintf $SRC_TOP/leim-dir-files "%%%%dir %%p\n" -fprintf $SRC_TOP/el-leim-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-leim-bytecomped-files -o -fprint $SRC_TOP/leim-not-comped-files \) \)
 
 popd
 
-# put the lists together filtering  ./usr to /usr
-cat base-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > base-filelist
-cat el-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > el-filelist
-cat leim-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > leim-filelist
+# put the lists together after filtering  ./usr to /usr
+perl -pi -e "s|\.%{_prefix}|%{_prefix}|" *-files
+cat base-*-files > base-filelist
+cat el-*-files > el-filelist
+cat leim-*-files > leim-filelist
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -202,15 +227,15 @@ fi
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
-%dir %{_datadir}/emacs/site-lisp
-%{_datadir}/emacs/site-lisp/python-mode.elc
-%{_datadir}/emacs/site-lisp/php-mode.elc
-%{_datadir}/emacs/site-lisp/po-*.elc
-%{_datadir}/emacs/site-lisp/rpm-spec-mode.elc
-%{_datadir}/emacs/site-lisp/ssl.elc
-%{_datadir}/emacs/site-lisp/subdirs.el
-%{_datadir}/emacs/site-lisp/site-start.d/*.el
-%{_datadir}/emacs/site-lisp/lang
+# %dir %{_datadir}/emacs/site-lisp
+# %{_datadir}/emacs/site-lisp/python-mode.elc
+# %{_datadir}/emacs/site-lisp/php-mode.elc
+# %{_datadir}/emacs/site-lisp/po-*.elc
+# %{_datadir}/emacs/site-lisp/rpm-spec-mode.elc
+# %{_datadir}/emacs/site-lisp/ssl.elc
+# %{_datadir}/emacs/site-lisp/subdirs.el
+# %{_datadir}/emacs/site-lisp/site-start.d/*.el
+# %{_datadir}/emacs/site-lisp/lang
 %dir %{_datadir}/emacs/%{version}
 %{_datadir}/emacs/%{version}/etc
 # quieten startup when -leim and -el aren't installed
@@ -218,22 +243,64 @@ fi
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
-%dir %{_datadir}/emacs/site-lisp/site-start.d
+# %dir %{_datadir}/emacs/site-lisp/site-start.d
 %{_datadir}/applications/gnu-emacs.desktop
 %{_datadir}/pixmaps/emacs.png 
 
 %files -f el-filelist el
 %defattr(-,root,root)
-%{_datadir}/emacs/site-lisp/python-mode.el
-%{_datadir}/emacs/site-lisp/php-mode.el
-%{_datadir}/emacs/site-lisp/po-*.el
-%{_datadir}/emacs/site-lisp/ssl.el
-%{_datadir}/emacs/site-lisp/rpm-spec-mode.el
+# %{_datadir}/emacs/site-lisp/python-mode.el
+# %{_datadir}/emacs/site-lisp/php-mode.el
+# %{_datadir}/emacs/site-lisp/po-*.el
+# %{_datadir}/emacs/site-lisp/ssl.el
+# %{_datadir}/emacs/site-lisp/rpm-spec-mode.el
 
 %files -f leim-filelist leim
 %defattr(-,root,root)
 
 %changelog
+* Mon Oct 27 2003 Jens Petersen <petersen@redhat.com> - 21.3-7
+- use "setarch i386" to build on ix86 (#101818) [reported by Michael Redinger]
+- use __make to %%build and %%install
+- set keyboard coding-system for utf-8 in lang-coding-systems-init.el (#106929)
+  [reported with fix by Axel Thimm]
+- add source url for MuleUCS
+- update base package description (#103551) [reported by Tim Landscheidt]
+
+* Wed Jun 04 2003 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Wed May  7 2003 Jens Petersen <petersen@redhat.com> - 21.3-5
+- move transient-mark-mode and global-font-lock-mode setting from default.el
+  back to dotemacs, so as not to surprise old users (#90193)
+  [reported by jik@kamens.brookline.ma.us]
+- change require-final-newline to query (default.el)
+- don't make a backup when applying browse-url-htmlview-84262.patch (#90226)
+  [reported by mitr@volny.cz]
+
+* Fri May  2 2003 Elliot Lee <sopwith@redhat.com>
+- Add emacs-21.3-ppc64.patch
+
+* Fri Apr 25 2003 Jens Petersen <petersen@redhat.com> - 21.3-3
+- use Mule-UCS utf-8 coding-system for CJK subprocess IO
+- no need to set fontset anymore in CJK locale
+
+* Wed Apr 16 2003 Jens Petersen <petersen@redhat.com> - 21.3-2
+- add Mule-UCS for CJK utf-8 support (suggested by Akira Tagoh)
+  and use it by default in CJK UTF-8 locale
+- move emacs-asian startup files into new lang-coding-systems-init.el
+- utf-8 setup in site-start.el is no longer needed in Emacs 21.3
+- generate filelist for site-lisp automatically like base lisp and leim
+- don't setup aspell in site-start.el
+- rename dotemacs to dotemacs.el and move former contents to new default.el
+
+* Mon Apr  7 2003 Jens Petersen <petersen@redhat.com> - 21.3-1
+- update to 21.3
+- no longer set compound-text-with-extensions in dotemacs, since it is now
+  the default
+- emacs-21.2-pop.patch is no longer needed
+- update php-mode to 1.0.4
+
 * Thu Feb 20 2003 Jens Petersen <petersen@redhat.com> - 21.2-33
 - default browse-url to use htmlview (#84262)
 - remove info dir file rather than excluding it
