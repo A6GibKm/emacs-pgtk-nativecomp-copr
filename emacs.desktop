@@ -31,5 +31,4 @@ Terminal=0
 MapNotify=false
 Categories=TextEditor;Development;X-Red-Hat-Base;Application;
 Encoding=UTF-8
-
-
+StartupWMClass=Emacs

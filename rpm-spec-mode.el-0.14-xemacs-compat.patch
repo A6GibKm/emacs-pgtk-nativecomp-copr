@@ -1,0 +1,43 @@
+diff -u rpm-spec-mode.el~ rpm-spec-mode.el
+--- rpm-spec-mode.el~	2002-12-02 12:00:38.000000000 +0900
++++ rpm-spec-mode.el	2002-12-02 12:00:38.000000000 +0900
+@@ -105,6 +105,10 @@
+   :type 'string
+   :group 'rpm-spec)
+ 
++;; XEmacs compatibility function
++(unless (fboundp 'define-obsolete-variable-alias)
++  (defalias 'define-obsolete-variable-alias 'make-obsolete-variable))
++
+ (define-obsolete-variable-alias
+   'rpm-completion-ignore-case 'rpm-spec-completion-ignore-case)
+ 
+@@ -597,6 +601,14 @@
+ 
+ ;;------------------------------------------------------------
+ 
++;; XEmacs compatibility function
++(unless (fboundp 'user-mail-address)
++  (defun user-mail-address ()
++    "Return value of `user-mail-address'.
++
++XEmacs sendmail compatibility function."
++    user-mail-address))
++
+ (defun rpm-add-change-log-entry (&optional change-log-entry)
+   "Find change log and add an entry for today."
+   (interactive "sChange log entry: ")
+@@ -1117,6 +1129,13 @@
+ 
+ ;;------------------------------------------------------------
+ 
++;; XEmacs compatibility function
++(unless (fboundp 'ignore-errors)
++      (defmacro ignore-errors (&rest body)
++	"Execute FORMS; if an error occurs, return nil.
++Otherwise, return result of last FORM."
++	`(condition-case nil (progn ,@body) (error nil))))
++
+ (defun rpm-spec-field-value (field max)
+   "Get the value of FIELD, searching up to buffer position MAX.
+ See `search-forward-regexp'."

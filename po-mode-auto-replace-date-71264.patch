@@ -1,0 +1,13 @@
+diff -u po-mode.el~ po-mode.el
+--- po-mode.el~	2003-01-16 01:44:50.000000000 +0900
++++ po-mode.el	2003-01-16 01:44:50.000000000 +0900
+@@ -1267,8 +1267,7 @@
+ 		       (concat "\"PO-Revision-Date: "
+ 			       (format-time-string "%Y-%m-%d %H:%M" time)
+ 			       zone "\\n\"")
+-		       t t))))
+-	(message ""))
++		       t t)))))
+     (message (_"PO-Revision-Date should be adjusted..."))))
+ 
+ ;;; Handling span of entry, entry type and entry attributes.

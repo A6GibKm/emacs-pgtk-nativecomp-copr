@@ -38,9 +38,10 @@
 ;;   (setq auto-mode-alist (cons '("\\.po\\'\\|\\.po\\." . po-mode)
 ;;				  auto-mode-alist))
 ;;
-;; To use the right coding system automatically under Emacs 20, also add:
+;; To use the right coding system automatically under Emacs 20 or newer,
+;; also add:
 ;;
-;;   (autoload 'po-find-file-coding-system "po-mode")
+;;   (autoload 'po-find-file-coding-system "po-compat")
 ;;   (modify-coding-system-alist 'file "\\.po\\'\\|\\.po\\."
 ;;				  'po-find-file-coding-system)
 ;;
@@ -49,6 +50,9 @@
 
 ;;; Code:
 
+(defconst po-mode-version-string "2.01" "\
+Version number of this version of po-mode.el.")
+
 ;;; Emacs portability matters - part I.
 ;;; Here is the minimum for customization to work.  See part II.
 
@@ -133,6 +137,23 @@ msgstr \"\"
   :type 'string
   :group 'po)
 
+(defcustom po-translation-project-address
+  "translation@iro.umontreal.ca"
+  "*Electronic mail address of the Translation Project.
+Typing \\[po-send-mail] (normally bound to `M') the user will send the PO file
+to this email address."
+  :type 'string
+  :group 'po)
+
+(defcustom po-translation-project-mail-label "TP-Robot"
+  "*Subject label when sending the PO file to `po-translation-project-address'.
+Don't change it when you send PO files to \"translation@iro.umontreal.ca\", the
+Translation Project Robot at http://www.iro.umontreal.ca/contrib/po/HTML/.  If
+the label is different, your submission will be consiedered as a regular mail
+and not stored at the TP site and also not forwarded to the package maintainer."
+  :type 'string
+  :group 'po)
+
 (defcustom po-highlighting (or po-EMACS20 po-XEMACS)
   "*Highlight text whenever appropriate, when non-nil.
 However, on older Emacses, a yet unexplained highlighting bug causes files
@@ -160,6 +181,7 @@ slightly different."
     ("Albanian" . "sq")
     ("Amharic" . "am")
     ("Arabic" . "ar")
+    ("Argentinian" . "es_AR")
     ("Armenian" . "hy")
     ("Assamese" . "as")
     ("Avestan" . "ae")
@@ -180,6 +202,8 @@ slightly different."
     ("Chamorro" . "ch")
     ("Chechen" . "ce")
     ("Chinese" . "zh")
+    ("Chinese (simplified)" . "zh_CN")
+    ("Chinese (traditional)" . "zh_TW")
     ("Church Slavic" . "cu")
     ("Chuvash" . "cv")
     ("Cornish" . "kw")
@@ -210,6 +234,7 @@ slightly different."
     ("Hiri Motu" . "ho")
     ("Hungarian" . "hu")
     ("Icelandic" . "is")
+    ("Ido" . "io")
     ("Indonesian" . "id")
     ("Interlingua" . "ia")
     ("Interlingue" . "ie")
@@ -218,7 +243,7 @@ slightly different."
     ("Irish" . "ga")
     ("Italian" . "it")
     ("Japanese" . "ja")
-    ("Javanese" . "jw")
+    ("Javanese" . "jv")
     ("Kalaallisut" . "kl")
     ("Kannada" . "kn")
     ("Kashmiri" . "ks")
@@ -315,6 +340,7 @@ slightly different."
     ("Uzbek" . "uz")
     ("Vietnamese" . "vi")
     ("Volapuk" . "vo")
+    ("Walloon" . "wa")
     ("Welsh" . "cy")
     ("Wolof" . "wo")
     ("Xhosa" . "xh")
@@ -618,8 +644,7 @@ No doubt that highlighting, when Emacs does not allow it, is a kludge."
 (defun po-mode-version ()
   "Show Emacs PO mode version."
   (interactive)
-  (message (_"Emacs PO mode, version %s")
-	   (substring "$Revision: 1.1.1.1 $" 11 -2)))
+  (message (_"Emacs PO mode, version %s") po-mode-version-string))
 
 (defconst po-help-display-string
   (_"\
@@ -650,55 +675,122 @@ M-S  Ignore path          M-A  Ignore PO file      *M-L  Ignore lexicon
   "Help page for PO mode.")
 
 (defconst po-mode-menu-layout
-  '("PO"
+  `("PO"
     ("Moving around"
-     ["Auto select" po-auto-select-entry t]
+     ["Auto select" po-auto-select-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next interesting entry"))]
      "---"
      "Forward"
-     ["Any next" po-next-entry t]
-     ["Next translated" po-next-translated-entry t]
-     ["Next fuzzy" po-next-fuzzy-entry t]
-     ["Next obsolete" po-next-obsolete-entry t]
-     ["Next untranslated" po-next-untranslated-entry t]
-     ["Last file entry" po-last-entry t]
+     ["Any next" po-next-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next entry"))]
+     ["Next translated" po-next-translated-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next translated entry"))]
+     ["Next fuzzy" po-next-fuzzy-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next fuzzy entry"))]
+     ["Next obsolete" po-next-obsolete-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next obsolete entry"))]
+     ["Next untranslated" po-next-untranslated-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to next untranslated entry"))]
+     ["Last file entry" po-last-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to last entry"))]
      "---"
      "Backward"
-     ["Any previous" po-previous-entry t]
-     ["Previous translated" po-previous-translated-entry t]
-     ["Previous fuzzy" po-previous-fuzzy-entry t]
-     ["Previous obsolete" po-previous-obsolete-entry t]
-     ["Previous untranslated" po-previous-untranslated-entry t]
-     ["First file entry" po-first-entry t]
+     ["Any previous" po-previous-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to previous entry"))]
+     ["Previous translated" po-previous-translated-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to previous translated entry"))]
+     ["Previous fuzzy" po-previous-fuzzy-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to previous fuzzy entry"))]
+     ["Previous obsolete" po-previous-obsolete-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to previous obsolete entry"))]
+     ["Previous untranslated" po-previous-untranslated-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to previous untranslated entry"))]
+     ["First file entry" po-first-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to first entry"))]
      "---"
      "Position stack"
-     ["Mark and push current" po-push-location t]
-     ["Pop and return" po-pop-location t]
-     ["Exchange current/top" po-exchange-location t]
+     ["Mark and push current" po-push-location
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Remember current location"))]
+     ["Pop and return" po-pop-location
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to last remembered location and forget about it"))]
+     ["Exchange current/top" po-exchange-location
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Jump to last remembered location and remember current location"))]
      "---"
-     ["Redisplay" po-current-entry t]
-     ["Current index" po-statistics t])
+     ["Redisplay" po-current-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Make current entry properly visible"))]
+     ["Current index" po-statistics
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Statistical info on current translation file"))])
     ("Modifying entries"
-     ["Undo" po-undo t]
+     ["Undo" po-undo
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Revoke last changed entry"))]
      "---"
      "Msgstr"
-     ["Edit msgstr" po-edit-msgstr t]
-     ["Ediff and merge msgstr" po-edit-msgstr-and-ediff t]
-     ["Kill msgstr" po-kill-msgstr t]
-     ["Save msgstr" po-kill-ring-save-msgstr t]
-     ["Yank msgstr" po-yank-msgstr t]
+     ["Edit msgstr" po-edit-msgstr
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Edit current translation"))]
+     ["Ediff and merge msgstr" po-edit-msgstr-and-ediff
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Call `ediff' on current translation for merging"))]
+     ["Cut msgstr" po-kill-msgstr
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Cut (kill) current translation"))]
+     ["Copy msgstr" po-kill-ring-save-msgstr
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Copy current translation"))]
+     ["Paste msgstr" po-yank-msgstr
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Paste (yank) text most recently cut/copied translation"))]
      "---"
      "Comments"
-     ["Edit comment" po-edit-comment t]
-     ["Ediff and merge comment" po-edit-comment-and-ediff t]
-     ["Kill comment" po-kill-comment t]
-     ["Save comment" po-kill-ring-save-comment t]
-     ["Yank comment" po-yank-comment t]
+     ["Edit comment" po-edit-comment
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Edit current comment"))]
+     ["Ediff and merge comment" po-edit-comment-and-ediff
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Call `ediff' on current comment for merging"))]
+     ["Cut comment" po-kill-comment
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Cut (kill) current comment"))]
+     ["Copy comment" po-kill-ring-save-comment
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Copy current translation"))]
+     ["Paste comment" po-yank-comment
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Paste (yank) text most recently cut/copied"))]
      "---"
-     ["Remove fuzzy mark" po-unfuzzy t]
-     ["Fuzzy or fade out" po-fade-out-entry t]
-     ["Init with msgid" po-msgid-to-msgstr t])
+     ["Remove fuzzy mark" po-unfuzzy
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Remove \"#, fuzzy\""))]
+     ["Fuzzy or fade out" po-fade-out-entry
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Set current entry fuzzy, or if already fuzzy delete it"))]
+     ["Init with msgid" po-msgid-to-msgstr
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "\
+Initialize or replace current translation with the original message"))])
     ("Other files"
-     ["Other window" po-other-window t]
+     ["Other window" po-other-window
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Select other window; if necessay split current frame"))]
      "---"
      "Program sources"
      ["Cycle reference" po-cycle-source-reference t]
@@ -729,119 +821,54 @@ M-S  Ignore path          M-A  Ignore PO file      *M-L  Ignore lexicon
     ["Mark preferred" po-mark-translatable t]
     ["Mark with keyword" po-select-mark-and-mark t]
     "---"
-    ["Version info" po-mode-version t]
-    ["Help page" po-help t]
-    ["Validate" po-validate t]
-    ["Mail officially" po-send-mail t]
-    ["Edit out full" po-edit-out-full t]
+    ["Version info" po-mode-version
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Display version number of PO mode"))]
+    ["Help page" po-help
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Show the PO mode help screen"))]
+    ["Validate" po-validate
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Check validity of current translation file using `msgfmt'"))]
+    ["Mail officially" po-send-mail
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Send current translation file to the Translation Robot by mail"))]
+    ["Edit out full" po-edit-out-full
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Leave PO mode to edit translation file using fundamental mode"))]
     "---"
-    ["Forceful quit" po-quit t]
-    ["Soft quit" po-confirm-and-quit t])
+    ["Forceful quit" po-quit
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Close (kill) current translation file without saving"))]
+    ["Soft quit" po-confirm-and-quit
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Save current translation file, than close (kill) it"))])
   "Menu layout for PO mode.")
 
 (defconst po-subedit-mode-menu-layout
-  '("PO-Edit"
-    ["Ediff and merge translation variants" po-subedit-ediff t]
+  `("PO-Edit"
+    ["Ediff and merge translation variants" po-subedit-ediff
+      ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Call `ediff' for merging variants"))]
     ["Cycle through auxiliary files" po-subedit-cycle-auxiliary t]
     "---"
-    ["Abort edit" po-subedit-abort t]
-    ["Exit edit" po-subedit-exit t])
+    ["Abort edit" po-subedit-abort
+     ,@(if (featurep 'xemacs) '(t)
+	  '(:help "Don't change the translation"))]
+    ["Exit edit" po-subedit-exit
+     ,@(if (featurep 'xemacs) '(t)
+	 '(:help "Use this text as the translation and close current edit buffer"))])
   "Menu layout for PO subedit mode.")
 
 (defconst po-subedit-message
   (_"Type 'C-c C-c' once done, or 'C-c C-k' to abort edit")
   "Message to post in the minibuffer when an edit buffer is displayed.")
 
-; Make the cpnnn codesets available.
-(if po-EMACS20
-  (mapc #'codepage-setup (mapcar #'car (cp-supported-codepages))))
-
-(defconst po-content-type-charset-alist
-  '(; Note: Emacs 21 doesn't support all encodings, thus the missing entries.
-    (ASCII . undecided)
-    (ANSI_X3.4-1968 . undecided)
-    (US-ASCII . undecided)
-    (ISO-8859-1 . iso-8859-1)
-    (ISO_8859-1 . iso-8859-1)
-    (ISO-8859-2 . iso-8859-2)
-    (ISO_8859-2 . iso-8859-2)
-    (ISO-8859-3 . iso-8859-3)
-    (ISO_8859-3 . iso-8859-3)
-    (ISO-8859-4 . iso-8859-4)
-    (ISO_8859-4 . iso-8859-4)
-    (ISO-8859-5 . iso-8859-5)
-    (ISO_8859-5 . iso-8859-5)
-    ;(ISO-8859-6 . ??)
-    ;(ISO_8859-6 . ??)
-    (ISO-8859-7 . iso-8859-7)
-    (ISO_8859-7 . iso-8859-7)
-    (ISO-8859-8 . iso-8859-8)
-    (ISO_8859-8 . iso-8859-8)
-    (ISO-8859-9 . iso-8859-9)
-    (ISO_8859-9 . iso-8859-9)
-    ;(ISO-8859-13 . ??)
-    ;(ISO_8859-13 . ??)
-    (ISO-8859-15 . iso-8859-15) ; requires Emacs 21
-    (ISO_8859-15 . iso-8859-15) ; requires Emacs 21
-    (KOI8-R . koi8-r)
-    ;(KOI8-U . ??)
-    (CP437 . cp437) ; requires Emacs 20
-    (CP775 . cp775) ; requires Emacs 20
-    (CP850 . cp850) ; requires Emacs 20
-    (CP852 . cp852) ; requires Emacs 20
-    (CP855 . cp855) ; requires Emacs 20
-    ;(CP856 . ??)
-    (CP857 . cp857) ; requires Emacs 20
-    (CP861 . cp861) ; requires Emacs 20
-    (CP862 . cp862) ; requires Emacs 20
-    (CP864 . cp864) ; requires Emacs 20
-    (CP865 . cp865) ; requires Emacs 20
-    (CP866 . cp866) ; requires Emacs 21
-    (CP869 . cp869) ; requires Emacs 20
-    ;(CP874 . ??)
-    ;(CP922 . ??)
-    ;(CP932 . ??)
-    ;(CP943 . ??)
-    ;(CP949 . ??)
-    ;(CP950 . ??)
-    ;(CP1046 . ??)
-    ;(CP1124 . ??)
-    ;(CP1129 . ??)
-    (CP1250 . cp1250) ; requires Emacs 20
-    (CP1251 . cp1251) ; requires Emacs 20
-    (CP1252 . iso-8859-1) ; approximation
-    (CP1253 . cp1253) ; requires Emacs 20
-    (CP1254 . iso-8859-9) ; approximation
-    (CP1255 . iso-8859-8) ; approximation
-    ;(CP1256 . ??)
-    (CP1257 . cp1257) ; requires Emacs 20
-    (GB2312 . cn-gb-2312)  ; also named 'gb2312' in XEmacs 21 or Emacs 21
-                           ; also named 'euc-cn' in Emacs 20 or Emacs 21
-    (EUC-JP . euc-jp)
-    (EUC-KR . euc-kr)
-    ;(EUC-TW . ??)
-    (BIG5 . big5)
-    ;(BIG5-HKSCS . ??)
-    ;(GBK . ??)
-    ;(GB18030 . ??)
-    (SHIFT_JIS . shift_jis)
-    ;(JOHAB . ??)
-    (TIS-620 . tis-620)    ; requires Emacs 20 or Emacs 21
-    (VISCII . viscii)      ; requires Emacs 20 or Emacs 21
-    (UTF-8 . utf-8)        ; requires Mule-UCS in Emacs 20, or Emacs 21
-    )
-  "How to convert a GNU libc/libiconv canonical charset name as seen in
-Content-Type into a Mule coding system.")
-
 (defvar po-auxiliary-list nil
   "List of auxiliary PO files, in completing read format.")
 
 (defvar po-auxiliary-cursor nil
   "Cursor into the 'po-auxiliary-list'.")
-
-(defvar po-translation-project-address
-  "translation@iro.umontreal.ca"
-  "Electronic mail address of the Translation Project.")
 
 (defvar po-compose-mail-function
   (let ((functions '(compose-mail-other-window
@@ -913,70 +940,10 @@ Content-Type into a Mule coding system.")
 
 ;;; Mode activation.
 
-(defun po-find-charset (filename)
-  "Return PO file charset value."
-  (interactive)
-  (let ((charset-regexp
-	 "^\"Content-Type: text/plain;[ \t]*charset=\\(.*\\)\\\\n\"")
-	(short-read nil))
-    ;; Try the first 4096 bytes.  In case we cannot find the charset value
-    ;; within the first 4096 bytes (the PO file might start with a long
-    ;; comment) try the next 4096 bytes repeatedly until we'll know for sure
-    ;; we've checked the empty header entry entirely.
-    (while (not (or short-read (re-search-forward "^msgid" nil t)))
-      (save-excursion
-        (goto-char (point-max))
-	(let ((pair (insert-file-contents-literally filename nil
-						    (1- (point))
-						    (1- (+ (point) 4096)))))
-	  (setq short-read (< (nth 1 pair) 4096)))))
-    (cond (short-read nil)
-	  ((re-search-forward charset-regexp nil t) (match-string 1))
-	  ;; We've found the first msgid; maybe, only a part of the msgstr
-	  ;; value was loaded.  Load the next 1024 bytes; if charset still
-	  ;; isn't available, give up.
-	  (t (save-excursion
-	       (goto-char (point-max))
-	       (insert-file-contents-literally filename nil
-					       (1- (point))
-					       (1- (+ (point) 1024))))
-	     (if (re-search-forward charset-regexp nil t)
-		 (match-string 1))))))
-
-(eval-and-compile
-  (if (or po-EMACS20 po-XEMACS)
-      (defun po-find-file-coding-system-guts (operation filename)
-	"\
-Return a Mule (DECODING . ENCODING) pair, according to PO file charset.
-Called through file-coding-system-alist, before the file is visited for real."
-	(and (eq operation 'insert-file-contents)
-	     (po-with-temp-buffer
-	       (let ((coding-system-for-read 'no-conversion))
-                 (let* ((charset (or (po-find-charset filename)
-				     "ascii"))
-                        (charset-upper (intern (upcase charset)))
-                        (charset-lower (intern (downcase charset))))
-                   (list (or (cdr (assq charset-upper
-                                        po-content-type-charset-alist))
-                             (if (memq charset-lower (coding-system-list))
-                                 charset-lower
-                               'no-conversion)))))))))
-
-  (if po-EMACS20
-      (defun po-find-file-coding-system (arg-list)
-	"\
-Return a Mule (DECODING . ENCODING) pair, according to PO file charset.
-Called through file-coding-system-alist, before the file is visited for real."
-	(po-find-file-coding-system-guts (car arg-list) (car (cdr arg-list)))))
-
-  (if po-XEMACS
-      (defun po-find-file-coding-system (operation filename)
-	"\
-Return a Mule (DECODING . ENCODING) pair, according to PO file charset.
-Called through file-coding-system-alist, before the file is visited for real."
-	(po-find-file-coding-system-guts operation filename)))
-
- )
+;; Emacs 21.2 comes with po-find-file-coding-system. We give preference
+;; to the version shipped with Emacs.
+(if (not (fboundp 'po-find-file-coding-system))
+  (require 'po-compat))
 
 (defvar po-mode-abbrev-table nil
   "Abbrev table used while in PO mode.")
@@ -1127,8 +1094,12 @@ all reachable through 'M-x customize', in group 'Emacs.Editing.I18n.Po'."
 
 ;; Insert MODE-LINE-ENTRY in mode line, but on first load only.
 (or (member po-mode-line-entry mode-line-format)
-    (let ((entry (member 'global-mode-string mode-line-format)))
-      (setcdr entry (cons po-mode-line-entry (cdr entry)))))
+    ;; mode-line-format usually contains global-mode-string, but some
+    ;; people customize this variable. As a last resort, append at the end.
+    (let ((prev-entry (or (member 'global-mode-string mode-line-format)
+                          (member "   " mode-line-format)
+                          (last mode-line-format))))
+      (setcdr prev-entry (cons po-mode-line-entry (cdr prev-entry)))))
 
 (defun po-update-mode-line-string ()
   "Compute a new statistics string to display in mode line."
@@ -1182,33 +1153,34 @@ Then, update the mode line counters."
       ;; While counting, skip the header entry, for consistency with msgfmt.
       (po-find-span-of-entry)
       (if (string-equal (po-get-msgid nil) "")
-	  (if (po-next-entry)
-	      (progn
-		;; Start counting
-		(while (re-search-forward po-any-msgstr-regexp nil t)
-		  (and (= (% total 20) 0)
-		       (if flag
-			   (message (_"Position %d/%d") position total)
-			 (message (_"Position %d") total)))
-		  (setq here (point))
-		  (goto-char (match-beginning 0))
-		  (setq total (1+ total))
-		  (and flag (eq (point) current) (setq position total))
-		  (cond ((eq (following-char) ?#)
-			 (setq po-obsolete-counter (1+ po-obsolete-counter)))
-			((looking-at po-untranslated-regexp)
-			 (setq po-untranslated-counter (1+ po-untranslated-counter)))
-			(t (setq po-translated-counter (1+ po-translated-counter))))
-		  (goto-char here))
+	  (goto-char po-end-of-entry))
+      (if (re-search-forward "^msgid" (point-max) t)
+	  (progn
+	    ;; Start counting
+	    (while (re-search-forward po-any-msgstr-regexp nil t)
+	      (and (= (% total 20) 0)
+		   (if flag
+		       (message (_"Position %d/%d") position total)
+		     (message (_"Position %d") total)))
+	      (setq here (point))
+	      (goto-char (match-beginning 0))
+	      (setq total (1+ total))
+	      (and flag (eq (point) current) (setq position total))
+	      (cond ((eq (following-char) ?#)
+		     (setq po-obsolete-counter (1+ po-obsolete-counter)))
+		    ((looking-at po-untranslated-regexp)
+		     (setq po-untranslated-counter (1+ po-untranslated-counter)))
+		    (t (setq po-translated-counter (1+ po-translated-counter))))
+	      (goto-char here))
 
-		;; Make another pass just for the fuzzy entries, kind of kludgey.
-		;; FIXME: Counts will be wrong if untranslated entries are fuzzy, yet
-		;; this should not normally happen.
-		(goto-char (point-min))
-		(while (re-search-forward po-fuzzy-regexp nil t)
-		  (setq po-fuzzy-counter (1+ po-fuzzy-counter)))
-		(setq po-translated-counter (- po-translated-counter po-fuzzy-counter)))
-	    '())))
+	    ;; Make another pass just for the fuzzy entries, kind of kludgey.
+	    ;; FIXME: Counts will be wrong if untranslated entries are fuzzy, yet
+	    ;; this should not normally happen.
+	    (goto-char (point-min))
+	    (while (re-search-forward po-fuzzy-regexp nil t)
+	      (setq po-fuzzy-counter (1+ po-fuzzy-counter)))
+	    (setq po-translated-counter (- po-translated-counter po-fuzzy-counter)))
+	'()))
 
     ;; Push the results out.
     (if flag
@@ -2078,8 +2050,10 @@ For more info cf. `po-subedit-ediff'."
 (defun po-subedit-ediff ()
   "Edit the subedit buffer using `ediff'.
 `po-subedit-ediff' calls `po-ediff-buffers-exit-recursive' to edit translation
-variants side by side.  `msgcat' is able to produce those variants;  every
-variant is marked with:
+variants side by side if they are actually different; if variants are equal just
+delete the first one.
+
+`msgcat' is able to produce those variants; every variant is marked with:
 
 #-#-#-#-#  file name reference  #-#-#-#-#
 
@@ -2124,7 +2098,12 @@ When done with the `ediff' session press \\[exit-recursive-edit] exit to
 	  (erase-buffer)
 	  (insert-buffer-substring oldbuf start-2 end-2))
 
-	(po-ediff-buffers-exit-recursive buf1 buf2 oldbuf end-2)))))
+	(if (not (string-equal (buffer-substring-no-properties start-1 end-1)
+			       (buffer-substring-no-properties start-2 end-2)))
+	    (po-ediff-buffers-exit-recursive buf1 buf2 oldbuf end-2)
+	  (message "Variants are equal; delete %s" buf1)
+	  (forward-line -1)
+	  (delete-region (point-min) (point)))))))
 
 (defun po-subedit-abort ()
   "Exit the subedit buffer, merely discarding its contents."
@@ -3260,11 +3239,13 @@ Write to your team?  ('n' if writing to the Translation Project robot) ")))
 			    po-obsolete-counter))))
 	  (let ((buffer (current-buffer))
 		(name (po-guess-archive-name))
-		(transient-mark-mode nil))
+		(transient-mark-mode nil)
+		(coding-system-for-read buffer-file-coding-system)
+		(coding-system-for-write buffer-file-coding-system))
 	    (apply po-compose-mail-function address
 		   (if team-flag
 		       (read-string (_"Subject? "))
-		     (format "TP-Robot %s" name))
+		     (format "%s %s" po-translation-project-mail-label name))
 		   nil)
 	    (goto-char (point-min))
 	    (re-search-forward
@@ -3327,5 +3308,7 @@ strings remain."
 	    (progn
 	      (save-buffer)
 	      (kill-buffer (current-buffer)))))))
+
+(provide 'po-mode)
 
 ;;; po-mode.el ends here

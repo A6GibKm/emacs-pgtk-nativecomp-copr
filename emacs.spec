@@ -1,8 +1,9 @@
-# [for (x)emacs] -*- coding: utf-8 -*-
+# This file is encoded in UTF-8.  -*- coding: utf-8 -*-
+
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 21.2
-Release: 18
+Release: 33
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -20,17 +21,26 @@ Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
 Source11: php-mode.el
 Source12: php-mode-init.el
 Source13: ssl.el
-Source14: po-mode.el
-Source15: po-mode-init.el
+Source16: python-mode-init.el
+Source17: rpm-spec-mode-init.el
+Source18: rpm-spec-mode.el-0.14-xemacs-compat.patch
+Source20: po-mode.el
+Source21: po-compat.el
+Source22: po-mode-init.el
+Source23: po-mode-auto-replace-date-71264.patch
 Patch1: emacs-21.2-pop.patch 
-Patch50: emacs-21.2-s390.patch
+Patch2: emacs-21.2-s390.patch
+Patch3: emacs-21.2-x86_64.patch
+Patch4: emacs-21.2-sticky-bit-80049.patch
+Patch5: emacs-21.2-s390x.patch
+Patch6: emacs-21.2-menubar-games.patch
+Patch7: emacs-21.2-alloc-blockinput-83600.patch
+Patch8: browse-url-htmlview-84262.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
-Prereq: /sbin/install-info
-BuildRequires: glibc-devel gcc XFree86-devel bzip2 ncurses-devel
-BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-devel 
-Obsoletes: emacs-nox emacs-X11
+Prereq: /sbin/install-info, dev
+BuildRequires: glibc-devel, gcc, XFree86-devel, bzip2, ncurses-devel, zlib-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Obsoletes: emacs-nox, emacs-X11
 Conflicts: gettext < 0.10.40
-Prereq: dev
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -69,133 +79,102 @@ non-English character set. Input methods for many different character
 sets are included in this package.
 
 %prep
-
 %setup -q -b 1
-
-%patch1 -p1
-
-%ifarch s390 s390x
-%patch50 -p1 -b .s390
-%endif
+%patch1 -p1 -b .pop
+%patch2 -p1 -b .s390
+%patch3 -p1 -b .hammer
+%patch4 -p1 -b .sticky
+%patch5 -p1 -b .s390x
+# remove game we can't ship
+%patch6 -p1
+rm lisp/finder-inf.el lisp/play/tetris.el*
+# block input in `allocate_vectorlike' (alloc.c)
+%patch7 -p1 -b .block
+# make browse-url default to htmlview not netscape
+%patch8 -p1 -b .htmlview
+# patches 2 and 3 touch configure.in
+autoconf-2.13
 
 %build
-
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
-#to find installinfo
-export PATH="$PATH:/sbin:/usr/sbin"
 
 %configure --with-gcc --with-pop --with-sound
-make
+make %{?_smp_mflags}
+# remove versioned file so that we end up with .1 suffix and only one DOC file
+rm src/emacs-%{version}.*
+# make sure patched lisp files get byte-compiled
+src/emacs -batch -f batch-byte-recompile-directory lisp
+make %{?_smp_mflags} -C lisp updates
 
-
-%define recompile src/emacs -batch --no-init-file --no-site-file -f batch-byte-compile
-
-# recompile patched .el files
-%{recompile} lisp/mail/mh-utils.el lisp/progmodes/make-mode.el
+%define emacsbatch src/emacs -batch --no-init-file --no-site-file
 
 # bytecompile python-mode, ssl, php-mode and rpm-spec-mode
-cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE14 .
-%{recompile} python-mode.el rpm-spec-mode.el php-mode.el ssl.el po-mode.el
+cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE20 %SOURCE21 .
 
-
+# xemacs compat patch
+patch < %SOURCE18
+# fix po-auto-replace-revision-date nil
+patch < %SOURCE23
+%{emacsbatch} -f batch-byte-compile *.el
 
 %install
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr
-mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d
-
-mkdir -p $RPM_BUILD_ROOT/%{_infodir}
 
 %makeinstall
 
-#install lisp files for Japanese and other Asian languages
-pushd $RPM_BUILD_ROOT
-tar --use-compress-program=bzip2 -xf %{SOURCE9}
-popd
+# make sure movemail isn't setgid
+chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
 
-rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
-gzip -9nf $RPM_BUILD_ROOT/%{_infodir}/*
+# install lisp files for Japanese and other Asian languages
+tar jxC $RPM_BUILD_ROOT -f %{SOURCE9}
 
-install -m 644 %SOURCE6 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.el
+rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
-mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/site-lisp
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+install -m 0644 %SOURCE6 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.el
 
 mv $RPM_BUILD_ROOT%{_mandir}/man1/ctags.1 $RPM_BUILD_ROOT%{_mandir}/man1/gctags.1
-mv $RPM_BUILD_ROOT/usr/bin/ctags $RPM_BUILD_ROOT/usr/bin/gctags
-
+mv $RPM_BUILD_ROOT%{_bindir}/ctags $RPM_BUILD_ROOT%{_bindir}/gctags
 
 # GNOME / KDE files
-mkdir -p $RPM_BUILD_ROOT/usr/share/applications
-install -c -m 0644 %SOURCE3 $RPM_BUILD_ROOT/usr/share/applications/gnu-emacs.desktop
-mkdir -p $RPM_BUILD_ROOT/usr/share/pixmaps
-install -c -m 0644 %SOURCE4 $RPM_BUILD_ROOT/usr/share/pixmaps/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
+install -m 0644 %SOURCE3 $RPM_BUILD_ROOT%{_datadir}/applications/gnu-emacs.desktop
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
+install -m 0644 %SOURCE4 $RPM_BUILD_ROOT%{_datadir}/pixmaps/
 
-mkdir -p $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
-install -c -m644 etc/DOC-* $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc
+# install site-lisp files
+install -m 0644 *.el *.elc $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/
 
-# Python mode, php mode and rpm-spec mode
-
-install -c -m0644 po-mode.el po-mode.elc php-mode.el php-mode.elc python-mode.el python-mode.elc rpm-spec-mode.el rpm-spec-mode.elc ssl.el ssl.elc $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/
-install -m0644 %SOURCE12 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d/php-mode-init.el
-install -m0644 %SOURCE15 $RPM_BUILD_ROOT/usr/share/emacs/site-lisp/site-start.d/po-mode-init.el
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
+install -m 0644 $RPM_SOURCE_DIR/*-init.el $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
 
 # default initialization file
-mkdir -p $RPM_BUILD_ROOT/etc/skel
-install -c -m0644 %SOURCE5 $RPM_BUILD_ROOT/etc/skel/.emacs
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
+install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
+
+# elisp reference manual
+tar jxf %{SOURCE10}
+pushd elisp-manual-21-2.8
+install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT%{_infodir}
+popd
 
 #
 # create file lists
 #
+SRC_TOP=$PWD
+rm -f *-filelist {base,el,leim}-*-files
+pushd $RPM_BUILD_ROOT
 
-# Remove ctags
+find .%{_datadir}/emacs/%{version}/lisp \( -type f -not -name '*.el' -fprint $SRC_TOP/base-lisp-none-elc-files \) -o \( -type d -fprintf $SRC_TOP/base-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-bytecomped-files -o -fprint $SRC_TOP/base-not-comped-files \) \)
 
-rm -f $RPM_BUILD_ROOT/usr/bin/ctags
-rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/*ctags*
-rm -f $RPM_BUILD_ROOT/usr/share/emacs/%{version}/etc/ctags*
+find .%{_datadir}/emacs/%{version}/leim \( -name '*.elc' -fprint $SRC_TOP/leim-elc-files \) -o \( -type d -fprintf $SRC_TOP/leim-dir-files "%%%%dir %%p\n" -fprintf $SRC_TOP/el-leim-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-leim-bytecomped-files -o -fprint $SRC_TOP/leim-not-comped-files \) \)
 
-# The elisp reference manual
-bzcat %{SOURCE10} | tar xf -
-pushd elisp-manual-21-2.8
-install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT/%{_infodir}
 popd
 
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp -type f\
-  -not -name '*.el' -print | sed "s^$RPM_BUILD_ROOT^^" > core-filelist
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
-  -type d -printf "%%%%dir %%p\n" | sed "s^$RPM_BUILD_ROOT^^" >> core-filelist
-
-# Include .el files which lack a corresponding byte compiled form
-for I in `find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
-          -name '*.el'`; do
-  if [ ! -e `dirname $I`/`basename $I .el`.elc ]; then 
-    echo $I | sed "s^$RPM_BUILD_ROOT^^"
-  fi
-done >> core-filelist
-
-# Include all non elisp files which emacs installs
-#find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp -type f | \
-#  sed "s^$RPM_BUILD_ROOT^^" | grep -v "\.el\(c\)\?$" >> core-filelist
-
-
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/leim \
-  -name '*.elc' -print | sed "s^$RPM_BUILD_ROOT^^" > leim-filelist
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/leim \
-  -mindepth 1 -type d -printf "%%%%dir %%p\n" | \
-  sed "s^$RPM_BUILD_ROOT^^" >> leim-filelist
-
-#
-# be sure to exclude some files which are needed in the core package
-#
-for I in `find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/lisp \
-          -name '*.el'`; do
-  if [ -e `dirname $I`/`basename $I .el`.elc ]; then 
-    echo $I | sed "s^$RPM_BUILD_ROOT^^"
-  fi
-done >> el-filelist
-
-find $RPM_BUILD_ROOT/usr/share/emacs/%{version}/leim \
-  -name '*.el' -print | sed "s^$RPM_BUILD_ROOT^^" |\
-  grep -v "leim\/leim-list.el" >> el-filelist
+# put the lists together filtering  ./usr to /usr
+cat base-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > base-filelist
+cat el-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > el-filelist
+cat leim-*-files | sed "s|\.%{_prefix}|%{_prefix}|" > leim-filelist
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -215,51 +194,133 @@ done
 fi
 
 
-%files -f core-filelist
+%files -f base-filelist
 %defattr(-,root,root)
-%config(noreplace) /etc/skel/.emacs
+%config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
-/usr/bin/*
+%{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
-/usr/share/emacs/site-lisp/python-mode.elc
-/usr/share/emacs/site-lisp/php-mode.elc
-/usr/share/emacs/site-lisp/po-mode.elc
-/usr/share/emacs/site-lisp/rpm-spec-mode.elc
-/usr/share/emacs/site-lisp/ssl.elc
-/usr/share/emacs/site-lisp/subdirs.el
-/usr/share/emacs/site-lisp/site-start.d/lang.emacs.el
-/usr/share/emacs/site-lisp/site-start.d/php-mode-init.el
-/usr/share/emacs/site-lisp/site-start.d/po-mode-init.el
-/usr/share/emacs/site-lisp/lang
-/usr/share/emacs/%{version}/site-lisp/subdirs.el
-
-%dir /usr/share/emacs
-%dir /usr/share/emacs/site-lisp
-%dir /usr/share/emacs/%{version}
-%dir /usr/share/emacs/%{version}/*
-/usr/share/emacs/%{version}/etc/*
-/usr/libexec/emacs/%{version}/*/*
-%attr(0755,root,root) /usr/libexec/emacs/%{version}/*/movemail
-%attr(0644,root,root) %config /usr/share/emacs/site-lisp/site-start.el
-%dir /usr/share/emacs/site-lisp/site-start.d
-%config(noreplace) /usr/share/applications/gnu-emacs.desktop
-/usr/share/pixmaps/emacs.png 
+%dir %{_datadir}/emacs
+%dir %{_datadir}/emacs/site-lisp
+%{_datadir}/emacs/site-lisp/python-mode.elc
+%{_datadir}/emacs/site-lisp/php-mode.elc
+%{_datadir}/emacs/site-lisp/po-*.elc
+%{_datadir}/emacs/site-lisp/rpm-spec-mode.elc
+%{_datadir}/emacs/site-lisp/ssl.elc
+%{_datadir}/emacs/site-lisp/subdirs.el
+%{_datadir}/emacs/site-lisp/site-start.d/*.el
+%{_datadir}/emacs/site-lisp/lang
+%dir %{_datadir}/emacs/%{version}
+%{_datadir}/emacs/%{version}/etc
+# quieten startup when -leim and -el aren't installed
+%dir %{_datadir}/emacs/%{version}/leim
+%{_datadir}/emacs/%{version}/site-lisp
+%{_libexecdir}/emacs
+%attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
+%dir %{_datadir}/emacs/site-lisp/site-start.d
+%{_datadir}/applications/gnu-emacs.desktop
+%{_datadir}/pixmaps/emacs.png 
 
 %files -f el-filelist el
 %defattr(-,root,root)
-/usr/share/emacs/site-lisp/python-mode.el
-/usr/share/emacs/site-lisp/php-mode.el
-/usr/share/emacs/site-lisp/po-mode.el
-/usr/share/emacs/site-lisp/ssl.el
-/usr/share/emacs/site-lisp/rpm-spec-mode.el
+%{_datadir}/emacs/site-lisp/python-mode.el
+%{_datadir}/emacs/site-lisp/php-mode.el
+%{_datadir}/emacs/site-lisp/po-*.el
+%{_datadir}/emacs/site-lisp/ssl.el
+%{_datadir}/emacs/site-lisp/rpm-spec-mode.el
 
 %files -f leim-filelist leim
 %defattr(-,root,root)
-/usr/share/emacs/%{version}/leim/leim-list.el
-%dir /usr/share/emacs/%{version}/leim
 
 %changelog
+* Thu Feb 20 2003 Jens Petersen <petersen@redhat.com> - 21.2-33
+- default browse-url to use htmlview (#84262)
+- remove info dir file rather than excluding it
+
+* Sat Feb  8 2003 Jens Petersen <petersen@redhat.com> - 21.2-32
+- set X copy'n'paste encoding to extended compound-text (#74100)
+  by default in .emacs file [suggested by olonho@hotmail.com]
+- .emacs file cleanup (xemacs now has a separate init file)
+
+* Fri Feb  7 2003 Jens Petersen <petersen@redhat.com> - 21.2-31
+- block input in allocate_vectorlike to prevent malloc hangs (#83600)
+  [thanks to Jim Blandy]
+- set startup wmclass notify in desktop file
+
+* Wed Jan 22 2003 Tim Powers <timp@redhat.com>
+- rebuilt
+
+* Wed Jan 15 2003 Jens Petersen <petersen@redhat.com> 21.2-29
+- update to newer po-mode.el and po-compat.el from gettext-0.11.4
+- patch po-mode's po-replace-revision-date for when
+  po-auto-replace-revision-date is nil (#71264)
+- update po-mode-init.el
+- examine LC_ALL before LC_CTYPE in site-start.el for utf-8 (#79535)
+- don't install etc/DOC files explicitly by hand
+- make sure all lisp .elc files are up to date
+- pass _smp_mflags to make
+- remove games that we shouldn't ship
+
+* Mon Jan 13 2003 Karsten Hopp <karsten@redhat.de> 21.2-28
+- s390x lib64 fix
+
+* Fri Jan  3 2003 Jens Petersen <petersen@redhat.com> 21.2-27
+- look at LANG after LC_CTYPE when checking for UTF-8 locale encoding
+  in site-start.el (#79535)
+- don't set desktop file config(noreplace)
+
+* Fri Dec 20 2002 Jens Petersen <petersen@redhat.com> 21.2-26
+- unset the sticky bit of emacs in bindir (#80049)
+
+* Wed Dec 18 2002 Jens Petersen <petersen@redhat.com> 21.2-25
+- no need to patch config.{sub,guess}
+
+* Tue Dec  3 2002 Tim Waugh <twaugh@redhat.com>
+- Fix python-mode-init.el (bug #78910).
+
+* Sun Dec  1 2002 Jens Petersen <petersen@redhat.com> 21.2-24
+- rpm-spec-mode update fixes
+  - patch in XEmacs compat functions rather than defining them with apel
+    macros in init file (#78764)
+  - autoload "rpm-spec-mode" not "rpm-spec-mode.el" in same file
+- let emacs base also own leim dir to avoid startup warning about missing dir
+  when -el and -leim aren't installed (#78764)
+
+* Thu Nov 28 2002 Jens Petersen <petersen@redhat.com>
+- use LC_CTYPE rather than LANG to determine default encoding (#78678)
+  [reported by starback@stp.ling.uu.se]
+
+* Wed Nov 27 2002 Jens Petersen <petersen@redhat.com> 21.2-23
+- set transient-mark-mode in dotemacs for Emacs not XEmacs (#75440)
+- update rpm-spec-mode.el to 0.12
+  - define needed XEmacs compat functions in new rpm-spec-mode-init.el
+- tidy site-start.el
+  - move python-mode setup to python-mode
+- don't build with sbin in path
+- use _libexecdir, _bindir and _sysconfdir
+- don't gzip info files explicitly
+- use tar's C and j options
+- generate lisp file-lists in single find sweeps over lisp and leim dirs
+  - use -fprint and -fprintf
+  - correct more dir ownerships
+
+* Sun Nov 24 2002 Florian La Roche <Florian.LaRoche@redhat.de> 21.2-22
+- add correct alloca defines for s390
+
+* Wed Nov  6 2002 Jens Petersen <petersen@redhat.com> 21.2-21
+- uses patches for x86_64 and s390 support and config.{guess,sub} updating
+
+* Tue Nov  5 2002 Jens Petersen <petersen@redhat.com> 21.2-20
+- add support for x86_64 and merge in s390 support from cvs
+- add alloca defines to amdx86-64.h (from SuSE)
+
+* Wed Oct 30 2002 Jens Petersen <petersen@redhat.com> 21.2-19
+- own our libexec dir (#73984)
+- only set transient-mark-mode in dotemacs for Emacs (#75440)
+- update to latest config.{guess,sub}
+- use _datadir macro
+
 * Wed Aug 28 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-18
 - Desktop file fix - add Application to make it show up
 - DNS lookup fix for pop (#64802)
@@ -271,7 +332,7 @@ fi
 - Handle UTF-8 input (#70855).
 
 * Tue Aug  6 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-15
-- Don't use canna by default (# 70870)
+- Don't use canna by default (#70870)
 
 * Thu Aug  1 2002 Trond Eivind Glomsrød <teg@redhat.com> 21.2-14
 - Fixes to desktop file (add encoding, add missing a ";")
