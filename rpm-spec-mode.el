@@ -3,7 +3,7 @@
 ;; Copyright (C) 1997-2002 Stig Bjørlykke, <stigb@tihlde.org>
 
 ;; Author:   Stig Bjørlykke, <stigb@tihlde.org>
-;; Keywords: unix, languages
+;; Keywords: unix, languages, rpm
 ;; Version:  0.12
 
 ;; This file is part of XEmacs.
@@ -33,6 +33,7 @@
 ;;     Tim Powers <timp@redhat.com> and Trond Eivind Glomsrød
 ;;          <teg@redhat.com> for Red Hat adaptions and some fixes.
 ;;     Chmouel Boudjnah <chmouel@mandrakesoft.com> for Mandrake fixes.
+;;     Ville Skyttä  <scop@xemacs.org> for some fixes.
 
 ;;; ToDo:
 
@@ -69,11 +70,6 @@
   :prefix "rpm-spec-"
   :group 'languages)
 
-(defcustom rpm-spec-build-command "rpmbuild"
-  "Command for building a RPM package."
-  :type 'string
-  :group 'rpm-spec)
-
 (defcustom rpm-spec-add-attr nil
   "Add \"%attr\" entry for file listings or not."
   :type 'boolean
@@ -95,7 +91,7 @@ timecheck age."
   :group 'rpm-spec)
 
 (defcustom rpm-spec-buildroot ""
-  "Override the BuildRoot tag with directory <dir>."
+  "When building, override the BuildRoot tag with directory <dir>."
   :type 'string
   :group 'rpm-spec)
 
@@ -125,8 +121,17 @@ This is used during Tempo template completion."
   :type 'boolean
   :group 'rpm-spec)
 
+(define-obsolete-variable-alias
+  'rpm-spec-test 'rpm-spec-nobuild)
+
 (defcustom rpm-spec-nobuild nil
   "Do not execute any build stages.  Useful for testing out spec files."
+  :type 'boolean
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-quiet nil
+  "Print as little as possible.
+Normally only error messages will be displayed."
   :type 'boolean
   :group 'rpm-spec)
 
@@ -139,11 +144,6 @@ the package."
 
 (defcustom rpm-spec-nodeps nil
   "Do not verify build dependencies."
-  :type 'boolean
-  :group 'rpm-spec)
-
-(defcustom rpm-spec-old-rpm nil
-  "Set if using `rpm' as command for building packages."
   :type 'boolean
   :group 'rpm-spec)
 
@@ -179,8 +179,50 @@ value returned by function `user-mail-address'."
                  string)
   :group 'rpm-spec)
 
+(defcustom rpm-spec-indent-heading-values nil
+  "*Indent values for all tags in the \"heading\" of the spec file."
+  :type 'boolean
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-use-compilation-mode t
+  "*If non-nil, build in `compilation-mode' if it's available."
+  :type 'boolean
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-release "1"
+  "*Default value for the Release tag in new spec files."
+  :type 'string
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-epoch nil
+  "*If non-nil, default value for the Epoch tag in new spec files."
+  :type '(choice (const :tag "No Epoch" nil) integer)
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-buildroot
+  "%{_tmppath}/%{name}-%{version}-%{release}-root"
+  "*Default value for the BuildRoot tag in new spec files."
+  :type 'integer
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-build-section ""
+  "*Default %build section in new spec files."
+  :type 'string
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-install-section "rm -rf $RPM_BUILD_ROOT\n"
+  "*Default %install section in new spec files."
+  :type 'string
+  :group 'rpm-spec)
+
+(defcustom rpm-spec-default-clean-section "rm -rf $RPM_BUILD_ROOT\n"
+  "*Default %clean section in new spec files."
+  :type 'string
+  :group 'rpm-spec)
+
 (defgroup rpm-spec-faces nil
   "Font lock faces for `rpm-spec-mode'."
+  :prefix "rpm-spec-"
   :group 'rpm-spec
   :group 'faces)
 
@@ -188,12 +230,12 @@ value returned by function `user-mail-address'."
 ;; variables used by navigation functions.
 
 (defconst rpm-sections
-  '("preamble" "description" "prep" "setup" "build" "install" "clean"
+  '("preamble" "description" "prep" "setup" "build" "install" "check" "clean"
     "changelog" "files")
   "Partial list of section names.")
 (defvar rpm-section-list
   '(("preamble") ("description") ("prep") ("setup") ("build") ("install")
-    ("clean") ("changelog") ("files"))
+    ("check") ("clean") ("changelog") ("files"))
   "Partial list of section names.")
 (defconst rpm-scripts
   '("pre" "post" "preun" "postun"
@@ -204,60 +246,67 @@ value returned by function `user-mail-address'."
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.1 sources, file build/parseSpec.c: partList[].
-             '("build" "changelog" "clean" "description" "files" "install"
-               "package" "post" "postun" "pre" "prep" "preun" "trigger"
-               "triggerin" "triggerpostun" "triggerun" "verifyscript") t)
+             ;; From RPM 4.2 sources, file build/parseSpec.c: partList[].
+             '("build" "changelog" "check" "clean" "description" "files"
+               "install" "package" "post" "postun" "pre" "prep" "preun"
+               "trigger" "triggerin" "triggerpostun" "triggerun"
+               "verifyscript") t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
 ;;------------------------------------------------------------
 
 (defface rpm-spec-tag-face
-  '(( ((class color) (background light)) (:foreground "blue") )
+  '(( ((class color) (background light)) (:foreground "blue3") )
     ( ((class color) (background dark)) (:foreground "blue") ))
-  "*The face used for tags."
+  "*Face for tags."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-macro-face
   '(( ((class color) (background light)) (:foreground "purple") )
     ( ((class color) (background dark)) (:foreground "yellow") ))
-  "*The face used for macros."
+  "*Face for RPM macros and variables."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-var-face
   '(( ((class color) (background light)) (:foreground "maroon") )
     ( ((class color) (background dark)) (:foreground "maroon") ))
-  "*The face used for environment variables."
+  "*Face for environment variables."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-doc-face
-  '(( ((class color) (background light)) (:foreground "magenta") )
+  '(( ((class color) (background light)) (:foreground "magenta3") )
     ( ((class color) (background dark)) (:foreground "magenta") ))
-  "*The face used for document files."
+  "*Face for %doc entries in %files."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-dir-face
-  '(( ((class color) (background light)) (:foreground "green") )
+  '(( ((class color) (background light)) (:foreground "green4") )
     ( ((class color) (background dark)) (:foreground "green") ))
-  "*The face used for directories."
+  "*Face for %dir entries in %files."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-package-face
-  '(( ((class color) (background light)) (:foreground "red") )
+  '(( ((class color) (background light)) (:foreground "red3") )
     ( ((class color) (background dark)) (:foreground "red") ))
-  "*The face used for files."
+  "*Face for package tag."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-ghost-face
-  '(( ((class color) (background light)) (:foreground "red") )
+  '(( ((class color) (background light)) (:foreground "gray50") )
     ( ((class color) (background dark)) (:foreground "red") ))
-  "*The face used for ghost tags."
+  "*Face for %ghost and %config entries in %files."
+  :group 'rpm-spec-faces)
+
+(defface rpm-spec-section-face
+  '(( ((class color) (background light)) (:foreground "purple" :underline t) )
+    ( ((class color) (background dark)) (:foreground "yellow" :underline t) ))
+  "*Face for section markers."
   :group 'rpm-spec-faces)
 
 ;;; GNU emacs font-lock needs these...
 (defvar rpm-spec-macro-face
-  'rpm-spec-macro-face "*Face for macros.")
+  'rpm-spec-macro-face "*Face for RPM macros and variables.")
 (defvar rpm-spec-var-face
   'rpm-spec-var-face "*Face for environment variables.")
 (defvar rpm-spec-tag-face
@@ -265,11 +314,13 @@ value returned by function `user-mail-address'."
 (defvar rpm-spec-package-face
   'rpm-spec-package-face "*Face for package tag.")
 (defvar rpm-spec-dir-face
-  'rpm-spec-dir-face "*Face for directory entries.")
+  'rpm-spec-dir-face "*Face for %dir entries in %files.")
 (defvar rpm-spec-doc-face
-  'rpm-spec-doc-face "*Face for documentation entries.")
+  'rpm-spec-doc-face "*Face for %doc entries in %files.")
 (defvar rpm-spec-ghost-face
-  'rpm-spec-ghost-face "*Face for \"%ghost\" files.")
+  'rpm-spec-ghost-face "*Face for %ghost and %config entries in %files.")
+(defvar rpm-spec-section-face
+  'rpm-spec-section-face "*Face for section markers.")
 
 (defvar rpm-default-umask "-"
   "*Default umask for files, specified with \"%attr\".")
@@ -281,9 +332,11 @@ value returned by function `user-mail-address'."
 ;;------------------------------------------------------------
 
 (defvar rpm-no-gpg nil "Tell rpm not to sign package.")
+(defvar rpm-spec-build-command "rpmbuild" "Command to build rpms.")
+(defvar rpm-spec-nobuild-option "--nobuild" "Option for no build.")
 
 (defvar rpm-tags-list
-  ;; From RPM 4.1 sources, file build/parsePreamble.c: preambleList[].")
+  ;; From RPM 4.2 sources, file build/parsePreamble.c: preambleList[].")
   '(("AutoProv")
     ("AutoReq")
     ("AutoReqProv")
@@ -332,7 +385,7 @@ value returned by function `user-mail-address'."
   "List of elements that are valid tags.")
 
 (defvar rpm-group-tags-list
-  ;; From RPM 4.1 sources, file GROUPS.
+  ;; From RPM 4.2 sources, file GROUPS.
   '(("Amusements/Games")
     ("Amusements/Graphics")
     ("Applications/Archiving")
@@ -421,9 +474,10 @@ value returned by function `user-mail-address'."
   (define-key rpm-spec-mode-map "\C-c\C-xi" 'rpm-change-timecheck-option)
   (define-key rpm-spec-mode-map "\C-c\C-xn" 'rpm-toggle-nobuild)
   (define-key rpm-spec-mode-map "\C-c\C-xo" 'rpm-files-owner)
-  (define-key rpm-spec-mode-map "\C-c\C-xp" 'rpm-change-target-option)
   (define-key rpm-spec-mode-map "\C-c\C-xr" 'rpm-toggle-rmsource)
+  (define-key rpm-spec-mode-map "\C-c\C-xq" 'rpm-toggle-quiet)
   (define-key rpm-spec-mode-map "\C-c\C-xs" 'rpm-toggle-short-circuit)
+  (define-key rpm-spec-mode-map "\C-c\C-xt" 'rpm-change-target-option)
   (define-key rpm-spec-mode-map "\C-c\C-xu" 'rpm-files-umask)
   ;;(define-key rpm-spec-mode-map "\C-q" 'indent-spec-exp)
   ;;(define-key rpm-spec-mode-map "\t" 'sh-indent-line)
@@ -466,6 +520,8 @@ value returned by function `user-mail-address'."
                 :style toggle :selected rpm-spec-clean]
                ["No build"      rpm-toggle-nobuild
                 :style toggle :selected rpm-spec-nobuild]
+               ["Quiet"         rpm-toggle-quiet
+                :style toggle :selected rpm-spec-quiet]
                ["GPG sign"      rpm-toggle-sign-gpg
                 :style toggle :selected rpm-spec-sign-gpg]
                ["Ignore dependencies" rpm-toggle-nodeps
@@ -488,33 +544,35 @@ value returned by function `user-mail-address'."
               )))
 
 (defvar rpm-spec-font-lock-keywords
-  '(
-    ("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
-    ("^\\([a-zA-Z0-9]+\\)\\(\([a-zA-Z0-9,]+\)\\):"
+  (list
+   (cons rpm-section-regexp rpm-spec-section-face)
+   '("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
+   '("^\\([a-zA-Z0-9]+\\)\\(\([a-zA-Z0-9,_]+\)\\):"
      (1 rpm-spec-tag-face)
      (2 rpm-spec-ghost-face))
-    ("^\\([a-zA-Z0-9]+\\):" 1 rpm-spec-tag-face)
-    ("%\\(de\\(fine\\|scription\\)\\|files\\|package\\)[ \t]+\\([^-][^ \t\n]*\\)"
+   '("^\\([a-zA-Z0-9]+\\):" 1 rpm-spec-tag-face)
+   '("%\\(de\\(fine\\|scription\\)\\|files\\|package\\)[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
-    ("%p\\(ost\\|re\\)\\(un\\)?[ \t]+\\([^-][^ \t\n]*\\)"
+   '("%p\\(ost\\|re\\)\\(un\\)?[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
-    ("%configure " 0 rpm-spec-macro-face)
-    ("%dir[ \t]+\\([^ \t\n]+\\)[ \t]*" 1 rpm-spec-dir-face)
-    ("%doc\\(dir\\)?[ \t]+\\(.*\\)\n" 2 rpm-spec-doc-face)
-    ("%\\(ghost\\|config\\)[ \t]+\\(.*\\)\n" 2 rpm-spec-ghost-face)
-    ("^%.+-[a-zA-Z][ \t]+\\([a-zA-Z0-9\.-]+\\)" 1 rpm-spec-doc-face)
-    ("^\\(.+\\)(\\([a-zA-Z]\\{2,2\\}\\)):"
+   '("%configure " 0 rpm-spec-macro-face)
+   '("%dir[ \t]+\\([^ \t\n]+\\)[ \t]*" 1 rpm-spec-dir-face)
+   '("%doc\\(dir\\)?[ \t]+\\(.*\\)\n" 2 rpm-spec-doc-face)
+   '("%\\(ghost\\|config\\([ \t]*(.*)\\)?\\)[ \t]+\\(.*\\)\n"
+     3 rpm-spec-ghost-face)
+   '("^%.+-[a-zA-Z][ \t]+\\([a-zA-Z0-9\.-]+\\)" 1 rpm-spec-doc-face)
+   '("^\\(.+\\)(\\([a-zA-Z]\\{2,2\\}\\)):"
      (1 rpm-spec-tag-face)
      (2 rpm-spec-doc-face))
-    ("^\\*\\(.*[0-9] \\)\\(.*\\)\\(<.*>\\)\\(.*\\)\n"
+   '("^\\*\\(.*[0-9] \\)\\(.*\\)<\\(.*\\)>\\(.*\\)\n"
      (1 rpm-spec-dir-face)
      (2 rpm-spec-package-face)
      (3 rpm-spec-tag-face)
-     (4 font-lock-warning-face))
-    ("%{[^{}]*}" 0 rpm-spec-macro-face)
-    ("$[a-zA-Z0-9_]+" 0 rpm-spec-var-face)
-    ("${[a-zA-Z0-9_]+}" 0 rpm-spec-var-face)
-    )
+     (4 rpm-spec-ghost-face))
+   '("%{[^{}]*}" 0 rpm-spec-macro-face)
+   '("$[a-zA-Z0-9_]+" 0 rpm-spec-var-face)
+   '("${[a-zA-Z0-9_]+}" 0 rpm-spec-var-face)
+   )
   "Additional expressions to highlight in `rpm-spec-mode'.")
 
 ;;Initialize font lock for xemacs
@@ -525,6 +583,8 @@ value returned by function `user-mail-address'."
 (define-abbrev-table 'rpm-spec-mode-abbrev-table ())
 
 ;;------------------------------------------------------------
+
+(add-hook 'rpm-spec-mode-new-file-hook 'rpm-spec-initialize)
 
 ;;;###autoload
 (defun rpm-spec-mode ()
@@ -553,13 +613,13 @@ with no args, if that value is non-nil."
                     "Post menu for `rpm-spec-mode'." rpm-spec-mode-menu)
   (easy-menu-add rpm-spec-mode-menu)
 
-  (if (= (buffer-size) 0)
-      (rpm-spec-initialize))
+  (if (and (= (buffer-size) 0) rpm-spec-initialize-sections)
+      (run-hooks 'rpm-spec-mode-new-file-hook))
 
-  (if (executable-find "rpmbuild")
-      (setq rpm-spec-build-command "rpmbuild")
-    (setq rpm-spec-old-rpm t)
-    (setq rpm-spec-build-command "rpm"))
+  (if (not (executable-find "rpmbuild"))
+      (progn
+	(setq rpm-spec-build-command "rpm")
+	(setq rpm-spec-nobuild-option "--test")))
   
   (make-local-variable 'paragraph-start)
   (setq paragraph-start (concat "$\\|" page-delimiter))
@@ -608,7 +668,7 @@ with no args, if that value is non-nil."
                            (substring (current-time-string) -4) " "
                            fullname " <" address ">"
                            (and rpm-spec-insert-changelog-version
-                                (concat " " (rpm-find-spec-version t))))))
+                                (concat " - " (rpm-find-spec-version t))))))
       (if (not (search-forward string nil t))
           (insert "\n" string "\n")
         (forward-line 2))
@@ -878,6 +938,9 @@ leave point at previous location."
 
 (defun rpm-build (buildoptions)
   "Build this RPM package."
+  (if (and (buffer-modified-p)
+           (y-or-n-p (format "Buffer %s modified, save it? " (buffer-name))))
+      (save-buffer))
   (setq rpm-buffer-name
         (concat "*" rpm-spec-build-command " " buildoptions " "
                 (file-name-nondirectory buffer-file-name) "*"))
@@ -906,18 +969,23 @@ leave point at previous location."
       (setq buildoptions (cons "--target" (cons rpm-spec-target
                                                 buildoptions))))
   (if rpm-spec-nobuild
-      (setq buildoptions (cons (if rpm-spec-old-rpm "--test" "--nobuild")
-			       buildoptions)))
+      (setq buildoptions (cons rpm-spec-nobuild-option buildoptions)))
+  (if rpm-spec-quiet
+      (setq buildoptions (cons "--quiet" buildoptions)))
   (if rpm-spec-nodeps
       (setq buildoptions (cons "--nodeps" buildoptions)))
   (if (and rpm-spec-sign-gpg (not rpm-no-gpg))
       (setq buildoptions (cons "--sign" buildoptions)))
   (save-excursion
     (set-buffer (get-buffer rpm-buffer-name))
+    (and rpm-spec-use-compilation-mode
+         (fboundp 'compilation-mode)
+         (compilation-mode))
     (goto-char (point-max)))
-  (let ((process
-         (apply 'start-process rpm-spec-build-command rpm-buffer-name
-		rpm-spec-build-command buildoptions)))
+  (let* ((process-environment (cons "EMACS=t" process-environment))
+         (process
+          (apply 'start-process rpm-spec-build-command rpm-buffer-name
+                 rpm-spec-build-command buildoptions)))
     (if (and rpm-spec-sign-gpg (not rpm-no-gpg))
         (let ((rpm-passwd-cache (read-passwd "GPG passphrase: ")))
           (process-send-string process (concat rpm-passwd-cache "\n"))))
@@ -1022,8 +1090,16 @@ command."
   (interactive "p")
   (setq rpm-spec-nobuild (not rpm-spec-nobuild))
   (rpm-update-mode-name)
-  (message (concat "Turned `" (if rpm-spec-old-rpm "--test" "--nobuild") "' "
+  (message (concat "Turned `" rpm-spec-nobuild-option "' "
                    (if rpm-spec-nobuild "on" "off") ".")))
+
+(defun rpm-toggle-quiet (&optional arg)
+  "Toggle `rpm-spec-quiet'."
+  (interactive "p")
+  (setq rpm-spec-quiet (not rpm-spec-quiet))
+  (rpm-update-mode-name)
+  (message (concat "Turned `--quiet' "
+                   (if rpm-spec-quiet "on" "off") ".")))
 
 (defun rpm-toggle-sign-gpg (&optional arg)
   "Toggle `rpm-spec-sign-gpg'."
@@ -1059,6 +1135,7 @@ command."
                       (if rpm-spec-nobuild       "N")
                       (if rpm-spec-rmsource      "R")
                       (if rpm-spec-short-circuit "S")
+		      (if rpm-spec-quiet         "Q")
                       ))
   (if (not (equal modes ""))
       (setq mode-name (concat mode-name ":" modes))))
@@ -1128,14 +1205,19 @@ See `search-forward-regexp'."
                (search-forward-regexp (concat
                                        field ":[ \t]*\\(.*?\\)[ \t]*$") max)
                (match-string 1))))
-        (if (string-match "%{?\\([^}]*\\)}?$" str)
-            (progn
-              (goto-char (point-min))
-              (search-forward-regexp
-               (concat "%define[ \t]+" (substring str (match-beginning 1)
-                                                  (match-end 1))
-                       "[ \t]+\\(.*\\)"))
-              (match-string 1))
+        (if (string-match "\\(%{?\\)\\([a-zA-Z0-9_]*\\)\\(}?\\)" str)
+            (let ((end-string (substring str (match-end 3))))
+              (concat (substring str 0 (match-beginning 1))
+                      (progn
+                        (goto-char (point-min))
+                        (search-forward-regexp
+                         (concat "%define[ \t]+"
+                                 (substring str
+                                            (match-beginning 2)
+                                            (match-end 2))
+                                 "[ \t]+\\(.*\\)"))
+                        (match-string 1))
+                      end-string))
           str)))))
 
 (defun rpm-find-spec-version (&optional with-epoch)
@@ -1182,7 +1264,7 @@ if one is present in the file."
 
 (defun rpm-spec-initialize ()
   "Create a default spec file if one does not exist or is empty."
-  (let (file name version (release "1"))
+  (let (file name version (release rpm-spec-default-release))
     (setq file (if (buffer-file-name)
                    (file-name-nondirectory (buffer-file-name))
                  (buffer-name)))
@@ -1197,30 +1279,52 @@ if one is present in the file."
      ((eq (string-match "\\(.*\\).spec" file) 0)
       (setq name (match-string 1 file))))
 
+    (if rpm-spec-indent-heading-values
+	(insert
+	 "Summary:        "
+	 "\nName:           " (or name "")
+	 "\nVersion:        " (or version "")
+	 "\nRelease:        " (or release "")
+	 (if rpm-spec-default-epoch
+	     (concat "\nEpoch:          "
+		     (int-to-string rpm-spec-default-epoch))
+	   "")
+	 "\nLicense:        "
+	 "\nGroup:          "
+	 "\nURL:            "
+	 "\nSource0:        %{name}-%{version}.tar.gz"
+	 "\nBuildRoot:      " rpm-spec-default-buildroot)
+      (insert
+       "Summary: "
+       "\nName: " (or name "")
+       "\nVersion: " (or version "")
+       "\nRelease: " (or release "")
+       (if rpm-spec-default-epoch
+	   (concat "\nEpoch: " (int-to-string rpm-spec-default-epoch))
+	 "")
+       "\nLicense: "
+       "\nGroup: "
+       "\nURL: "
+       "\nSource0: %{name}-%{version}.tar.gz"
+       "\nBuildRoot: " rpm-spec-default-buildroot))
+
     (insert
-     "Summary: "
-     "\nName: " (or name "")
-     "\nVersion: " (or version "")
-     "\nRelease: " (or release "")
-     "\nLicense: "
-     "\nGroup: "
-     "\nURL: "
-     "\nSource0: %{name}-%{version}.tar.gz"
-     "\nBuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot"
      "\n\n%description\n"
      "\n%prep"
      "\n%setup -q"
-     "\n\n%build"
-     "\n\n%install"
-     "\nrm -rf $RPM_BUILD_ROOT"
-     "\n\n%clean"
-     "\nrm -rf $RPM_BUILD_ROOT"
+     "\n\n%build\n"
+     (or rpm-spec-default-build-section "")
+     "\n%install\n"
+     (or rpm-spec-default-install-section "")
+     "\n%clean\n"
+     (or rpm-spec-default-clean-section "")
      "\n\n%files"
      "\n%defattr(-,root,root,-)"
      "\n%doc\n"
      "\n\n%changelog\n")
 
-    (rpm-add-change-log-entry "Initial build.\n")))
+    (end-of-line 1)
+    (rpm-add-change-log-entry "Initial build.")))
 
 ;;------------------------------------------------------------
 
@@ -1232,8 +1336,7 @@ if one is present in the file."
            rpm-spec-mode-version
            " by Stig Bjørlykke, <stigb@tihlde.org>")))
 
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.spec$" . rpm-spec-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.spec\\(\\.in\\)?$" . rpm-spec-mode))
 
 (provide 'rpm-spec-mode)
 

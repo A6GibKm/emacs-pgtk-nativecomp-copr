@@ -2,10 +2,10 @@
 
 %define muleucs_ver current
 
-Summary: The libraries needed to run the GNU Emacs text editor.
+Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.3
-Release: 7
+Release: 9
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -15,12 +15,11 @@ Source3: emacs.desktop
 Source4: emacs.png
 Source5: dotemacs.el
 Source6: site-start.el
-Source7: python-mode.el
-Source8: http://www.tihlde.org/~stigb/rpm-spec-mode.el
-#Source9: emacs-asian-0.2.tar.bz2
+Source7: http://www.python.org/emacs/python-mode/python-mode.el
+Source8: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
 Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
 # 1.0.2 - http://prdownloads.sourceforge.net/php-mode/php-mode-102.el
-Source11: php-mode.el
+Source11: http://prdownloads.sourceforge.net/php-mode/php-mode.el
 Source12: php-mode-init.el
 Source13: ssl.el
 Source16: python-mode-init.el
@@ -33,7 +32,7 @@ Source23: po-mode-auto-replace-date-71264.patch
 Source24: ftp://ftp.m17n.org/pub/mule/Mule-UCS/test/Mule-UCS-%{muleucs_ver}.tar.gz
 Source25: lang-coding-systems-init.el
 Source26: default.el
-#Patch1: emacs-21.2-pop.patch 
+Source27: rfc1345.el
 Patch2: emacs-21.2-s390.patch
 Patch3: emacs-21.2-x86_64.patch
 Patch4: emacs-21.2-sticky-bit-80049.patch
@@ -42,13 +41,18 @@ Patch6: emacs-21.2-menubar-games.patch
 Patch7: emacs-21.2-alloc-blockinput-83600.patch
 Patch8: browse-url-htmlview-84262.patch
 Patch9: emacs-21.3-ppc64.patch
+Patch10: editfns.c-Fformat-multibyte-davej.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/install-info, dev
-BuildRequires: glibc-devel, gcc, XFree86-devel, bzip2, ncurses-devel, zlib-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
+Buildrequires: XFree86-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Requires: ncurses, zlib
+Requires: XFree86-libs, Xaw3d, libpng, libjpeg, libungif, libtiff
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
-Obsoletes: emacs-nox, emacs-X11
+Requires: emacs-common = %{version}-%{release}
+Obsoletes: emacs-X11
 Conflicts: gettext < 0.10.40
 
 %description
@@ -57,10 +61,39 @@ editor. Emacs contains special code editing features, a scripting
 language (elisp), and the capability to read mail, news, and more
 without leaving the editor.
 
-%package el
-Summary: The sources for elisp programs included with Emacs.
+This package provides an emacs binary with support for X windows.
+
+%package nox
+Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
-Requires: emacs
+Requires: ncurses, zlib
+Requires: emacs-common = %{version}-%{release}
+
+%description nox
+Emacs is a powerful, customizable, self-documenting, modeless text
+editor. Emacs contains special code editing features, a scripting
+language (elisp), and the capability to read mail, news, and more
+without leaving the editor.
+
+This package provides an emacs binary with no X windows support for running
+on a terminal.
+
+%package common
+Summary: Emacs common files
+Group: Applications/Editors
+
+%description common
+Emacs is a powerful, customizable, self-documenting, modeless text
+editor. Emacs contains special code editing features, a scripting
+language (elisp), and the capability to read mail, news, and more
+without leaving the editor.
+
+This package contains all the common files needed by emacs or emacs-nox.
+
+%package el
+Summary: Emacs Lisp source files included with Emacs.
+Group: Applications/Editors
+Requires: emacs = %{version}
 
 %description el
 Emacs-el contains the emacs-elisp sources for many of the elisp
@@ -70,9 +103,9 @@ You need to install emacs-el only if you intend to modify any of the
 Emacs packages or see some elisp examples.
 
 %package leim
-Summary: Emacs Lisp code for input methods for international characters.
+Summary: Emacs Lisp files for input methods for international characters.
 Group: Applications/Editors
-Requires: emacs
+Requires: emacs = %{version}
 
 %description leim
 The emacs-leim package contains Emacs Lisp code for input methods for
@@ -92,6 +125,7 @@ sets are included in this package.
 # block input in `allocate_vectorlike' (alloc.c)
 %patch7 -p1 -b .block
 %patch9 -p1 -b .ppc64
+%patch10 -p1 -b .multibyte
 
 ## Lisp patches
 # remove game we can't ship
@@ -102,9 +136,12 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 # patches 2 and 3 touch configure.in
 autoconf-2.13
 
+# add rfc1345 input method (default for UTF-8 lang env)
+cp -pi %SOURCE27 leim/quail
+
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
-%configure --with-gcc --with-pop --with-sound
+%configure --with-pop --with-sound
 
 # workaround #101818 (vm/break dumper problem)
 %ifarch %{ix86}
@@ -114,23 +151,25 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 %__make %{?_smp_mflags}
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
+
+TOPDIR=${PWD}
+%define emacsbatch ${TOPDIR}/src/emacs -batch --no-init-file --no-site-file
+
+# setup site-lisp files
+cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE20 %SOURCE21 site-lisp
+# xemacs compat patch
+patch -d site-lisp < %SOURCE18
+# fix po-auto-replace-revision-date nil
+patch -d site-lisp < %SOURCE23
+
 # make sure patched lisp files get byte-compiled
-src/emacs -batch -f batch-byte-recompile-directory lisp
+%emacsbatch -f batch-byte-recompile-directory lisp
+%emacsbatch -f batch-byte-compile leim/quail/rfc1345.el site-lisp/*.el
+
 %__make %{?_smp_mflags} -C lisp updates
 
-%define emacsbatch src/emacs -batch --no-init-file --no-site-file
-
-# bytecompile python-mode, ssl, php-mode and rpm-spec-mode
-cp %SOURCE7 %SOURCE8  %SOURCE11 %SOURCE13 %SOURCE20 %SOURCE21 .
-
-# xemacs compat patch
-patch < %SOURCE18
-# fix po-auto-replace-revision-date nil
-patch < %SOURCE23
-%{emacsbatch} -f batch-byte-compile *.el
-
 ( cd Mule-UCS-%{muleucs_ver}
-  ../%{emacsbatch} -q --no-site-file -l mucs-comp.el )
+  %{emacsbatch} -l mucs-comp.el )
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -142,11 +181,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %makeinstall
 
+# rebuild without X support
+%configure --without-x
+%__make %{?_smp_mflags}
+
+# install the emacs without X
+install -m 0755 src/emacs $RPM_BUILD_ROOT%{_bindir}/emacs-nox
+install -m 0755 src/emacs-%{version}.2 $RPM_BUILD_ROOT%{_bindir}/emacs-nox-%{version}
+install -m 0644 etc/DOC-%{version}.2 $RPM_BUILD_ROOT%{_datadir}/emacs/%{version}/etc/
+install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/
+
 # make sure movemail isn't setgid
 chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
-
-# # install lisp files for Japanese and other Asian languages
-# tar jxC $RPM_BUILD_ROOT -f %{SOURCE9}
 
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
@@ -154,8 +200,10 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
 install -m 0644 %SOURCE6 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.el
 install -m 0644 %SOURCE26 $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
 
-mv $RPM_BUILD_ROOT%{_mandir}/man1/ctags.1 $RPM_BUILD_ROOT%{_mandir}/man1/gctags.1
-mv $RPM_BUILD_ROOT%{_bindir}/ctags $RPM_BUILD_ROOT%{_bindir}/gctags
+mv $RPM_BUILD_ROOT%{_bindir}/{etags,etags.emacs}
+mv $RPM_BUILD_ROOT%{_mandir}/man1/{ctags.1,gctags.1}
+mv $RPM_BUILD_ROOT%{_bindir}/{ctags,ctags.emacs}
+ln -s ctags.emacs $RPM_BUILD_ROOT%{_bindir}/gctags
 
 # GNOME / KDE files
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
@@ -164,7 +212,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 install -m 0644 %SOURCE4 $RPM_BUILD_ROOT%{_datadir}/pixmaps/
 
 # install site-lisp files
-install -m 0644 *.el *.elc $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/
+install -m 0644 site-lisp/*.el{,c} $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/
 
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
 install -m 0644 $RPM_SOURCE_DIR/*-init.el $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp/site-start.d
@@ -176,7 +224,7 @@ install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 # elisp reference manual
 tar jxf %{SOURCE10}
 ( cd elisp-manual-21-2.8
-  install -m 644 elisp elisp-? elisp-?? $RPM_BUILD_ROOT%{_infodir} )
+  install -m 644 elisp elisp-* $RPM_BUILD_ROOT%{_infodir} )
 
 ( cd Mule-UCS-%{muleucs_ver}/lisp
   mkdir %buildroot%{_datadir}/emacs/site-lisp/Mule-UCS
@@ -185,19 +233,18 @@ tar jxf %{SOURCE10}
 #
 # create file lists
 #
-SRC_TOP=$PWD
-rm -f *-filelist {base,el,leim}-*-files
-pushd $RPM_BUILD_ROOT
+rm -f *-filelist {common,el,leim}-*-files
+( TOPDIR=${PWD}
+  cd $RPM_BUILD_ROOT
 
-find .%{_datadir}/emacs/%{version}/lisp .%{_datadir}/emacs/site-lisp \( -type f -not -name '*.el' -fprint $SRC_TOP/base-lisp-none-elc-files \) -o \( -type d -fprintf $SRC_TOP/base-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-bytecomped-files -o -fprint $SRC_TOP/base-not-comped-files \) \)
+  find .%{_datadir}/emacs/%{version}/lisp .%{_datadir}/emacs/site-lisp \( -type f -not -name '*.el' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' ! -name site-start.el \( -exec test -e '{}'c \; -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \) \)
 
-find .%{_datadir}/emacs/%{version}/leim \( -name '*.elc' -fprint $SRC_TOP/leim-elc-files \) -o \( -type d -fprintf $SRC_TOP/leim-dir-files "%%%%dir %%p\n" -fprintf $SRC_TOP/el-leim-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $SRC_TOP/el-leim-bytecomped-files -o -fprint $SRC_TOP/leim-not-comped-files \) \)
-
-popd
+  find .%{_datadir}/emacs/%{version}/leim \( -name '*.elc' -fprint $TOPDIR/leim-elc-files \) -o \( -type d -fprintf $TOPDIR/leim-dir-files "%%%%dir %%p\n" -fprintf $TOPDIR/el-leim-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $TOPDIR/el-leim-bytecomped-files -o -fprint $TOPDIR/leim-not-comped-files \) \)
+)
 
 # put the lists together after filtering  ./usr to /usr
 perl -pi -e "s|\.%{_prefix}|%{_prefix}|" *-files
-cat base-*-files > base-filelist
+cat common-*-files > common-filelist
 cat el-*-files > el-filelist
 cat leim-*-files > leim-filelist
 
@@ -205,12 +252,15 @@ cat leim-*-files > leim-filelist
 rm -rf $RPM_BUILD_ROOT
    
 %define info_files ccmode cl dired-x ediff emacs forms gnus info message mh-e reftex sc vip viper widget elisp
-%post
+%post common
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
 done
 
-%preun
+# make etags a symlink to etags.emacs if etags doesn't exist
+[ -e %{_bindir}/etags ] || ln -s etags.emacs %{_bindir}/etags
+
+%preun common
 if [ "$1" = 0 ]; then
 for f in %{info_files}; do
   /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
@@ -218,30 +268,44 @@ for f in %{info_files}; do
 done
 fi
 
+%files
+%defattr(-,root,root)
+%{_bindir}/emacs
+%{_bindir}/emacs-%{version}
+%dir %{_datadir}/emacs/%{version}/etc
+%{_datadir}/emacs/%{version}/etc/DOC-%{version}.1
+%dir %{_libexecdir}/emacs/%{version}/*
+%{_libexecdir}/emacs/%{version}/*/fns-%{version}.1.el
 
-%files -f base-filelist
+%files nox
+%defattr(-,root,root)
+%{_bindir}/emacs-nox
+%{_bindir}/emacs-nox-%{version}
+%dir %{_datadir}/emacs/%{version}/etc
+%{_datadir}/emacs/%{version}/etc/DOC-%{version}.2
+%dir %{_libexecdir}/emacs/%{version}/*
+%{_libexecdir}/emacs/%{version}/*/fns-%{version}.2.el
+
+%files -f common-filelist common
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
+%exclude %{_bindir}/emacs
+%exclude %{_bindir}/emacs-%{version}
+%exclude %{_bindir}/emacs-nox
+%exclude %{_bindir}/emacs-nox-%{version}
 %{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
-# %dir %{_datadir}/emacs/site-lisp
-# %{_datadir}/emacs/site-lisp/python-mode.elc
-# %{_datadir}/emacs/site-lisp/php-mode.elc
-# %{_datadir}/emacs/site-lisp/po-*.elc
-# %{_datadir}/emacs/site-lisp/rpm-spec-mode.elc
-# %{_datadir}/emacs/site-lisp/ssl.elc
-# %{_datadir}/emacs/site-lisp/subdirs.el
-# %{_datadir}/emacs/site-lisp/site-start.d/*.el
-# %{_datadir}/emacs/site-lisp/lang
 %dir %{_datadir}/emacs/%{version}
 %{_datadir}/emacs/%{version}/etc
+%exclude %{_datadir}/emacs/%{version}/etc/DOC-%{version}.*
 # quieten startup when -leim and -el aren't installed
 %dir %{_datadir}/emacs/%{version}/leim
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
+%exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 # %dir %{_datadir}/emacs/site-lisp/site-start.d
 %{_datadir}/applications/gnu-emacs.desktop
@@ -249,16 +313,42 @@ fi
 
 %files -f el-filelist el
 %defattr(-,root,root)
-# %{_datadir}/emacs/site-lisp/python-mode.el
-# %{_datadir}/emacs/site-lisp/php-mode.el
-# %{_datadir}/emacs/site-lisp/po-*.el
-# %{_datadir}/emacs/site-lisp/ssl.el
-# %{_datadir}/emacs/site-lisp/rpm-spec-mode.el
 
 %files -f leim-filelist leim
 %defattr(-,root,root)
 
 %changelog
+* Sat Jan 24 2004 Jens Petersen <petersen@redhat.com> - 21.3-9
+- base emacs package now only contains emacs binary built with X support
+- bring back emacs-nox subpackage (emacs built without X support) (#113001)
+  [suggested by Frank Kruchio]
+- all the common files required by emacs and emacs-nox are now in emacs-common
+- emacs no longer obsoletes emacs-nox
+- update php-mode.el to 1.0.5
+- add missing rfc1345.el leim input method
+- update po-compat.el to version in gettext-0.13.1
+- update base package summary
+- add url for python-mode.el and php-mode.el
+- gctags is now a symlink to ctags.emacs
+
+* Wed Jan 14 2004 Jens Petersen <petersen@redhat.com> - 21.3-8
+- comment out setting transient-mark-mode in skel .emacs (#102441,#90193)
+  [reported by mal@gromco.com, Jonathan Kamens]
+- improve lang-coding-systems-init.el to set-language-environment for CJK
+  utf-8 locale too and use utf-8 for default-coding-systems and
+  terminal-coding-system (#111172) [Yoshinori Kuniga]
+- update rpm-spec-mode.el to newer one in xemacs package cvs (#105888) [Dams]
+- rename etags to etags.emacs and make etags a symlink to it at install time
+  if it doesn't exist (#92256) [marc_soft@merlins.org]
+- apply editfns.c-Fformat-multibyte-davej.patch to fix multibyte code typo
+  in Fformat [patch from Dave Jones]
+- add runtime requirements for XFree86-libs, image libraries, ncurses and zlib
+- improve -el and -leim package summaries
+- no longer configure build with redundant --with-gcc
+
+* Tue Nov 25 2003 Jens Petersen <petersen@redhat.com>
+- buildrequire autoconf213 (#110741) [reported by mvd@mylinux.com.ua]
+
 * Mon Oct 27 2003 Jens Petersen <petersen@redhat.com> - 21.3-7
 - use "setarch i386" to build on ix86 (#101818) [reported by Michael Redinger]
 - use __make to %%build and %%install

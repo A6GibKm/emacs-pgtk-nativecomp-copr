@@ -7,4 +7,4 @@
 (global-font-lock-mode t)
 
 ;; enable visual feedback on selections
-(setq transient-mark-mode t)
+;(setq transient-mark-mode t)
