@@ -1,7 +1,7 @@
 Summary: The libraries needed to run the GNU Emacs text editor.
 Name: emacs
 Version: 20.7
-Release: 40
+Release: 41
 License: GPL
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
@@ -16,7 +16,7 @@ Source8: emacs.locale.alias
 Source11: http://www.tihlde.org/~stigb/rpm-spec-mode.el
 Source12: mwheel.el
 Source13: lisp-startup-localealias.patch
-Source14: ftp://ftp.gnus.org/pub/gnus/gnus-5.8.8.tar.bz2
+Source14: ftp://ftp.gnus.org/pub/gnus/gnus-5.8.8-compiled.tar.bz2
 Source15: emacs-asian.tar.bz2
 Source16: ftp://ftp.gnu.org/gnus/emacs/elisp-manual-21-2.6.tar.bz2
 Patch0: emacs-20.7-xaw3d.patch
@@ -31,6 +31,7 @@ Patch9: emacs-20.6-ia64-3.patch
 Patch10: emacs-20.7-manboption.patch
 Patch11: emacs-20.7-proto.patch
 Patch12: emacs-cpp-Makefile.patch
+Patch13: emacs-20.7-makeregexp.patch
 
 Patch50: emacs-20.7-s390.patch
 
@@ -44,14 +45,13 @@ BuildRequires: zlib-devel libpng-devel libjpeg-devel libungif-devel libtiff-deve
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
 editor. Emacs contains special code editing features, a scripting
-language (elisp), and the capability to read mail, news and more without
-leaving the editor.
+language (elisp), and the capability to read mail, news, and more
+without leaving the editor.
 
-This package includes the libraries you need to run the Emacs editor, so
-you need to install this package if you intend to use Emacs.  You also
-need to install the actual Emacs program package (emacs-nox or emacs-X11).
-Install emacs-nox if you are not going to use the X Window System; install
-emacs-X11 if you will be using X.
+This package includes the libraries you need to run the Emacs editor,
+You also need to install the actual Emacs program package (emacs-nox or
+emacs-X11).  Install emacs-nox if you are not going to use the X
+Window System; install emacs-X11 if you will be using X.
 
 %package el
 Summary: The sources for elisp programs included with Emacs.
@@ -75,8 +75,8 @@ The emacs-leim package contains Emacs Lisp code for input methods for
 various international character scripts. Basically, the Lisp code
 provided by this package describes the consecutive keystrokes that a
 user must press in order to input a particular character in a
-non-English character set. Input methods for many different language's
-character sets are included in this package.
+non-English character set. Input methods for many different character
+sets are included in this package.
 
 %package nox
 Summary: The Emacs text editor without support for the X Window System.
@@ -85,13 +85,13 @@ Requires: emacs
 Prereq: fileutils
 
 %description nox
-Emacs-nox is the Emacs text editor program without support for
-the X Window System.
+Emacs-nox is the Emacs text editor program without support for the X
+Window System.
 
 You need to install this package only if you plan on exclusively using
-Emacs without the X Window System (emacs-X11 will work both in X and out
-of X, but emacs-nox will only work outside of X).  You'll also need to
-install the emacs package in order to run Emacs.
+Emacs without the X Window System (emacs-X11 will work both in X and
+out of X, but emacs-nox will only work outside of X).  You'll also
+need to install the emacs package in order to run Emacs.
 
 %package X11
 Summary: The Emacs text editor for the X Window System.
@@ -109,7 +109,6 @@ System.  You should also install emacs-X11 if you're going to run
 Emacs both with and without X (it will work fine both ways). You'll
 also need to install the emacs package in order to run Emacs.
 
-
 %prep
 
 %setup -q -b 1
@@ -126,6 +125,7 @@ also need to install the emacs package in order to run Emacs.
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 
 %ifarch s390 s390x
 %patch50 -p1 -b .s390
@@ -172,7 +172,7 @@ BuildEmacs nox "--with-x=no"
 #%{recompile} lisp/startup.el
 
 # recompile patched .el files
-%{recompile} lisp/mail/mh-utils.el
+%{recompile} lisp/mail/mh-utils.el lisp/progmodes/make-mode.el
 
 # bytecompile python-mode, mwheel and rpm-spec-mode
 cp %SOURCE7 %SOURCE11 %SOURCE12 .
@@ -204,8 +204,8 @@ popd
 # We want a newer gnus
 tar --use-compress-program=bzip2 -xf %{SOURCE14}
 pushd gnus-5.8.8
-PATH=$RPM_BUILD_ROOT/usr/bin:$PATH ./configure 
-make
+#PATH=$RPM_BUILD_ROOT/usr/bin:$PATH ./configure 
+#make
 
 rm -f $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/*
 install -m 644 lisp/* $RPM_BUILD_ROOT//usr/share/emacs/%{version}/lisp/gnus/
@@ -391,6 +391,7 @@ fi
 %files -f leim-filelist leim
 %defattr(-,root,root)
 /usr/share/emacs/%{version}/leim/leim-list.el
+%dir /usr/share/emacs/%{version}/leim
 
 %files nox
 %defattr(-,root,root)
@@ -404,6 +405,10 @@ fi
 /usr/share/pixmaps/emacs.png 
 
 %changelog
+* Mon Jul 30 2001 Trond Eivind Glomsrød <teg@redhat.com>
+- Minor fix to make-mode fontify regexp (#50010)
+- Build without emacs being installed (#49085)
+
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - Much cleaner site-start.d sourcing
 - Add more build dependencies
