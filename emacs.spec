@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 0.92
+Release: 1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -410,7 +410,12 @@ fi
     python-completion-ignored-extensions.dpatch,
     remote-files-permissions.dpatch, save-buffer.dpatch, scroll-margin.dpatch,
     xfree86-4.3-modifiers.dpatch
-  - add fix-x-vs-no-x-diffs.dpatch and 
+  - add fix-x-vs-no-x-diffs.dpatch
+    - define emacs_libexecdir
+    - build both emacs and emacs-nox as %%{version}.1 and move common DOC file
+      to emacs-common
+    - suffix version in fns-%%{version}.1.el with -x and -nox respectively
+- add 100 to elisp patches
 
 * Wed Apr  6 2005 Jens Petersen <petersen@redhat.com> - 21.3-27
 - use alternatives to switch _bindir/emacs between emacs and emacs-nox
