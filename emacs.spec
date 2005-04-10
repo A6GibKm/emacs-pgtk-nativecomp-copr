@@ -137,7 +137,7 @@ user must press in order to input a particular character in a
 non-English character set. Input methods for many different character
 sets are included in this package.
 
-%define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_arch}-%{_vendor}-%{_os}%{?_gnu}
+%define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
 %prep
 %setup -q -b 1 -a 24 -a 28
