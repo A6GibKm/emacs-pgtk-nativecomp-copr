@@ -5,8 +5,8 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 21.3
-Release: 27
+Version: 21.4
+Release: 0.92
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -35,6 +35,7 @@ Source26: default.el
 Source27: rfc1345.el
 Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
 Source29: tramp-init.el
+Source30: wrapper
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: xorg-x11-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
@@ -43,26 +44,40 @@ Requires: fonts-xorg-75dpi
 BuildRequires: setarch
 %endif
 Requires: emacs-common = %{version}-%{release}
-PreReq: %{_sbindir}/alternatives
 Obsoletes: emacs-X11
 Conflicts: gettext < 0.10.40
+
+# Non-lisp patches
 Patch2: emacs-21.2-s390.patch
 Patch3: emacs-21.2-x86_64.patch
 Patch4: emacs-21.2-sticky-bit-80049.patch
 Patch5: emacs-21.2-s390x.patch
-Patch6: emacs-21.2-menubar-games.patch
 Patch7: emacs-21.2-alloc-blockinput-83600.patch
-Patch8: browse-url-htmlview-84262.patch
 Patch9: emacs-21.3-ppc64.patch
 Patch10: editfns.c-Fformat-multibyte-davej.patch
 Patch11: emacs-21.3-no-rpath.patch
-Patch12: emacs-21.3-lisp-textmodes-ispell-languages.patch
-Patch13: emacs-21.3-gud-libtool-fix.patch
 Patch14: emacs-xim-status-under-window-125413.patch
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
-Patch16: movemail-CAN-2005-0100.patch
 Patch17: emacs-21.3-gcc4.patch
-Patch18: emacs-21.3-latex-mode-hook-144083.patch
+Patch19: emacs-21.4-21.4a-diff.patch
+Patch20: bzero-and-have-stdlib.dpatch
+Patch21: coding-region-leak.dpatch
+Patch22: detect-coding-iso2022.dpatch
+Patch23: fix-batch-mode-signal-handling.dpatch
+Patch24: fix-x-vs-no-x-diffs.dpatch
+Patch25: scroll-margin.dpatch
+Patch26: xfree86-4.3-modifiers.dpatch
+
+# Lisp patches
+Patch106: emacs-21.2-menubar-games.patch
+Patch108: browse-url-htmlview-84262.patch
+Patch112: emacs-21.3-lisp-textmodes-ispell-languages.patch
+Patch113: emacs-21.3-gud-libtool-fix.patch
+Patch118: emacs-21.3-latex-mode-hook-144083.patch
+Patch119: battery-acpi-support.dpatch
+Patch120: pcl-cvs-format.dpatch
+Patch121: python-completion-ignored-extensions.dpatch
+Patch122: save-buffer.dpatch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -76,7 +91,6 @@ This package provides an emacs binary with support for X windows.
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
 Requires: emacs-common = %{version}-%{release}
-PreReq: %{_sbindir}/alternatives
 
 %description nox
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -123,38 +137,55 @@ user must press in order to input a particular character in a
 non-English character set. Input methods for many different character
 sets are included in this package.
 
+%define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_arch}-%{_vendor}-%{_os}%{?_gnu}
+
 %prep
 %setup -q -b 1 -a 24 -a 28
 
-%patch2 -p1 -b .s390
-%patch3 -p1 -b .hammer
-%patch4 -p1 -b .sticky
-%patch5 -p1 -b .s390x
+%patch2 -p1 -b .2-s390
+%patch3 -p1 -b .3-hammer
+%patch4 -p1 -b .4-sticky
+%patch5 -p1 -b .5-s390x
 # block input in `allocate_vectorlike' (alloc.c)
-%patch7 -p1 -b .block
-%patch9 -p1 -b .ppc64
-%patch10 -p1 -b .multibyte
-%patch11 -p1 -b .rpath
-%patch14 -p1 -b .StatusArea
-%patch15 -p0 -b .modifier
-%patch16 -p1 -b .fmtstr
-%patch17 -p1 -b .getcwd
+%patch7 -p1 -b .7-block
+%patch9 -p1 -b .9-ppc64
+%patch10 -p1 -b .10-multibyte
+%patch11 -p1 -b .11-rpath
+%patch14 -p1 -b .14-StatusArea
+%patch15 -p0 -b .15-modifier
+%patch17 -p1 -b .17-getcwd
+%patch19 -p1 -b .19-fedora
+%patch20 -p1 -b .20-bzero
+%patch21 -p1 -b .21-leak
+%patch22 -p1 -b .22-iso2022
+%patch23 -p1 -b .23-batch
+%patch24 -p1 -b .24-x-nox
+%patch25 -p1 -b .25-scroll-margin
+%patch26 -p1 -b .26-xmodifier
 
 # patches 2 and 3 touch configure.in
 autoconf-2.13
 
 ## Lisp patches
 # remove game we can't ship
-%patch6 -p1
+%patch106 -p1
 rm lisp/finder-inf.el lisp/play/tetris.el*
 # make browse-url default to htmlview not netscape
-%patch8 -p1
+%patch108 -p1
 # fix names of aspell language dictionaries
-%patch12 -p1
+%patch112 -p1
 # fix running gdb with libtool
-%patch13 -p1
+%patch113 -p1
 # run latex-mode-hook
-%patch18 -p1
+%patch118 -p1
+# battery acpi
+%patch119 -p1
+# pcl-cvs format
+%patch120 -p1
+# .pyc completion
+%patch121 -p1
+# save-buffer
+%patch122 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -208,22 +239,28 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %makeinstall
-
-# bindir/emacs handled by alternatives
-rm $RPM_BUILD_ROOT%{_bindir}/emacs
+# suffix binaries with -x
+mv $RPM_BUILD_ROOT%{_bindir}/emacs{,-x}
+mv $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}{,-x}
+mv $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1{,-x}.el
 
 # rebuild without X support
+# remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
+rm src/emacs-%{version}.*
 %configure --without-x
 %__make %{?_smp_mflags}
 
 # install the emacs without X
-install -m 0755 src/emacs-%{version}.2 $RPM_BUILD_ROOT%{_bindir}/emacs-nox-%{version}
-#ln $RPM_BUILD_ROOT%{_bindir}/emacs-nox{-%{version},}
-install -m 0644 etc/DOC-%{version}.2 $RPM_BUILD_ROOT%{_datadir}/emacs/%{version}/etc/
-install -m 0644 lib-src/fns-%{version}.2.el $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/
+install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
+ln $RPM_BUILD_ROOT%{_bindir}/emacs{-%{version},}-nox
+install -m 0644 lib-src/fns-%{version}.1.el $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1-nox.el
+
+# install wrapper script
+install -m 0755 %SOURCE30 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}
+ln -s %{_bindir}/emacs-%{version} $RPM_BUILD_ROOT%{_bindir}/emacs
 
 # make sure movemail isn't setgid
-chmod 755 $RPM_BUILD_ROOT%{_libexecdir}/emacs/%{version}/*/movemail
+chmod 755 $RPM_BUILD_ROOT%{emacs_libexecdir}/movemail
 
 %define site_lisp $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
 
@@ -289,23 +326,6 @@ rm -rf $RPM_BUILD_ROOT
    
 %define info_files ada-mode autotype ccmode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
 
-%post
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 50
-
-%post nox
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-nox-%{version} 20
-
-%postun
-if [ $1 -eq 0 ]; then
-  alternatives --remove emacs %{_bindir}/emacs-%{version}
-fi
-
-%postun nox
-if [ $1 -eq 0 ]; then
-  alternatives --remove emacs %{_bindir}/emacs-nox-%{version}
-fi
-
-
 %post common
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
@@ -323,42 +343,47 @@ fi
 
 %files
 %defattr(-,root,root)
+%{_bindir}/emacs
 %{_bindir}/emacs-%{version}
-%dir %{_datadir}/emacs/%{version}
-%dir %{_datadir}/emacs/%{version}/etc
-%{_datadir}/emacs/%{version}/etc/DOC-%{version}.1
-%dir %{_libexecdir}/emacs/%{version}/*
-%{_libexecdir}/emacs/%{version}/*/fns-%{version}.1.el
+%{_bindir}/emacs-x
+%{_bindir}/emacs-%{version}-x
+%dir %{_libexecdir}/emacs
+%dir %{_libexecdir}/emacs/%{version}
+%dir %{emacs_libexecdir}
+%{emacs_libexecdir}/fns-%{version}.1-x.el
 %{_datadir}/applications/gnu-emacs.desktop
 %{_datadir}/pixmaps/emacs.png 
 
 %files nox
 %defattr(-,root,root)
-%{_bindir}/emacs-nox-%{version}
+%{_bindir}/emacs
+%{_bindir}/emacs-%{version}
+%{_bindir}/emacs-nox
+%{_bindir}/emacs-%{version}-nox
+%dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 %dir %{_datadir}/emacs/%{version}/etc
-%{_datadir}/emacs/%{version}/etc/DOC-%{version}.2
-%dir %{_libexecdir}/emacs/%{version}/*
-%{_libexecdir}/emacs/%{version}/*/fns-%{version}.2.el
+%dir %{_libexecdir}/emacs
+%dir %{_libexecdir}/emacs/%{version}
+%dir %{emacs_libexecdir}
+%{emacs_libexecdir}/fns-%{version}.1-nox.el
 
 %files -f common-filelist common
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
-%exclude %{_bindir}/emacs-%{version}
-%exclude %{_bindir}/emacs-nox-%{version}
+%exclude %{_bindir}/emacs*
 %{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 %{_datadir}/emacs/%{version}/etc
-%exclude %{_datadir}/emacs/%{version}/etc/DOC-%{version}.*
 # quieten startup when -leim and -el aren't installed
 %dir %{_datadir}/emacs/%{version}/leim
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
-%exclude %{_libexecdir}/emacs/%{version}/*/fns-%{version}.*.el
+%exclude %{emacs_libexecdir}/fns-%{version}.*.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 
@@ -369,6 +394,24 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Fri Apr  8 2005 Jens Petersen <petersen@redhat.com> - 21.4-1
+- update to 21.4 movemail vulnerability release
+  - no longer need movemail-CAN-2005-0100.patch
+- replace %{_bindir}/emacs alternatives with a wrapper script (Warren Togami)
+  to prevent it from disappearing when upgrading (Michal Jaegermann, 154326)
+  - suffix the X emacs binaries with -x and the no X binaries with -nox
+  - the wrapper script %{_bindir}/emacs-%%version runs emacs-x if installed or
+    otherwise emacs-nox.  %{_bindir}/emacs is a symlink to the wrapper
+- make emacs and emacs-nox own the subdirs in %{_libexecdir}
+- add a bunch of fixes from debian's emacs21_21.4a-1 patch:
+    battery-acpi-support.dpatch, bzero-and-have-stdlib.dpatch,
+    coding-region-leak.dpatch, detect-coding-iso2022.dpatch,
+    fix-batch-mode-signal-handling.dpatch, pcl-cvs-format.dpatch,
+    python-completion-ignored-extensions.dpatch,
+    remote-files-permissions.dpatch, save-buffer.dpatch, scroll-margin.dpatch,
+    xfree86-4.3-modifiers.dpatch
+  - add fix-x-vs-no-x-diffs.dpatch and 
+
 * Wed Apr  6 2005 Jens Petersen <petersen@redhat.com> - 21.3-27
 - use alternatives to switch _bindir/emacs between emacs and emacs-nox
   (Henning Schmiedehausen, #151067)
