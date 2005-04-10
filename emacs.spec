@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 0
+Release: 1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -46,7 +46,6 @@ BuildRequires: setarch
 Requires: emacs-common = %{version}-%{release}
 Obsoletes: emacs-X11
 Conflicts: gettext < 0.10.40
-ExcludeArch: s390
 
 # Non-lisp patches
 Patch2: emacs-21.2-s390.patch
