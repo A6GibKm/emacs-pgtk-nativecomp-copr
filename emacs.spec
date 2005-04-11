@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 1
+Release: 2
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -67,6 +67,9 @@ Patch23: fix-batch-mode-signal-handling.dpatch
 Patch24: fix-x-vs-no-x-diffs.dpatch
 Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
+# generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
+Patch27: etags-14.21-17.11-diff.patch
+Patch28: emacs-21.4-setarch_for_loadup-101818.patch
 
 # Lisp patches
 Patch106: emacs-21.2-menubar-games.patch
@@ -162,6 +165,11 @@ sets are included in this package.
 %patch24 -p1 -b .24-x-nox
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
+%patch27 -p1 -b .27-14.21
+%ifarch %{ix86}
+# workaround #101818 (vm/break dumper problem)
+%patch28 -p1 -b .28-execshield
+%endif
 
 # patches 2 and 3 touch configure.in
 autoconf-2.13
@@ -204,12 +212,11 @@ cp -pi %SOURCE27 leim/quail
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 %configure --with-pop --with-sound
 
-# workaround #101818 (vm/break dumper problem)
+# SETARCH needed for setarch patch on i386 (#101818)
+%__make %{?_smp_mflags} \
 %ifarch %{ix86}
-%define __make setarch i386 make
+  SETARCH="setarch i386"
 %endif
-
-%__make %{?_smp_mflags}
 
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
@@ -233,12 +240,11 @@ TOPDIR=${PWD}
 %install
 rm -rf $RPM_BUILD_ROOT
 
-# workaround #101818 (vm/break dumper problem)
+%makeinstall \
 %ifarch %{ix86}
-%define makeinstall %{__make} prefix=%{?buildroot:%{buildroot}}%{_prefix} exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} bindir=%{?buildroot:%{buildroot}}%{_bindir} sbindir=%{?buildroot:%{buildroot}}%{_sbindir} sysconfdir=%{?buildroot:%{buildroot}}%{_sysconfdir} datadir=%{?buildroot:%{buildroot}}%{_datadir} includedir=%{?buildroot:%{buildroot}}%{_includedir} libdir=%{?buildroot:%{buildroot}}%{_libdir} libexecdir=%{?buildroot:%{buildroot}}%{_libexecdir} localstatedir=%{?buildroot:%{buildroot}}%{_localstatedir} sharedstatedir=%{?buildroot:%{buildroot}}%{_sharedstatedir} mandir=%{?buildroot:%{buildroot}}%{_mandir} infodir=%{?buildroot:%{buildroot}}%{_infodir} install
+  SETARCH="setarch i386"
 %endif
 
-%makeinstall
 # suffix binaries with -x
 mv $RPM_BUILD_ROOT%{_bindir}/emacs{,-x}
 mv $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}{,-x}
@@ -248,7 +254,10 @@ mv $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1{,-x}.el
 # remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
 rm src/emacs-%{version}.*
 %configure --without-x
-%__make %{?_smp_mflags}
+%__make %{?_smp_mflags} \
+%ifarch %{ix86}
+  SETARCH="setarch i386"
+%endif
 
 # install the emacs without X
 install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
@@ -394,7 +403,14 @@ fi
 %defattr(-,root,root)
 
 %changelog
-* Fri Apr  8 2005 Jens Petersen <petersen@redhat.com> - 21.4-1
+* Mon Apr 11 2005 Jens Petersen <petersen@redhat.com> - 21.4-2
+- update etags to 17.11 (idht4n@hotmail.com, 151390)
+  - add etags-14.21-17.11-diff.patch
+- replace i386 setarch redefinitions of __make and makeinstall with
+  emacs-21.4-setarch_for_loadup-101818.patch and setting SETARCH on i386
+  (Jason Vas Dias, 101818)
+
+* Sun Apr 10 2005 Jens Petersen <petersen@redhat.com> - 21.4-1
 - update to 21.4 movemail vulnerability release
   - no longer need movemail-CAN-2005-0100.patch
 - replace %{_bindir}/emacs alternatives with a wrapper script (Warren Togami)
