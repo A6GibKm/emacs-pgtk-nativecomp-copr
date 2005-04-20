@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 2
+Release: 3
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -36,6 +36,8 @@ Source27: rfc1345.el
 Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
 Source29: tramp-init.el
 Source30: wrapper
+Source31: igrep.el
+Source32: igrep-init.el
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
 Buildrequires: xorg-x11-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
@@ -197,7 +199,7 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 
 # install rest of site-lisp files
 ( cd site-lisp
-  cp %SOURCE7 %SOURCE8 %SOURCE13 %SOURCE20 %SOURCE21 .
+  cp %SOURCE7 %SOURCE8 %SOURCE13 %SOURCE20 %SOURCE21 %SOURCE31 .
   # xemacs compat patch for rpm-spec-mode
   patch < %SOURCE18
   # fix po-auto-replace-revision-date nil
@@ -403,6 +405,9 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Wed Apr 20 2005 Jens Petersen <petersen@redhat.com> - 21.4-3
+- add igrep.el and init file
+
 * Mon Apr 11 2005 Jens Petersen <petersen@redhat.com> - 21.4-2
 - update etags to 17.11 (idht4n@hotmail.com, 151390)
   - add etags-14.21-17.11-diff.patch
