@@ -6,7 +6,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 3
+Release: 4
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -58,6 +58,8 @@ Patch7: emacs-21.2-alloc-blockinput-83600.patch
 Patch9: emacs-21.3-ppc64.patch
 Patch10: editfns.c-Fformat-multibyte-davej.patch
 Patch11: emacs-21.3-no-rpath.patch
+# this patch is no longer strictly needed with our iiimf-12.2
+# (however status under the window seems nicer)
 Patch14: emacs-xim-status-under-window-125413.patch
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
 Patch17: emacs-21.3-gcc4.patch
@@ -383,7 +385,8 @@ fi
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
-%exclude %{_bindir}/emacs*
+%exclude %{_bindir}/emacs
+%exclude %{_bindir}/emacs-*
 %{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
@@ -405,6 +408,11 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Mon Apr 25 2005 Jens Petersen <petersen@redhat.com> - 21.4-4
+- don't accidently exclude emacsclient from common package
+  (Jonathan Kamens, #157808)
+- traditional Chinese desktop file translation (Wei-Lun Chao, #157287)
+
 * Wed Apr 20 2005 Jens Petersen <petersen@redhat.com> - 21.4-3
 - add igrep.el and init file
 
