@@ -2,11 +2,12 @@
 
 %define muleucs_ver current
 %define tramp_ver 2.1.3
+%define cc_mode_ver 5.30.9
 
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 4
+Release: 5
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -38,8 +39,9 @@ Source29: tramp-init.el
 Source30: wrapper
 Source31: igrep.el
 Source32: igrep-init.el
+Source33: http://download.sourceforge.net/cc-mode/cc-mode-%{cc_mode_ver}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-root
-BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213
+BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213, texinfo
 Buildrequires: xorg-x11-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: fonts-xorg-75dpi
 %ifarch %{ix86}
@@ -147,7 +149,7 @@ sets are included in this package.
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
 %prep
-%setup -q -b 1 -a 24 -a 28
+%setup -q -b 1 -a 24 -a 28 -a 33
 
 %patch2 -p1 -b .2-s390
 %patch3 -p1 -b .3-hammer
@@ -212,6 +214,10 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 # add rfc1345 input method (default for UTF-8 lang env)
 cp -pi %SOURCE27 leim/quail
 
+# install newer cc-mode
+cp -p cc-mode-%{cc_mode_ver}/*.el lisp/progmodes
+cp -p cc-mode-%{cc_mode_ver}/cc-mode.texi man
+
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 %configure --with-pop --with-sound
@@ -240,6 +246,12 @@ TOPDIR=${PWD}
 ( cd tramp-%{tramp_ver}
   ./configure --with-emacs=${TOPDIR}/src/emacs
   make )
+
+# update cc-mode manual
+rm info/ccmode*
+( cd cc-mode-%{cc_mode_ver}
+  makeinfo cc-mode.texi
+  cp -p cc-mode.info* ../info )
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -337,7 +349,7 @@ cat leim-*-files > leim-filelist
 %clean
 rm -rf $RPM_BUILD_ROOT
    
-%define info_files ada-mode autotype ccmode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
+%define info_files ada-mode autotype cc-mode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
 
 %post common
 for f in %{info_files}; do
@@ -408,7 +420,11 @@ fi
 %defattr(-,root,root)
 
 %changelog
-* Mon Apr 25 2005 Jens Petersen <petersen@redhat.com> - 21.4-4
+* Wed May 18 2005 Jens Petersen <petersen@redhat.com> - 21.4-5
+- update cc-mode to 5.30.9 stable release to address font-lock problems
+  (126165,148977,150197,155292,158044)
+
+* Mon May 16 2005 Jens Petersen <petersen@redhat.com> - 21.4-4
 - don't accidently exclude emacsclient from common package
   (Jonathan Kamens, #157808)
 - traditional Chinese desktop file translation (Wei-Lun Chao, #157287)
