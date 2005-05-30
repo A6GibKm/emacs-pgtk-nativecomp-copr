@@ -4,9 +4,6 @@
 ;;; prevents loading of this file.  Also the "-q" option to emacs
 ;;; prevents both "~/.emacs" and this file from being loaded at startup.
 
-;; always end a file with a newline
-(setq require-final-newline 'query)
-
 (when window-system
   ;; enable wheelmouse support by default
   (mwheel-install)

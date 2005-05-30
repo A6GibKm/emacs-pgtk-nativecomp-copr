@@ -420,6 +420,10 @@ fi
 %defattr(-,root,root)
 
 %changelog
+* Mon May 30 2005 Jens Petersen <petersen@redhat.com>
+- move setting of require-final-newline from default.el to a comment in default
+  .emacs (Ralph Loader, 119141)
+
 * Wed May 18 2005 Jens Petersen <petersen@redhat.com> - 21.4-5
 - update cc-mode to 5.30.9 stable release to address font-lock problems
   (126165,148977,150197,155292,158044)
