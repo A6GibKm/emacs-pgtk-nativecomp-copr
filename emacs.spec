@@ -1,26 +1,32 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 
+%define emacs21 1
 %define muleucs_ver current
-%define tramp_ver 2.1.3
+%define tramp_ver 2.0.49
+
 %define cc_mode_ver 5.30.9
 
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 5
+Release: 6
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
+%if %{emacs21}
 Source1: ftp://ftp.gnu.org/gnu/emacs/leim-%{version}.tar.gz
+%endif
 Source3: emacs.desktop
 Source4: emacs.png
 Source5: dotemacs.el
 Source6: site-start.el
 Source7: http://www.python.org/emacs/python-mode/python-mode.el
 Source8: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
+%if %{emacs21}
 Source10: ftp://ftp.gnu.org/gnu/emacs/elisp-manual-21-2.8.tar.bz2
-Source11: http://prdownloads.sourceforge.net/php-mode/php-mode-1.1.0.tgz
+%endif
+Source11: http://download.sourceforge.net/php-mode/php-mode-1.1.0.tgz
 Source12: php-mode-init.el
 Source13: ssl.el
 Source16: python-mode-init.el
@@ -30,19 +36,28 @@ Source20: po-mode.el
 Source21: po-compat.el
 Source22: po-mode-init.el
 Source23: po-mode-auto-replace-date-71264.patch
+%if %{emacs21}
 Source24: ftp://ftp.m17n.org/pub/mule/Mule-UCS/test/Mule-UCS-%{muleucs_ver}.tar.gz
+%endif
 Source25: lang-coding-systems-init.el
 Source26: default.el
+%if %{emacs21}
 Source27: rfc1345.el
 Source28: http://ftp.gnu.org/gnu/tramp/tramp-%{tramp_ver}.tar.gz
 Source29: tramp-init.el
+%endif
 Source30: wrapper
 Source31: igrep.el
 Source32: igrep-init.el
 Source33: http://download.sourceforge.net/cc-mode/cc-mode-%{cc_mode_ver}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-root
-BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, autoconf213, texinfo
-Buildrequires: xorg-x11-devel, Xaw3d-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, texinfo
+%if %{emacs21}
+Buildrequires: autoconf213, Xaw3d-devel
+%else
+Buildrequires: autoconf, gtk2-devel
+%endif
+Buildrequires: xorg-x11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: fonts-xorg-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
@@ -51,42 +66,63 @@ Requires: emacs-common = %{version}-%{release}
 Obsoletes: emacs-X11
 Conflicts: gettext < 0.10.40
 
-# Non-lisp patches
+# C and build patches
 Patch2: emacs-21.2-s390.patch
+%if %{emacs21}
 Patch3: emacs-21.2-x86_64.patch
+%endif
+# * needs updating for emacs22 *
 Patch4: emacs-21.2-sticky-bit-80049.patch
 Patch5: emacs-21.2-s390x.patch
+# * needs updating for emacs22 *
 Patch7: emacs-21.2-alloc-blockinput-83600.patch
+%if %{emacs21}
 Patch9: emacs-21.3-ppc64.patch
 Patch10: editfns.c-Fformat-multibyte-davej.patch
+%endif
 Patch11: emacs-21.3-no-rpath.patch
 # this patch is no longer strictly needed with our iiimf-12.2
 # (however status under the window seems nicer)
 Patch14: emacs-xim-status-under-window-125413.patch
+%if %{emacs21}
 Patch15: emacs-21.3-xterm-modifiers-137868.patch
+# * needs updating for emacs22 *
 Patch17: emacs-21.3-gcc4.patch
 Patch19: emacs-21.4-21.4a-diff.patch
+# * maybe needs updating for emacs22 *
 Patch20: bzero-and-have-stdlib.dpatch
 Patch21: coding-region-leak.dpatch
 Patch22: detect-coding-iso2022.dpatch
+# * maybe needs updating for emacs22 *
 Patch23: fix-batch-mode-signal-handling.dpatch
 Patch24: fix-x-vs-no-x-diffs.dpatch
 Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
 # generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
 Patch27: etags-14.21-17.11-diff.patch
+%endif
 Patch28: emacs-21.4-setarch_for_loadup-101818.patch
 
-# Lisp patches
+# Lisp and doc patches
+%if %{emacs21}
 Patch106: emacs-21.2-menubar-games.patch
+%endif
+# * needs updating for emacs22 *
 Patch108: browse-url-htmlview-84262.patch
+# * needs updating for emacs22 *
 Patch112: emacs-21.3-lisp-textmodes-ispell-languages.patch
+# * maybe needs updating for emacs22 *
 Patch113: emacs-21.3-gud-libtool-fix.patch
+%if %{emacs21}
+# * maybe needs updating for emacs22 *
 Patch118: emacs-21.3-latex-mode-hook-144083.patch
 Patch119: battery-acpi-support.dpatch
 Patch120: pcl-cvs-format.dpatch
 Patch121: python-completion-ignored-extensions.dpatch
+# * maybe needs updating for emacs22 *
 Patch122: save-buffer.dpatch
+%endif
+
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -114,6 +150,9 @@ on a terminal.
 Summary: Emacs common files
 Group: Applications/Editors
 PreReq: /sbin/install-info, dev, %{_sbindir}/alternatives
+%if ! %{emacs21}
+Obsoletes: emacs-leim
+%endif
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -134,6 +173,7 @@ programs included with the main Emacs text editor package.
 You need to install emacs-el only if you intend to modify any of the
 Emacs packages or see some elisp examples.
 
+%if %{emacs21}
 %package leim
 Summary: Emacs Lisp files for input methods for international characters.
 Group: Applications/Editors
@@ -145,6 +185,7 @@ provided by this package describes the consecutive keystrokes that a
 user must press in order to input a particular character in a
 non-English character set. Input methods for many different character
 sets are included in this package.
+%endif
 
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
@@ -152,15 +193,20 @@ sets are included in this package.
 %setup -q -b 1 -a 24 -a 28 -a 33
 
 %patch2 -p1 -b .2-s390
+%if %{emacs21}
 %patch3 -p1 -b .3-hammer
 %patch4 -p1 -b .4-sticky
+%endif
 %patch5 -p1 -b .5-s390x
+%if %{emacs21}
 # block input in `allocate_vectorlike' (alloc.c)
 %patch7 -p1 -b .7-block
 %patch9 -p1 -b .9-ppc64
 %patch10 -p1 -b .10-multibyte
+%endif
 %patch11 -p1 -b .11-rpath
 %patch14 -p1 -b .14-StatusArea
+%if %{emacs21}
 %patch15 -p0 -b .15-modifier
 %patch17 -p1 -b .17-getcwd
 %patch19 -p1 -b .19-fedora
@@ -172,15 +218,21 @@ sets are included in this package.
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
+%endif
 %ifarch %{ix86}
 # workaround #101818 (vm/break dumper problem)
 %patch28 -p1 -b .28-execshield
 %endif
 
 # patches 2 and 3 touch configure.in
+%if %{emacs21}
 autoconf-2.13
+%else
+autoconf
+%endif
 
 ## Lisp patches
+%if %{emacs21}
 # remove game we can't ship
 %patch106 -p1
 rm lisp/finder-inf.el lisp/play/tetris.el*
@@ -200,6 +252,7 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %patch121 -p1
 # save-buffer
 %patch122 -p1
+%endif
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -211,8 +264,10 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
   tar zxvf %SOURCE11
 )
 
+%if %{emacs21}
 # add rfc1345 input method (default for UTF-8 lang env)
 cp -pi %SOURCE27 leim/quail
+%endif
 
 # install newer cc-mode
 cp -p cc-mode-%{cc_mode_ver}/*.el lisp/progmodes
@@ -220,9 +275,18 @@ cp -p cc-mode-%{cc_mode_ver}/cc-mode.texi man
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
-%configure --with-pop --with-sound
+%configure --with-pop --with-sound \
+%if ! %{emacs21}
+  --with-gtk --without-xim
+%endif
 
 # SETARCH needed for setarch patch on i386 (#101818)
+%if ! %{emacs21}
+%__make bootstrap \
+%ifarch %{ix86}
+  SETARCH="setarch i386"
+%endif
+%endif
 %__make %{?_smp_mflags} \
 %ifarch %{ix86}
   SETARCH="setarch i386"
@@ -236,19 +300,28 @@ TOPDIR=${PWD}
 
 # make sure patched lisp files get byte-compiled
 %emacsbatch -f batch-byte-recompile-directory lisp
-%emacsbatch -f batch-byte-compile leim/quail/rfc1345.el site-lisp/*.el
+%emacsbatch -f batch-byte-compile site-lisp/*.el
+%if %{emacs21}
+%emacsbatch -f batch-byte-compile leim/quail/rfc1345.el
+%endif
 
 %__make %{?_smp_mflags} -C lisp updates
 
+%if %{emacs21}
 ( cd Mule-UCS-%{muleucs_ver}
   %{emacsbatch} -l mucs-comp.el )
 
 ( cd tramp-%{tramp_ver}
   ./configure --with-emacs=${TOPDIR}/src/emacs
   make )
+%endif
 
 # update cc-mode manual
+%if %{emacs21}
 rm info/ccmode*
+%else
+rm -f info/cc-mode*
+%endif
 ( cd cc-mode-%{cc_mode_ver}
   makeinfo cc-mode.texi
   cp -p cc-mode.info* ../info )
@@ -256,6 +329,7 @@ rm info/ccmode*
 %install
 rm -rf $RPM_BUILD_ROOT
 
+# workaround #101818 (vm/break dumper problem)
 %makeinstall \
 %ifarch %{ix86}
   SETARCH="setarch i386"
@@ -264,7 +338,9 @@ rm -rf $RPM_BUILD_ROOT
 # suffix binaries with -x
 mv $RPM_BUILD_ROOT%{_bindir}/emacs{,-x}
 mv $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}{,-x}
+%if %{emacs21}
 mv $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1{,-x}.el
+%endif
 
 # rebuild without X support
 # remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
@@ -278,7 +354,9 @@ rm src/emacs-%{version}.*
 # install the emacs without X
 install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
 ln $RPM_BUILD_ROOT%{_bindir}/emacs{-%{version},}-nox
+%if %{emacs21}
 install -m 0644 lib-src/fns-%{version}.1.el $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1-nox.el
+%endif
 
 # install wrapper script
 install -m 0755 %SOURCE30 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}
@@ -313,6 +391,7 @@ install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
 install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 
+%if %{emacs21}
 ( cd Mule-UCS-%{muleucs_ver}/lisp
   mkdir %{site_lisp}/Mule-UCS
   cp -p *.el *.elc %{site_lisp}/Mule-UCS )
@@ -324,27 +403,44 @@ install -m 0644 %SOURCE5 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 tar jxf %{SOURCE10}
 ( cd elisp-manual-21-2.8
   install -m 644 elisp elisp-* $RPM_BUILD_ROOT%{_infodir} )
+%endif
 
 # after everything is installed, remove info dir
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
+%if ! %{emacs21}
+rm $RPM_BUILD_ROOT%{_localstatedir}/games/emacs/*
+%endif
+
 #
 # create file lists
 #
-rm -f *-filelist {common,el,leim}-*-files
+rm -f *-filelist {common,el}-*-files
+%if %{emacs21}
+rm -f *-filelist leim-*-files
+%endif
+
 ( TOPDIR=${PWD}
   cd $RPM_BUILD_ROOT
 
-  find .%{_datadir}/emacs/%{version}/lisp .%{_datadir}/emacs/site-lisp \( -type f -not -name '*.el' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' ! -name site-start.el \( -exec test -e '{}'c \; -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \) \)
+  find .%{_datadir}/emacs/%{version}/lisp \
+%if ! %{emacs21}
+    .%{_datadir}/emacs/%{version}/leim \
+%endif
+    .%{_datadir}/emacs/site-lisp \( -type f -not -name '*.el' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' ! -name site-start.el \( -exec test -e '{}'c \; -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \) \)
 
+%if %{emacs21}
   find .%{_datadir}/emacs/%{version}/leim \( -name '*.elc' -fprint $TOPDIR/leim-elc-files \) -o \( -type d -fprintf $TOPDIR/leim-dir-files "%%%%dir %%p\n" -fprintf $TOPDIR/el-leim-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el' \( -exec test -e '{}'c \; -fprint $TOPDIR/el-leim-bytecomped-files -o -fprint $TOPDIR/leim-not-comped-files \) \)
+%endif
 )
 
 # put the lists together after filtering  ./usr to /usr
 sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
 cat common-*-files > common-filelist
 cat el-*-files common-lisp-dir-files > el-filelist
+%if %{emacs21}
 cat leim-*-files > leim-filelist
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -375,7 +471,9 @@ fi
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
+%if %{emacs21}
 %{emacs_libexecdir}/fns-%{version}.1-x.el
+%endif
 %{_datadir}/applications/gnu-emacs.desktop
 %{_datadir}/pixmaps/emacs.png 
 
@@ -391,7 +489,9 @@ fi
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
+%if %{emacs21}
 %{emacs_libexecdir}/fns-%{version}.1-nox.el
+%endif
 
 %files -f common-filelist common
 %defattr(-,root,root)
@@ -405,21 +505,35 @@ fi
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 %{_datadir}/emacs/%{version}/etc
+%if %{emacs21}
 # quieten startup when -leim and -el aren't installed
 %dir %{_datadir}/emacs/%{version}/leim
+%endif
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
+%if %{emacs21}
 %exclude %{emacs_libexecdir}/fns-%{version}.*.el
+%endif
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 
 %files -f el-filelist el
 %defattr(-,root,root)
 
+%if %{emacs21}
 %files -f leim-filelist leim
 %defattr(-,root,root)
+%endif
 
 %changelog
+* Thu Jun 23 2005 Jens Petersen <petersen@redhat.com> - 21.4-6
+- merge in changes from emacs22.spec conditionally
+  - define emacs21 rpm macro switch to control major version and use it
+- update tramp to 2.0.49
+
+* Fri Jun 17 2005 Jens Petersen <petersen@redhat.com>
+- set arg0 to emacs in wrapper script (Peter Oliver, 149512#3)
+
 * Mon May 30 2005 Jens Petersen <petersen@redhat.com>
 - move setting of require-final-newline from default.el to a comment in default
   .emacs (Ralph Loader, 119141)
