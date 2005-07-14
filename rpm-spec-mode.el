@@ -70,6 +70,11 @@
   :prefix "rpm-spec-"
   :group 'languages)
 
+(defcustom rpm-spec-build-command "rpmbuild"
+  "Command for building an RPM package."
+  :type 'string
+  :group 'rpm-spec)
+
 (defcustom rpm-spec-add-attr nil
   "Add \"%attr\" entry for file listings or not."
   :type 'boolean
@@ -246,11 +251,11 @@ value returned by function `user-mail-address'."
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.2 sources, file build/parseSpec.c: partList[].
+             ;; From RPM 4.4.1 sources, file build/parseSpec.c: partList[].
              '("build" "changelog" "check" "clean" "description" "files"
-               "install" "package" "post" "postun" "pre" "prep" "preun"
-               "trigger" "triggerin" "triggerpostun" "triggerun"
-               "verifyscript") t)
+               "install" "package" "post" "postun" "pretrans" "posttrans"
+               "pre" "prep" "preun" "trigger" "triggerin" "triggerpostun"
+               "triggerun" "verifyscript") t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
@@ -332,11 +337,11 @@ value returned by function `user-mail-address'."
 ;;------------------------------------------------------------
 
 (defvar rpm-no-gpg nil "Tell rpm not to sign package.")
-(defvar rpm-spec-build-command "rpmbuild" "Command to build rpms.")
 (defvar rpm-spec-nobuild-option "--nobuild" "Option for no build.")
 
 (defvar rpm-tags-list
-  ;; From RPM 4.2 sources, file build/parsePreamble.c: preambleList[].")
+  ;; From RPM 4.4.1 sources, file build/parsePreamble.c: preambleList[], and
+  ;; a few macros that aren't tags, but useful here.
   '(("AutoProv")
     ("AutoReq")
     ("AutoReqProv")
@@ -350,6 +355,7 @@ value returned by function `user-mail-address'."
     ("Copyright")
     ("%description")
     ("Distribution")
+    ("DistTag")
     ("DistURL")
     ("DocDir")
     ("Epoch")
@@ -385,7 +391,7 @@ value returned by function `user-mail-address'."
   "List of elements that are valid tags.")
 
 (defvar rpm-group-tags-list
-  ;; From RPM 4.2 sources, file GROUPS.
+  ;; From RPM 4.4.1 sources, file GROUPS.
   '(("Amusements/Games")
     ("Amusements/Graphics")
     ("Applications/Archiving")
@@ -1205,19 +1211,23 @@ See `search-forward-regexp'."
                (search-forward-regexp (concat
                                        field ":[ \t]*\\(.*?\\)[ \t]*$") max)
                (match-string 1))))
-        (if (string-match "\\(%{?\\)\\([a-zA-Z0-9_]*\\)\\(}?\\)" str)
-            (let ((end-string (substring str (match-end 3))))
-              (concat (substring str 0 (match-beginning 1))
-                      (progn
-                        (goto-char (point-min))
-                        (search-forward-regexp
-                         (concat "%define[ \t]+"
-                                 (substring str
-                                            (match-beginning 2)
-                                            (match-end 2))
-                                 "[ \t]+\\(.*\\)"))
-                        (match-string 1))
-                      end-string))
+        ;; Try to expand macros
+        (if (string-match "\\(%{?\\(\\?\\)?\\)\\([a-zA-Z0-9_]*\\)\\(}?\\)" str)
+            (let ((start-string (substring str 0 (match-beginning 1)))
+                  (end-string (substring str (match-end 4))))
+              (if (progn
+                    (goto-char (point-min))
+                    (search-forward-regexp
+                     (concat "%\\(define\\|global\\)[ \t]+"
+                             (match-string 3 str)
+                             "[ \t]+\\(.*\\)") nil t))
+                  ;; Got it - replace.
+                  (concat start-string (match-string 2) end-string)
+                (if (match-string 2 str)
+                    ;; Conditionally evaluated macro - remove it.
+                    (concat start-string end-string)
+                  ;; Leave as is.
+                  str)))
           str)))))
 
 (defun rpm-find-spec-version (&optional with-epoch)

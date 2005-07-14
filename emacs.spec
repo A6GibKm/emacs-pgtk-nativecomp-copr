@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 6
+Release: 7
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -100,8 +100,8 @@ Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
 # generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
 Patch27: etags-14.21-17.11-diff.patch
+Patch28: emacs-21-personality-linux32-101818.patch
 %endif
-Patch28: emacs-21.4-setarch_for_loadup-101818.patch
 
 # Lisp and doc patches
 %if %{emacs21}
@@ -122,7 +122,6 @@ Patch121: python-completion-ignored-extensions.dpatch
 # * maybe needs updating for emacs22 *
 Patch122: save-buffer.dpatch
 %endif
-
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -218,10 +217,10 @@ sets are included in this package.
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
-%endif
 %ifarch %{ix86}
 # workaround #101818 (vm/break dumper problem)
 %patch28 -p1 -b .28-execshield
+%endif
 %endif
 
 # patches 2 and 3 touch configure.in
@@ -280,17 +279,10 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
   --with-gtk --without-xim
 %endif
 
-# SETARCH needed for setarch patch on i386 (#101818)
 %if ! %{emacs21}
-%__make bootstrap \
-%ifarch %{ix86}
-  SETARCH="setarch i386"
+%__make bootstrap
 %endif
-%endif
-%__make %{?_smp_mflags} \
-%ifarch %{ix86}
-  SETARCH="setarch i386"
-%endif
+%__make %{?_smp_mflags}
 
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
@@ -313,7 +305,8 @@ TOPDIR=${PWD}
 
 ( cd tramp-%{tramp_ver}
   ./configure --with-emacs=${TOPDIR}/src/emacs
-  make )
+  make lisp
+  make -C texi tramp )
 %endif
 
 # update cc-mode manual
@@ -483,9 +476,6 @@ fi
 %{_bindir}/emacs-%{version}
 %{_bindir}/emacs-nox
 %{_bindir}/emacs-%{version}-nox
-%dir %{_datadir}/emacs
-%dir %{_datadir}/emacs/%{version}
-%dir %{_datadir}/emacs/%{version}/etc
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
@@ -519,13 +509,30 @@ fi
 
 %files -f el-filelist el
 %defattr(-,root,root)
+%dir %{_datadir}/emacs
+%dir %{_datadir}/emacs/%{version}
 
 %if %{emacs21}
 %files -f leim-filelist leim
 %defattr(-,root,root)
+%dir %{_datadir}/emacs
+%dir %{_datadir}/emacs/%{version}
 %endif
 
 %changelog
+* Thu Jul 14 2005 Jens Petersen <petersen@redhat.com> - 21.4-7
+- update rpm-spec-mode.el to cvs revision 1.17 (Ville Skyttä)
+  - fixes expansion of %%{?dist}
+- replace emacs-21.4-setarch_for_loadup-101818.patch with backport
+  emacs-21-personality-linux32-101818.patch from cvs (Jan Djärv)
+  which also turns off address randomization during dumping (Masatake Yamato)
+  - no longer need to pass SETARCH to make on i386
+- move ownership of %{_datadir}/emacs/ and %{_datadir}/emacs/%{version}/
+  from emacs to emacs-el and emacs-leim subpackages
+- don't build tramp html and dvi documentation
+- drop src/config.in part of bzero-and-have-stdlib.dpatch to avoid
+  compiler warnings
+
 * Thu Jun 23 2005 Jens Petersen <petersen@redhat.com> - 21.4-6
 - merge in changes from emacs22.spec conditionally
   - define emacs21 rpm macro switch to control major version and use it
