@@ -189,7 +189,11 @@ sets are included in this package.
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
 %prep
+%if %{emacs21}
 %setup -q -b 1 -a 24 -a 28 -a 33
+%else
+%setup -q -a 33
+%endif
 
 %patch2 -p1 -b .2-s390
 %if %{emacs21}
