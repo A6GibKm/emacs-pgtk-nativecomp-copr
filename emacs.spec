@@ -524,13 +524,17 @@ fi
 %endif
 
 %changelog
+* Wed Aug 24 2005 Jens Petersen <petersen@redhat.com>
+- fix name of aspell-es dictionary (#147964)
+  - update emacs-21.3-lisp-textmodes-ispell-languages.patch
+
 * Thu Jul 14 2005 Jens Petersen <petersen@redhat.com> - 21.4-7
 - update rpm-spec-mode.el to cvs revision 1.17 (Ville Skyttä)
   - fixes expansion of %%{?dist}
 - replace emacs-21.4-setarch_for_loadup-101818.patch with backport
   emacs-21-personality-linux32-101818.patch from cvs (Jan Djärv)
   which also turns off address randomization during dumping (Masatake Yamato)
-  - no longer need to pass SETARCH to make on i386
+  - no longer need to pass SETARCH to make on i386 (#160814)
 - move ownership of %{_datadir}/emacs/ and %{_datadir}/emacs/%{version}/
   from emacs to emacs-el and emacs-leim subpackages
 - don't build tramp html and dvi documentation
