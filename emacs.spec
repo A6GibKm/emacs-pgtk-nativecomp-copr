@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 7
+Release: 8
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -58,7 +58,7 @@ Buildrequires: autoconf213, Xaw3d-devel
 Buildrequires: autoconf, gtk2-devel
 %endif
 Buildrequires: xorg-x11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
-Requires: fonts-xorg-75dpi
+Requires: xorg-x11-fonts-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -524,6 +524,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov 14 2005 Jeremy Katz <katzj@redhat.com> - 21.4-8
+- update dep for new xorg fonts packages
+
 * Wed Aug 24 2005 Jens Petersen <petersen@redhat.com>
 - fix name of aspell-es dictionary (#147964)
   - update emacs-21.3-lisp-textmodes-ispell-languages.patch
