@@ -57,7 +57,7 @@ Buildrequires: autoconf213, Xaw3d-devel
 %else
 Buildrequires: autoconf, gtk2-devel
 %endif
-Buildrequires: xorg-x11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Buildrequires: libX11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
 Requires: xorg-x11-fonts-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
