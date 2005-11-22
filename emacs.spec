@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 8
+Release: 9
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -101,7 +101,7 @@ Patch24: fix-x-vs-no-x-diffs.dpatch
 Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
 # generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
-Patch27: etags-14.21-17.11-diff.patch
+Patch27: etags-update-to-cvs.patch
 Patch28: emacs-21-personality-linux32-101818.patch
 %endif
 
@@ -123,6 +123,7 @@ Patch120: pcl-cvs-format.dpatch
 Patch121: python-completion-ignored-extensions.dpatch
 # * maybe needs updating for emacs22 *
 Patch122: save-buffer.dpatch
+Patch123: smtpmail-cvs-update.patch
 %endif
 
 %description
@@ -257,6 +258,8 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %patch121 -p1
 # save-buffer
 %patch122 -p1
+# smtpmail update
+%patch123 -p1
 %endif
 
 # install rest of site-lisp files
@@ -526,6 +529,13 @@ fi
 %endif
 
 %changelog
+* Tue Nov 22 2005 Jens Petersen <petersen@redhat.com> - 21.4-9
+- fix keyboard-coding-system on console for utf-8 (Dawid Gajownik, #173855)
+- update etags to latest cvs (Hideki Iwamoto, #173023)
+  - replace etags-14.21-17.11-diff.patch with etags-update-to-cvs.patch
+- update smtpmail.el to latest cvs version for better authentication support
+  with smtpmail-cvs-update.patch (Alberto Brizio, #167804)
+
 * Mon Nov 14 2005 Jeremy Katz <katzj@redhat.com> - 21.4-8
 - update dep for new xorg fonts packages
 
