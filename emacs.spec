@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 9
+Release: 10
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -529,6 +529,9 @@ fi
 %endif
 
 %changelog
+* Fri Nov 25 2005 Jens Petersen <petersen@redhat.com> - 21.4-10
+- fix missing parenthesis in lang-coding-systems-init.el
+
 * Tue Nov 22 2005 Jens Petersen <petersen@redhat.com> - 21.4-9
 - fix keyboard-coding-system on console for utf-8 (Dawid Gajownik, #173855)
 - update etags to latest cvs (Hideki Iwamoto, #173023)
