@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 10.1
+Release: 11
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -60,7 +60,7 @@ Buildrequires: autoconf213, Xaw3d-devel
 Buildrequires: autoconf, gtk2-devel
 %endif
 Buildrequires: libX11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
-Requires: xorg-x11-fonts-75dpi
+Requires: xorg-x11-fonts-ISO8859-1-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -283,6 +283,12 @@ cp -p cc-mode-%{cc_mode_ver}/cc-mode.texi man
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
+
+# stack-protector causes crashing on i386 (#174730)
+%ifarch %{ix86}
+CFLAGS=`echo $CFLAGS | sed -e "s/ -fstack-protector//"`
+%endif
+
 %configure --with-pop --with-sound \
 %if ! %{emacs21}
   --with-gtk --without-xim
@@ -529,6 +535,12 @@ fi
 %endif
 
 %changelog
+* Wed Dec 14 2005 Jens Petersen <petersen@redhat.com> - 21.4-11
+- avoid building with -fstack-protector on i386 to prevent crashing
+  (Jonathan Kamens, #174730)
+- require xorg-x11-fonts-ISO8859-1-75dpi instead of xorg-x11-fonts-75dpi
+  for modular X (#174614)
+
 * Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
 - rebuilt
 
