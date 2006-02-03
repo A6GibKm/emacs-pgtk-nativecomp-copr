@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 11
+Release: 12
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -125,6 +125,7 @@ Patch121: python-completion-ignored-extensions.dpatch
 Patch122: save-buffer.dpatch
 Patch123: smtpmail-cvs-update.patch
 %endif
+Patch124: mule-cmd.el-X11-locale.alias-173781.patch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -261,6 +262,8 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 # smtpmail update
 %patch123 -p1
 %endif
+# locale.alias path
+%patch124 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -535,6 +538,11 @@ fi
 %endif
 
 %changelog
+* Fri Feb  3 2006 Jens Petersen <petersen@redhat.com> - 21.4-12
+- add mule-cmd.el-X11-locale.alias-173781.patch to correct location of X11
+  locale.alias file (Paul Dickson, #173781)
+- fix autoload of php-mode in php-mode-init.el (Christopher Beland, #179484)
+
 * Wed Dec 14 2005 Jens Petersen <petersen@redhat.com> - 21.4-11
 - avoid building with -fstack-protector on i386 to prevent crashing
   (Jonathan Kamens, #174730)
