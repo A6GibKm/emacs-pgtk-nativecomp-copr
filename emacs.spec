@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 12
+Release: 12.1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -538,6 +538,9 @@ fi
 %endif
 
 %changelog
+* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 21.4-12.1
+- rebuilt for new gcc4.1 snapshot and glibc changes
+
 * Fri Feb  3 2006 Jens Petersen <petersen@redhat.com> - 21.4-12
 - add mule-cmd.el-X11-locale.alias-173781.patch to correct location of X11
   locale.alias file (Paul Dickson, #173781)
