@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 12.2
+Release: 13
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -55,7 +55,7 @@ Source33: http://download.sourceforge.net/cc-mode/cc-mode-%{cc_mode_ver}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: glibc-devel, gcc, bzip2, ncurses-devel, zlib-devel, texinfo
 %if %{emacs21}
-Buildrequires: autoconf213, Xaw3d-devel
+Buildrequires: autoconf213, libXaw-devel, Xaw3d-devel
 %else
 Buildrequires: autoconf, gtk2-devel
 %endif
@@ -126,6 +126,7 @@ Patch122: save-buffer.dpatch
 Patch123: smtpmail-cvs-update.patch
 %endif
 Patch124: mule-cmd.el-X11-locale.alias-173781.patch
+Patch125: sort-columns-posix-key-182282.patch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -264,6 +265,8 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %endif
 # locale.alias path
 %patch124 -p1
+# sort-columns posix key defs
+%patch125 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -282,7 +285,6 @@ cp -pi %SOURCE27 leim/quail
 
 # install newer cc-mode
 cp -p cc-mode-%{cc_mode_ver}/*.el lisp/progmodes
-cp -p cc-mode-%{cc_mode_ver}/cc-mode.texi man
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
@@ -334,8 +336,7 @@ rm info/ccmode*
 rm -f info/cc-mode*
 %endif
 ( cd cc-mode-%{cc_mode_ver}
-  makeinfo cc-mode.texi
-  cp -p cc-mode.info* ../info )
+  makeinfo cc-mode.texi )
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -343,7 +344,7 @@ rm -rf $RPM_BUILD_ROOT
 # workaround #101818 (vm/break dumper problem)
 %makeinstall \
 %ifarch %{ix86}
-  SETARCH="setarch i386"
+  SETARCH="setarch i386 -R"
 %endif
 
 # suffix binaries with -x
@@ -359,7 +360,7 @@ rm src/emacs-%{version}.*
 %configure --without-x
 %__make %{?_smp_mflags} \
 %ifarch %{ix86}
-  SETARCH="setarch i386"
+  SETARCH="setarch i386 -R"
 %endif
 
 # install the emacs without X
@@ -416,6 +417,9 @@ tar jxf %{SOURCE10}
   install -m 644 elisp elisp-* $RPM_BUILD_ROOT%{_infodir} )
 %endif
 
+# cc-mode manual
+install -m 644 cc-mode-%{cc_mode_ver}/cc-mode.info* $RPM_BUILD_ROOT%{_infodir}
+
 # after everything is installed, remove info dir
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 
@@ -456,7 +460,7 @@ cat leim-*-files > leim-filelist
 %clean
 rm -rf $RPM_BUILD_ROOT
    
-%define info_files ada-mode autotype cc-mode cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
+%define info_files ada-mode autotype cc-mode.info cl dired-x ebrowse ediff efaq elisp emacs eshell eudc forms gnus idlwave info message mh-e pcl-cvs reftex sc speedbar vip viper widget woman
 
 %post common
 for f in %{info_files}; do
@@ -538,6 +542,16 @@ fi
 %endif
 
 %changelog
+* Mon Feb 27 2006 Jens Petersen <petersen@redhat.com> - 21.4-13
+- buildrequire libXaw-devel for menus and scrollbar
+- pass -R to setarch to disable address randomization during dumping
+  (Sam Peterson, #174736)
+- install cc-mode.info correctly (Sam Peterson, #182084)
+- fix sort-columns not to use deprecated non-posix sort key syntax
+  with sort-columns-posix-key-182282.patch (Richard Ryniker, #182282)
+- use system-name function not variable when setting frame-title-format in
+  /etc/skel/.emacs for XEmacs users hitting .emacs
+
 * Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 21.4-12.2
 - bump again for double-long bug on ppc(64)
 

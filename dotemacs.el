@@ -12,7 +12,7 @@
 
 ;; default to better frame titles
 (setq frame-title-format
-      (concat  "%b - emacs@" system-name))
+      (concat  "%b - emacs@" (system-name)))
 
 ;; default to unified diffs
 (setq diff-switches "-u")
