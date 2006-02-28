@@ -1,6 +1,4 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
-# FIXME: doesn't currently build on ppc64
-ExcludeArch: ppc64
 
 %define emacs21 1
 %define muleucs_ver current
@@ -11,7 +9,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 13
+Release: 14
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -542,6 +540,9 @@ fi
 %endif
 
 %changelog
+* Tue Feb 28 2006 Jens Petersen <petersen@redhat.com> - 21.4-14
+- re-enable building on ppc64
+
 * Mon Feb 27 2006 Jens Petersen <petersen@redhat.com> - 21.4-13
 - buildrequire libXaw-devel for menus and scrollbar
 - pass -R to setarch to disable address randomization during dumping
