@@ -541,6 +541,10 @@ fi
 %endif
 
 %changelog
+* Thu Mar  2 2006 Jens Petersen <petersen@redhat.com>
+- avoid backup for fix-x-vs-no-x-diffs.dpatch (Ian Collier, #183503)
+- remove the old ccmode info manual (#182084)
+
 * Mon Feb 27 2006 Jens Petersen <petersen@redhat.com> - 21.4-13
 - buildrequire libXaw-devel for menus and scrollbar
 - pass -R to setarch to disable address randomization during dumping
