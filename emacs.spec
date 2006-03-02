@@ -1,4 +1,6 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
+# FIXME: doesn't currently build on ppc64
+ExcludeArch: ppc64
 
 %define emacs21 1
 %define muleucs_ver current
@@ -9,7 +11,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 14
+Release: 13
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -220,7 +222,7 @@ sets are included in this package.
 %patch21 -p1 -b .21-leak
 %patch22 -p1 -b .22-iso2022
 %patch23 -p1 -b .23-batch
-%patch24 -p1 -b .24-x-nox
+%patch24 -p1
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
@@ -327,12 +329,6 @@ TOPDIR=${PWD}
   make -C texi tramp )
 %endif
 
-# update cc-mode manual
-%if %{emacs21}
-rm info/ccmode*
-%else
-rm -f info/cc-mode*
-%endif
 ( cd cc-mode-%{cc_mode_ver}
   makeinfo cc-mode.texi )
 
@@ -416,6 +412,11 @@ tar jxf %{SOURCE10}
 %endif
 
 # cc-mode manual
+%if %{emacs21}
+rm $RPM_BUILD_ROOT%{_infodir}/ccmode*
+%else
+rm -f $RPM_BUILD_ROOT%{_infodir}/cc-mode*
+%endif
 install -m 644 cc-mode-%{cc_mode_ver}/cc-mode.info* $RPM_BUILD_ROOT%{_infodir}
 
 # after everything is installed, remove info dir
@@ -540,9 +541,6 @@ fi
 %endif
 
 %changelog
-* Tue Feb 28 2006 Jens Petersen <petersen@redhat.com> - 21.4-14
-- re-enable building on ppc64
-
 * Mon Feb 27 2006 Jens Petersen <petersen@redhat.com> - 21.4-13
 - buildrequire libXaw-devel for menus and scrollbar
 - pass -R to setarch to disable address randomization during dumping
