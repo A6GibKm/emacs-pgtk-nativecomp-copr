@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 13
+Release: 14
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -59,7 +59,7 @@ Buildrequires: autoconf213, libXaw-devel, Xaw3d-devel
 %else
 Buildrequires: autoconf, gtk2-devel
 %endif
-Buildrequires: libX11-devel, libpng-devel, libjpeg-devel, libungif-devel, libtiff-devel
+Buildrequires: libX11-devel, libpng-devel, libjpeg-devel, giflib-devel, libtiff-devel
 Requires: xorg-x11-fonts-ISO8859-1-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
@@ -102,7 +102,6 @@ Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
 # generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
 Patch27: etags-update-to-cvs.patch
-Patch28: emacs-21-personality-linux32-101818.patch
 %endif
 
 # Lisp and doc patches
@@ -193,6 +192,12 @@ sets are included in this package.
 
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
+%ifarch %{ix86}
+%define setarch setarch i386 -R
+%else
+%define setarch %{nil}
+%endif
+
 %prep
 %if %{emacs21}
 %setup -q -b 1 -a 24 -a 28 -a 33
@@ -226,10 +231,6 @@ sets are included in this package.
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
-%ifarch %{ix86}
-# workaround #101818 (vm/break dumper problem)
-%patch28 -p1 -b .28-execshield
-%endif
 %endif
 
 # patches 2 and 3 touch configure.in
@@ -302,7 +303,7 @@ CFLAGS=`echo $CFLAGS | sed -e "s/ -fstack-protector//"`
 %if ! %{emacs21}
 %__make bootstrap
 %endif
-%__make %{?_smp_mflags}
+%{setarch} %__make %{?_smp_mflags}
 
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
@@ -336,10 +337,20 @@ TOPDIR=${PWD}
 rm -rf $RPM_BUILD_ROOT
 
 # workaround #101818 (vm/break dumper problem)
-%makeinstall \
-%ifarch %{ix86}
-  SETARCH="setarch i386 -R"
-%endif
+%{setarch} make install \
+	prefix=%{?buildroot:%{buildroot}}%{_prefix} \
+	exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
+	bindir=%{?buildroot:%{buildroot}}%{_bindir} \
+	sbindir=%{?buildroot:%{buildroot}}%{_sbindir} \
+	sysconfdir=%{?buildroot:%{buildroot}}%{_sysconfdir} \
+	datadir=%{?buildroot:%{buildroot}}%{_datadir} \
+	includedir=%{?buildroot:%{buildroot}}%{_includedir} \
+	libdir=%{?buildroot:%{buildroot}}%{_libdir} \
+	libexecdir=%{?buildroot:%{buildroot}}%{_libexecdir} \
+	localstatedir=%{?buildroot:%{buildroot}}%{_localstatedir} \
+	sharedstatedir=%{?buildroot:%{buildroot}}%{_sharedstatedir} \
+	mandir=%{?buildroot:%{buildroot}}%{_mandir} \
+	infodir=%{?buildroot:%{buildroot}}%{_infodir}
 
 # suffix binaries with -x
 mv $RPM_BUILD_ROOT%{_bindir}/emacs{,-x}
@@ -352,10 +363,7 @@ mv $RPM_BUILD_ROOT%{emacs_libexecdir}/fns-%{version}.1{,-x}.el
 # remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
 rm src/emacs-%{version}.*
 %configure --without-x
-%__make %{?_smp_mflags} \
-%ifarch %{ix86}
-  SETARCH="setarch i386 -R"
-%endif
+%{setarch} %__make %{?_smp_mflags}
 
 # install the emacs without X
 install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
@@ -541,6 +549,12 @@ fi
 %endif
 
 %changelog
+* Tue Mar  7 2006 Jens Petersen <petersen@redhat.com> - 21.4-14
+- bring back setarch for i386 with -R option in spec file and drop
+  emacs-21-personality-linux32-101818.patch since it no longer seems
+  sufficient with recent kernels (Sam Peterson, #174736)
+- buildrequire giflib-devel instead of libungif-devel
+
 * Thu Mar  2 2006 Jens Petersen <petersen@redhat.com>
 - avoid backup for fix-x-vs-no-x-diffs.dpatch (Ian Collier, #183503)
 - remove the old ccmode info manual (#182084)
