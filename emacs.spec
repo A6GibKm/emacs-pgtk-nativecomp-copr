@@ -11,7 +11,7 @@ ExcludeArch: ppc64
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 14
+Release: 14.1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -533,7 +533,7 @@ fi
 %if %{emacs21}
 %exclude %{emacs_libexecdir}/fns-%{version}.*.el
 %endif
-%attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/default.el
+%attr(0644,root,root) %config(noreplace) %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 
 %files -f el-filelist el
@@ -549,6 +549,9 @@ fi
 %endif
 
 %changelog
+* Tue Apr 18 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-14.1
+- don't clobber site-lisp/default.el (Ritesh Khadgaray, 180153)
+
 * Tue Mar  7 2006 Jens Petersen <petersen@redhat.com> - 21.4-14
 - bring back setarch for i386 with -R option in spec file and drop
   emacs-21-personality-linux32-101818.patch since it no longer seems
