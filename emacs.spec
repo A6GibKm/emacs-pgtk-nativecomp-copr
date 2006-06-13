@@ -1,6 +1,6 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 # FIXME: doesn't currently build on ppc64
-ExcludeArch: ppc64
+# ExcludeArch: ppc64
 
 %define emacs21 1
 %define muleucs_ver current
