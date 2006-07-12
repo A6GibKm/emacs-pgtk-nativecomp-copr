@@ -11,7 +11,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 14.1
+Release: 14.1.1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -549,6 +549,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 21.4-14.1.1
+- rebuild
+
 * Tue Apr 18 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-14.1
 - don't clobber site-lisp/default.el (Ritesh Khadgaray, 180153)
 
