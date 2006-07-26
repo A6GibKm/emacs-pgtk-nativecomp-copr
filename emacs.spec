@@ -1,6 +1,4 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
-# FIXME: doesn't currently build on ppc64
-# ExcludeArch: ppc64
 
 %define emacs21 1
 %define muleucs_ver current
@@ -11,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 14.1.1
+Release: 15
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -102,6 +100,8 @@ Patch25: scroll-margin.dpatch
 Patch26: xfree86-4.3-modifiers.dpatch
 # generated from ftp://fly.isti.cnr.it/pub/etags.c.gz
 Patch27: etags-update-to-cvs.patch
+# required to build on PowerPC64
+Patch34: ppc64-unexelf.patch
 %endif
 
 # Lisp and doc patches
@@ -231,6 +231,7 @@ sets are included in this package.
 %patch25 -p1 -b .25-scroll-margin
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
+%patch34 -p1 -b .34-ppc64-unexelf
 %endif
 
 # patches 2 and 3 touch configure.in
@@ -549,6 +550,9 @@ fi
 %endif
 
 %changelog
+* Wed Jul 26 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-15
+- fix src/unexelf.c to build on PowerPC64 (backport from emacs-22, #183304)
+
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 21.4-14.1.1
 - rebuild
 
