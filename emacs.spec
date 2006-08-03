@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 15
+Release: 16
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -126,6 +126,7 @@ Patch123: smtpmail-cvs-update.patch
 %endif
 Patch124: mule-cmd.el-X11-locale.alias-173781.patch
 Patch125: sort-columns-posix-key-182282.patch
+Patch126: ispell-german-utf-8.patch
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -269,6 +270,8 @@ rm lisp/finder-inf.el lisp/play/tetris.el*
 %patch124 -p1
 # sort-columns posix key defs
 %patch125 -p1
+# German spell-checking for UTF-8 encoded buffers
+%patch126 -p1
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -550,6 +553,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug  3 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-16
+- fix German spell checking for UTF-8 encoded buffers (Daniel Hammer #197737)
+
 * Wed Jul 26 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-15
 - fix src/unexelf.c to build on PowerPC64 (backport from emacs-22, #183304)
 
