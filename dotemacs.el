@@ -20,3 +20,5 @@
 ;; always end a file with a newline
 ;(setq require-final-newline 'query)
 
+;;; uncomment for CJK utf-8 support for non-Asian users
+;; (require 'un-define)

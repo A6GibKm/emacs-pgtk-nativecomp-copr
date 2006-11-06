@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 17
+Release: 18
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -553,6 +553,9 @@ fi
 %endif
 
 %changelog
+* Thu Aug  3 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-18
+- non-CJK text broken by default for Western locale (James Ralston #144707)
+
 * Thu Aug  3 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-17
 - use UTF-8 keyboard input encoding on terminals that support it (Axel Thimm #185399)
 
