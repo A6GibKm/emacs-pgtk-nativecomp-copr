@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 19
+Release: 20
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -103,6 +103,7 @@ Patch26: xfree86-4.3-modifiers.dpatch
 Patch27: etags-update-to-cvs.patch
 # required to build on PowerPC64
 Patch34: ppc64-unexelf.patch
+Patch35: multibyte-command-line.patch
 %endif
 
 # Lisp and doc patches
@@ -234,6 +235,7 @@ sets are included in this package.
 %patch26 -p1 -b .26-xmodifier
 %patch27 -p1 -b .27-14.21
 %patch34 -p1 -b .34-ppc64-unexelf
+%patch35 -p1 -b .35-multibyte-command-line
 %endif
 
 # patches 2 and 3 touch configure.in
@@ -554,6 +556,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov  6 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-20
+- enable multibyte strings in command line arguments (Pawel Salek #196648)
+
 * Mon Nov  6 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-19
 - BuildRequires: sendmail (Wolfgang Rupprecht #213813)
 
