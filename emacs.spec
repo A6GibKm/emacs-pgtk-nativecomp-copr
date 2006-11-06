@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 18
+Release: 19
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -58,6 +58,7 @@ Buildrequires: autoconf213, libXaw-devel, Xaw3d-devel
 Buildrequires: autoconf, gtk2-devel
 %endif
 Buildrequires: libX11-devel, libpng-devel, libjpeg-devel, giflib-devel, libtiff-devel
+BuildRequires: sendmail
 Requires: xorg-x11-fonts-ISO8859-1-75dpi
 %ifarch %{ix86}
 BuildRequires: setarch
@@ -553,6 +554,9 @@ fi
 %endif
 
 %changelog
+* Mon Nov  6 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-19
+- BuildRequires: sendmail (Wolfgang Rupprecht #213813)
+
 * Thu Aug  3 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-18
 - non-CJK text broken by default for Western locale (James Ralston #144707)
 
