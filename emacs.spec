@@ -9,7 +9,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 21.4
-Release: 20
+Release: 20.1
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -556,6 +556,9 @@ fi
 %endif
 
 %changelog
+* Thu Nov 14 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-20.1
+- don't set keyboard-coding-system when running under X (Dean Messing #205859)
+
 * Mon Nov  6 2006 Chip Coldwell <coldwell@redhat.com> - 21.4-20
 - enable multibyte strings in command line arguments (Pawel Salek #196648)
 
