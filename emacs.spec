@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.0.93
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -95,7 +95,7 @@ Emacs packages or see some elisp examples.
 
 # install rest of site-lisp files
 ( cd site-lisp
-  cp %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE13 %SOURCE20 .
+  cp %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
   # xemacs compat patch for rpm-spec-mode
   patch < %SOURCE12
   # fix po-auto-replace-revision-date nil
@@ -279,6 +279,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Jan 24 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-3
+- po-mode.el was being left out
+
 * Tue Jan 23 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-1
 - new pretest version
 - removed setarch since new dumper copes with execshield
