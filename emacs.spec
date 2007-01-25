@@ -283,6 +283,7 @@ fi
 %changelog
 * Thu Jan 25 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-4
 - fixup loaddefs.el dependencies (Dan Nicolaescu #176171)
+- add BuildRequires: automake (changes to Makefile.in)
 
 * Wed Jan 24 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-3
 - po-mode.el was being left out
