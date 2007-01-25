@@ -32,7 +32,7 @@ Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
-BuildRequires: autoconf, bzip2, cairo, texinfo
+BuildRequires: autoconf, automake, bzip2, cairo, texinfo
 Requires: xorg-x11-fonts-ISO8859-1-75dpi
 Requires: emacs-common = %{version}-%{release}
 Conflicts: gettext < 0.10.40
