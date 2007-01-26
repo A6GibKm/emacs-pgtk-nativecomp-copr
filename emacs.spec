@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.0.93
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -102,6 +102,10 @@ Emacs packages or see some elisp examples.
   patch < %SOURCE12
   # fix po-auto-replace-revision-date nil
   patch < %SOURCE16 )
+
+# avoid trademark issues
+( cd lisp/play
+  rm -f tetris.el tetris.elc )
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
@@ -281,6 +285,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Jan 26 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-5
+- remove Tetris to avoid trademark problems (Ville Skyttä #224627)
+
 * Thu Jan 25 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-4
 - fixup loaddefs.el dependencies (Dan Nicolaescu #176171)
 - add BuildRequires: automake (changes to Makefile.in)
