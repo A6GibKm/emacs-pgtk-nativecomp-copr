@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.0.93
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -115,7 +115,7 @@ export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
 CFLAGS=`echo $CFLAGS | sed -e "s/ -fstack-protector//"`
 %endif
 
-%configure --with-pop --with-sound --with-gtk --without-xim
+%configure --with-pop --with-sound --with-gtk
 
 %__make bootstrap
 %__make %{?_smp_mflags}
@@ -285,6 +285,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Feb 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-6
+- remove --without-xim configure flag to fix dead keys (Ville Skyttä #224626)
+
 * Fri Jan 26 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-5
 - remove Tetris to avoid trademark problems (Ville Skyttä #224627)
 
