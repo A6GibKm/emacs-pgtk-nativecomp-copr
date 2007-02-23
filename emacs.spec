@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.0.93
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -285,8 +285,11 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Feb 23 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-7
+- fix po-mode-init.el (Kjartan Maraas #228143)
+
 * Tue Feb 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-6
-- remove --without-xim configure flag to fix dead keys (Ville Skyttä #224626)
+- remove --without-xim configure flag to fix dead keys (Alexandre Oliva #224626)
 
 * Fri Jan 26 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-5
 - remove Tetris to avoid trademark problems (Ville Skyttä #224627)
