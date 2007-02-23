@@ -95,6 +95,8 @@ Emacs packages or see some elisp examples.
 %setup -q
 %patch0 -p1
 
+autoconf && automake
+
 # install rest of site-lisp files
 ( cd site-lisp
   cp %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
