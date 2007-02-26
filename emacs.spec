@@ -42,6 +42,8 @@ Patch0: loaddefs-dependencies.patch
 
 # Lisp and doc patches
 
+%define paranoid 1
+
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
 editor. Emacs contains special code editing features, a scripting
@@ -105,9 +107,11 @@ autoconf && automake
   # fix po-auto-replace-revision-date nil
   patch < %SOURCE16 )
 
+%if %{paranoid}
 # avoid trademark issues
 ( cd lisp/play
   rm -f tetris.el tetris.elc )
+%endif
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
