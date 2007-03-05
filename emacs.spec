@@ -2,8 +2,8 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 22.0.93
-Release: 7%{?dist}
+Version: 22.0.94
+Release: 1%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -38,7 +38,6 @@ Requires: emacs-common = %{version}-%{release}
 Conflicts: gettext < 0.10.40
 
 # C and build patches
-Patch0: loaddefs-dependencies.patch
 
 # Lisp and doc patches
 
@@ -95,9 +94,6 @@ Emacs packages or see some elisp examples.
 
 %prep
 %setup -q
-%patch0 -p1
-
-autoconf
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -291,6 +287,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Feb 26 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.94-1
+- new pretest tarball obsoletes loaddefs.el dependencies patch
+
 * Fri Feb 23 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.93-7
 - fix po-mode-init.el (Kjartan Maraas #228143)
 
