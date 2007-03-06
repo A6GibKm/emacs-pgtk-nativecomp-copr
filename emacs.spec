@@ -2,7 +2,7 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 22.0.94
+Version: 22.0.95
 Release: 1%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
@@ -287,6 +287,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Mar  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.95-1
+- new pretest tarball from FSF
+
 * Mon Feb 26 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.94-1
 - new pretest tarball obsoletes loaddefs.el dependencies patch
 
