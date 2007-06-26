@@ -1,19 +1,15 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 
-%define expurgate 0
-%define humorless 0
-%define paranoid 1
-
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 22.0.990
+Version: 22.1
 Release: 1%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
 Source1: emacs.desktop
-Source2: default.el
+Source2: emacs.png
 Source3: dotemacs.el
 Source4: site-start.el
 Source5: http://www.python.org/emacs/python-mode/python-mode.el
@@ -28,6 +24,8 @@ Source13: focus-init.el
 Source14: po-mode.el
 Source15: po-mode-init.el
 Source16: po-mode-auto-replace-date-71264.patch
+Source18: default.el
+Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
 Buildroot: %{_tmppath}/%{name}-%{version}-root
@@ -38,6 +36,12 @@ BuildRequires: autoconf, automake, bzip2, cairo, texinfo
 Requires: xorg-x11-fonts-ISO8859-1-75dpi
 Requires: emacs-common = %{version}-%{release}
 Conflicts: gettext < 0.10.40
+
+# C and build patches
+
+# Lisp and doc patches
+
+%define paranoid 1
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -91,72 +95,94 @@ Emacs packages or see some elisp examples.
 %prep
 %setup -q
 
-%if %{expurgate}
-rm -f etc/sex.6 etc/condom.1 etc/celibacy.1
-%endif
-
-%if %{humorless}
-rm -f etc/COOKIES etc/JOKES etc/future-bug
-%endif
-
-%if %{paranoid}
-rm -f lisp/play/tetris.el
-%endif
-
 # install rest of site-lisp files
 ( cd site-lisp
-  cp %SOURCE2 %SOURCE4 %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
-  tar xfz %SOURCE7
+  cp %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
+  tar xfz %SOURCE7  # php-mode
   # xemacs compat patch for rpm-spec-mode
   patch < %SOURCE12
   # fix po-auto-replace-revision-date nil
   patch < %SOURCE16 )
 
+%if %{paranoid}
+# avoid trademark issues
+( cd lisp/play
+  rm -f tetris.el tetris.elc )
+%endif
+
 %build
+export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
 
-# First, build the binary without X support
-%configure --without-x
-%__make %{?_smp_mflags} -C src emacs
-mv src/emacs-%{version}.1 src/emacs-%{version}-nox
+# stack-protector causes crashing on i386 (#174730)
+%ifarch %{ix86}
+CFLAGS=`echo $CFLAGS | sed -e "s/ -fstack-protector//"`
+%endif
 
-# Now, rebuild with full X support
 %configure --with-pop --with-sound --with-gtk
-%__make %{?_smp_mflags} bootstrap
+
+%__make bootstrap
+%__make %{?_smp_mflags}
+
+# remove versioned file so that we end up with .1 suffix and only one DOC file
+rm src/emacs-%{version}.*
+
+TOPDIR=${PWD}
+%define emacsbatch ${TOPDIR}/src/emacs -batch --no-init-file --no-site-file
 
 # make sure patched lisp files get byte-compiled
-src/emacs -batch --no-init-file --no-site-file -f batch-byte-compile site-lisp/*.el
+%emacsbatch -f batch-byte-compile site-lisp/*.el
+
+%__make %{?_smp_mflags} -C lisp updates
 
 %install
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
+
 %makeinstall
-install -m 0755 src/emacs-%{version}-nox %{buildroot}%{_bindir}
 
-# install site-lisp files
-%define site_lisp %{buildroot}%{_datadir}/emacs/site-lisp
+# let alternatives manage the symlink
+rm $RPM_BUILD_ROOT%{_bindir}/emacs
+
+# rebuild without X support
+# remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
+rm src/emacs-%{version}.*
+%configure --without-x
+%__make %{?_smp_mflags}
+
+# install the emacs without X
+install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
+
+# make sure movemail isn't setgid
+chmod 755 $RPM_BUILD_ROOT%{emacs_libexecdir}/movemail
+
+%define site_lisp $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+
 mkdir -p %{site_lisp}
-install -m 0644 site-lisp/*.el{,c} %{site_lisp}
+install -m 0644 %SOURCE4 %{site_lisp}/site-start.el
+install -m 0644 %SOURCE18 %{site_lisp}
 
-# alternatives will create a symlink to /usr/bin/emacs-22.0.99
-rm %{buildroot}%{_bindir}/emacs
-
-mv %{buildroot}%{_bindir}/{etags,etags.emacs}
-mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
-mv %{buildroot}%{_bindir}/{ctags,gctags}
+mv $RPM_BUILD_ROOT%{_bindir}/{etags,etags.emacs}
+mv $RPM_BUILD_ROOT%{_mandir}/man1/{ctags.1,gctags.1}
+mv $RPM_BUILD_ROOT%{_bindir}/{ctags,gctags}
 
 # GNOME / KDE files
-mkdir -p %{buildroot}%{_datadir}/applications
-install -m 0644 %SOURCE1 %{buildroot}%{_datadir}/applications/gnu-emacs.desktop
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
+install -m 0644 %SOURCE1 $RPM_BUILD_ROOT%{_datadir}/applications/gnu-emacs.desktop
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
+install -m 0644 %SOURCE2 $RPM_BUILD_ROOT%{_datadir}/pixmaps/
+
+# install site-lisp files
+install -m 0644 site-lisp/*.el{,c} %{site_lisp}
 
 mkdir -p %{site_lisp}/site-start.d
 install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
 
 # default initialization file
-mkdir -p %{buildroot}%{_sysconfdir}/skel
-install -m 0644 %SOURCE3 %{buildroot}%{_sysconfdir}/skel/.emacs
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
+install -m 0644 %SOURCE3 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 
 # after everything is installed, remove info dir
-rm -f %{buildroot}%{_infodir}/dir
-rm %{buildroot}%{_localstatedir}/games/emacs/*
+rm -f $RPM_BUILD_ROOT%{_infodir}/dir
+rm $RPM_BUILD_ROOT%{_localstatedir}/games/emacs/*
 
 #
 # create file lists
@@ -168,7 +194,9 @@ rm -f *-filelist {common,el}-*-files
 
   find .%{_datadir}/emacs/%{version}/lisp \
     .%{_datadir}/emacs/%{version}/leim \
-    .%{_datadir}/emacs/site-lisp \( -type f -name '*.elc' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el.gz' -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \) )
+    .%{_datadir}/emacs/site-lisp \( -type f -name '*.elc' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el.gz' -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \)
+
+)
 
 # put the lists together after filtering  ./usr to /usr
 sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
@@ -180,25 +208,21 @@ rm -rf $RPM_BUILD_ROOT
 
 %define info_files ada-mode autotype calc ccmode cl dired-x ebrowse ediff efaq eintr elisp0 elisp1 elisp emacs emacs-mime emacs-xtra erc eshell eudc flymake forms gnus idlwave info message mh-e newsticker org pcl-cvs pgg rcirc reftex sc ses sieve smtpmail speedbar tramp url viper vip widget woman
 
-%post
-if [ $1 -ge 1 ] ; then
-    alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
-fi
-
 %preun
 if [ $1 -eq 0 ] ; then
-    alternatives --remove emacs %{_bindir}/emacs-%{version}
+  alternatives --remove emacs %{_bindir}/emacs-%{version}
 fi
 
-%post nox
-if [ $1 -ge 1 ] ; then
-    alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
-fi
+%posttrans
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
 %preun nox
 if [ $1 -eq 0 ] ; then
-    alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
+  alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
 fi
+
+%posttrans nox
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 
 %post common
 for f in %{info_files}; do
@@ -218,24 +242,29 @@ fi
 %files
 %defattr(-,root,root)
 %{_bindir}/emacs-%{version}
+%dir %{_libexecdir}/emacs
+%dir %{_libexecdir}/emacs/%{version}
+%dir %{emacs_libexecdir}
 %{_datadir}/applications/gnu-emacs.desktop
+%{_datadir}/pixmaps/emacs.png 
 
 %files nox
 %defattr(-,root,root)
 %{_bindir}/emacs-%{version}-nox
+%dir %{_libexecdir}/emacs
+%dir %{_libexecdir}/emacs/%{version}
+%dir %{emacs_libexecdir}
 
 %files -f common-filelist common
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %doc etc/NEWS BUGS README 
-%exclude %{_bindir}/emacs-%{version}
-%exclude %{_bindir}/emacs-%{version}-nox
+%exclude %{_bindir}/emacs-*
 %{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
-%dir %{emacs_libexecdir}
 %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
@@ -248,6 +277,16 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Jun  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-1
+- move alternatives install to posttrans scriptlet (Resolves: bz239745)
+- new release tarball from FSF (Resolves: bz245303)
+- new php-mode 1.2.0
+
+* Wed May 23 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.990-2
+- revert all spec file changes since 22.0.95-1 (Resolves: bz239745)
+- new pretest tarball from FSF (Resolves: bz238234)
+- restore php-mode (Resolves: bz235941)
+
 * Mon May 21 2007 Chip Coldwell <coldwell@redhat.com> - 22.0.990-1
 - new pretest tarball from FSF
 - removed Ulrich Drepper's patch to prevent mmapped pages during dumping
