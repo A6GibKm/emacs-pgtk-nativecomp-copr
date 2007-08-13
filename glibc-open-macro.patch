@@ -1,0 +1,11 @@
+--- emacs-22.1/src/sound.c~	2007-03-06 07:14:14.000000000 -0500
++++ emacs-22.1/src/sound.c	2007-08-09 15:54:52.117018000 -0400
+@@ -1469,7 +1469,7 @@ Internal use only, use `play-sound' inst
+       error ("No usable sound device driver found");
+ 
+   /* Open the device.  */
+-  current_sound_device->open (current_sound_device);
++  (current_sound_device->open) (current_sound_device);
+ 
+   /* Play the sound.  */
+   current_sound->play (current_sound, current_sound_device);
