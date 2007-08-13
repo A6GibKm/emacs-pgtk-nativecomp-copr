@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -28,6 +28,7 @@ Source18: default.el
 Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
+Patch0: glibc-open-macro.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -36,12 +37,14 @@ BuildRequires: autoconf, automake, bzip2, cairo, texinfo
 Requires: xorg-x11-fonts-ISO8859-1-75dpi
 Requires: emacs-common = %{version}-%{release}
 Conflicts: gettext < 0.10.40
+Provides: emacs(bin)
 
 # C and build patches
 
 # Lisp and doc patches
 
 %define paranoid 1
+%define expurgate 0
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -55,6 +58,7 @@ This package provides an emacs binary with support for X windows.
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
 Requires: emacs-common = %{version}-%{release}
+Provides: emacs(bin)
 
 %description nox
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -94,6 +98,7 @@ Emacs packages or see some elisp examples.
 
 %prep
 %setup -q
+%patch0 -p1 -b .glibc-open-macro
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -108,6 +113,10 @@ Emacs packages or see some elisp examples.
 # avoid trademark issues
 ( cd lisp/play
   rm -f tetris.el tetris.elc )
+%endif
+
+%if %{expurgate}
+rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
 %build
@@ -133,6 +142,16 @@ TOPDIR=${PWD}
 %emacsbatch -f batch-byte-compile site-lisp/*.el
 
 %__make %{?_smp_mflags} -C lisp updates
+
+# Create pkg-config file
+cat > emacs.pc << EOF
+sitepkglispdir=%{site_lisp}
+sitestartdir=%{site_lisp}/site-start.d
+
+Name: emacs
+Description: GNU Emacs text editor
+Version: %{version}
+EOF
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -180,6 +199,10 @@ install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
 install -m 0644 %SOURCE3 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
 
+# install pkgconfig file
+mkdir -p %{buildroot}%{_datadir}/pkg-config
+install -m 0644 emacs.pc %{buildroot}%{_datadir}/pkg-config
+
 # after everything is installed, remove info dir
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir
 rm $RPM_BUILD_ROOT%{_localstatedir}/games/emacs/*
@@ -226,15 +249,14 @@ alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 
 %post common
 for f in %{info_files}; do
-  /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir --section="GNU Emacs" 2> /dev/null || :
+  /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir 2> /dev/null || :
 done
 alternatives --install %{_bindir}/etags etags %{_bindir}/etags.emacs 80
 
 %preun common
 if [ "$1" = 0 ]; then
   for f in %{info_files}; do
-    /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir \
-      --section="GNU Emacs" 2> /dev/null || :
+    /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir 2> /dev/null || :
   done
   alternatives --remove etags %{_bindir}/etags.emacs
 fi
@@ -273,10 +295,16 @@ fi
 
 %files -f el-filelist el
 %defattr(-,root,root)
+%{_datadir}/pkg-config/emacs.pc
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Aug 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-2
+- add pkgconfig file for emacs-common and virtual provides (Resolves: bz242176)
+- glibc-open-macro.patch to deal with glibc turning "open" into a macro.
+- leave emacs info pages in default section (Resolves: bz199008) 
+
 * Fri Jun  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-1
 - move alternatives install to posttrans scriptlet (Resolves: bz239745)
 - new release tarball from FSF (Resolves: bz245303)
