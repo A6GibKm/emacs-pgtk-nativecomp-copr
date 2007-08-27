@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -300,6 +300,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Aug 28 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-3
+- change group from Development to Utility
+
 * Mon Aug 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-2
 - add pkgconfig file for emacs-common and virtual provides (Resolves: bz242176)
 - glibc-open-macro.patch to deal with glibc turning "open" into a macro.

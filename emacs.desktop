@@ -29,6 +29,6 @@ Exec=emacs %f
 Icon=emacs.png
 Type=Application
 Terminal=false
-Categories=Application;Development;TextEditor;X-Red-Hat-Base;
+Categories=Application;Utility;TextEditor;X-Red-Hat-Base;
 Encoding=UTF-8
 StartupWMClass=Emacs
