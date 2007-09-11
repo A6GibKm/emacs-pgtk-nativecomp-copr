@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -45,6 +45,9 @@ Provides: emacs(bin)
 
 %define paranoid 1
 %define expurgate 0
+
+%define site_lisp %{_datadir}/emacs/site-lisp
+%define pkgconfig %{_datadir}/pkgconfig
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -143,7 +146,7 @@ TOPDIR=${PWD}
 
 %__make %{?_smp_mflags} -C lisp updates
 
-# Create pkg-config file
+# Create pkgconfig file
 cat > emacs.pc << EOF
 sitepkglispdir=%{site_lisp}
 sitestartdir=%{site_lisp}/site-start.d
@@ -154,12 +157,12 @@ Version: %{version}
 EOF
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %makeinstall
 
 # let alternatives manage the symlink
-rm $RPM_BUILD_ROOT%{_bindir}/emacs
+rm %{buildroot}%{_bindir}/emacs
 
 # rebuild without X support
 # remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
@@ -168,44 +171,42 @@ rm src/emacs-%{version}.*
 %__make %{?_smp_mflags}
 
 # install the emacs without X
-install -m 0755 src/emacs-%{version}.1 $RPM_BUILD_ROOT%{_bindir}/emacs-%{version}-nox
+install -m 0755 src/emacs-%{version}.1 %{buildroot}%{_bindir}/emacs-%{version}-nox
 
 # make sure movemail isn't setgid
-chmod 755 $RPM_BUILD_ROOT%{emacs_libexecdir}/movemail
+chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
 
-%define site_lisp $RPM_BUILD_ROOT%{_datadir}/emacs/site-lisp
+mkdir -p %{buildroot}%{site_lisp}
+install -m 0644 %SOURCE4 %{buildroot}%{site_lisp}/site-start.el
+install -m 0644 %SOURCE18 %{buildroot}%{site_lisp}
 
-mkdir -p %{site_lisp}
-install -m 0644 %SOURCE4 %{site_lisp}/site-start.el
-install -m 0644 %SOURCE18 %{site_lisp}
-
-mv $RPM_BUILD_ROOT%{_bindir}/{etags,etags.emacs}
-mv $RPM_BUILD_ROOT%{_mandir}/man1/{ctags.1,gctags.1}
-mv $RPM_BUILD_ROOT%{_bindir}/{ctags,gctags}
+mv %{buildroot}%{_bindir}/{etags,etags.emacs}
+mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
+mv %{buildroot}%{_bindir}/{ctags,gctags}
 
 # GNOME / KDE files
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
-install -m 0644 %SOURCE1 $RPM_BUILD_ROOT%{_datadir}/applications/gnu-emacs.desktop
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
-install -m 0644 %SOURCE2 $RPM_BUILD_ROOT%{_datadir}/pixmaps/
+mkdir -p %{buildroot}%{_datadir}/applications
+install -m 0644 %SOURCE1 %{buildroot}%{_datadir}/applications/gnu-emacs.desktop
+mkdir -p %{buildroot}%{_datadir}/pixmaps
+install -m 0644 %SOURCE2 %{buildroot}%{_datadir}/pixmaps/
 
 # install site-lisp files
-install -m 0644 site-lisp/*.el{,c} %{site_lisp}
+install -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
-mkdir -p %{site_lisp}/site-start.d
-install -m 0644 $RPM_SOURCE_DIR/*-init.el %{site_lisp}/site-start.d
+mkdir -p %{buildroot}%{site_lisp}/site-start.d
+install -m 0644 $RPM_SOURCE_DIR/*-init.el %{buildroot}%{site_lisp}/site-start.d
 
 # default initialization file
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/skel
-install -m 0644 %SOURCE3 $RPM_BUILD_ROOT%{_sysconfdir}/skel/.emacs
+mkdir -p %{buildroot}%{_sysconfdir}/skel
+install -m 0644 %SOURCE3 %{buildroot}%{_sysconfdir}/skel/.emacs
 
 # install pkgconfig file
-mkdir -p %{buildroot}%{_datadir}/pkg-config
-install -m 0644 emacs.pc %{buildroot}%{_datadir}/pkg-config
+mkdir -p %{buildroot}/%{pkgconfig}
+install -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
 # after everything is installed, remove info dir
-rm -f $RPM_BUILD_ROOT%{_infodir}/dir
-rm $RPM_BUILD_ROOT%{_localstatedir}/games/emacs/*
+rm -f %{buildroot}%{_infodir}/dir
+rm %{buildroot}%{_localstatedir}/games/emacs/*
 
 #
 # create file lists
@@ -213,7 +214,7 @@ rm $RPM_BUILD_ROOT%{_localstatedir}/games/emacs/*
 rm -f *-filelist {common,el}-*-files
 
 ( TOPDIR=${PWD}
-  cd $RPM_BUILD_ROOT
+  cd %{buildroot}
 
   find .%{_datadir}/emacs/%{version}/lisp \
     .%{_datadir}/emacs/%{version}/leim \
@@ -227,7 +228,7 @@ cat common-*-files > common-filelist
 cat el-*-files common-lisp-dir-files > el-filelist
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %define info_files ada-mode autotype calc ccmode cl dired-x ebrowse ediff efaq eintr elisp0 elisp1 elisp emacs emacs-mime emacs-xtra erc eshell eudc flymake forms gnus idlwave info message mh-e newsticker org pcl-cvs pgg rcirc reftex sc ses sieve smtpmail speedbar tramp url viper vip widget woman
 
@@ -295,11 +296,15 @@ fi
 
 %files -f el-filelist el
 %defattr(-,root,root)
-%{_datadir}/pkg-config/emacs.pc
+%{pkgconfig}/emacs.pc
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Sep 10 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-4
+- fix pkgconfig path (from pkg-config to pkgconfig (Jonathan Underwood)
+- use macro instead of variable style for buildroot.
+
 * Mon Aug 28 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-3
 - change group from Development to Utility
 
