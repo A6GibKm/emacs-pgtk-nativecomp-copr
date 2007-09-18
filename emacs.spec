@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -12,12 +12,10 @@ Source1: emacs.desktop
 Source2: emacs.png
 Source3: dotemacs.el
 Source4: site-start.el
-Source5: http://www.python.org/emacs/python-mode/python-mode.el
 Source6: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
 Source7: http://download.sourceforge.net/php-mode/php-mode-1.2.0.tgz
 Source8: php-mode-init.el
 Source9: ssl.el
-Source10: python-mode-init.el
 Source11: rpm-spec-mode-init.el
 Source12: rpm-spec-mode.el-0.14-xemacs-compat.patch
 Source13: focus-init.el
@@ -34,7 +32,7 @@ BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
 BuildRequires: autoconf, automake, bzip2, cairo, texinfo
-Requires: xorg-x11-fonts-ISO8859-1-75dpi
+Requires: xorg-x11-fonts-ISO8859-1-100dpi
 Requires: emacs-common = %{version}-%{release}
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin)
@@ -105,7 +103,7 @@ Emacs packages or see some elisp examples.
 
 # install rest of site-lisp files
 ( cd site-lisp
-  cp %SOURCE5 %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
+  cp %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
   tar xfz %SOURCE7  # php-mode
   # xemacs compat patch for rpm-spec-mode
   patch < %SOURCE12
@@ -301,6 +299,10 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Sep 12 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-5
+- require xorg-x11-fonts-ISO8859-1-100dpi instead of 75dpi (Resolves: bz281861)
+- drop broken python mode (Resolves: bz262801)
+
 * Mon Sep 10 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-4
 - fix pkgconfig path (from pkg-config to pkgconfig (Jonathan Underwood)
 - use macro instead of variable style for buildroot.
