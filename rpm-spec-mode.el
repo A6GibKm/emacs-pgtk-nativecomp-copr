@@ -4,7 +4,7 @@
 
 ;; Author:   Stig Bjørlykke, <stigb@tihlde.org>
 ;; Keywords: unix, languages, rpm
-;; Version:  0.12
+;; Version:  0.12x
 
 ;; This file is part of XEmacs.
 
@@ -20,8 +20,8 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with XEmacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-;; MA 02111-1307, USA.
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301 USA.
 
 ;;; Synched up with: not in GNU Emacs.
 
@@ -39,7 +39,7 @@
 
 ;; - rewrite function names.
 ;; - autofill changelog entries.
-;; - customize rpm-tags-list and rpm-group-tags-list.
+;; - customize rpm-tags-list, rpm-obsolete-tags-list and rpm-group-tags-list.
 ;; - get values from `rpm --showrc'.
 ;; - ssh/rsh for compile.
 ;; - finish integrating the new navigation functions in with existing stuff.
@@ -63,7 +63,7 @@
 
 ;;; Code:
 
-(defconst rpm-spec-mode-version "0.12" "Version of `rpm-spec-mode'.")
+(defconst rpm-spec-mode-version "0.12x" "Version of `rpm-spec-mode'.")
 
 (defgroup rpm-spec nil
   "RPM spec mode with Emacs/XEmacs enhancements."
@@ -244,18 +244,19 @@ value returned by function `user-mail-address'."
   "Partial list of section names.")
 (defconst rpm-scripts
   '("pre" "post" "preun" "postun"
-    "trigger" "triggerin" "triggerun" "triggerpostun")
+    "trigger" "triggerin" "triggerprein" "triggerun" "triggerpostun"
+    "pretrans" "posttrans")
   "List of rpm scripts.")
 (defconst rpm-section-seperate "^%\\(\\w+\\)\\s-")
 (defconst rpm-section-regexp
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.4.1 sources, file build/parseSpec.c: partList[].
+             ;; From RPM 4.4.9 sources, file build/parseSpec.c: partList[].
              '("build" "changelog" "check" "clean" "description" "files"
                "install" "package" "post" "postun" "pretrans" "posttrans"
                "pre" "prep" "preun" "trigger" "triggerin" "triggerpostun"
-               "triggerun" "verifyscript") t)
+               "triggerprein" "triggerun" "verifyscript") t)
             "\\b"))
   "Regular expression to match beginning of a section.")
 
@@ -265,6 +266,11 @@ value returned by function `user-mail-address'."
   '(( ((class color) (background light)) (:foreground "blue3") )
     ( ((class color) (background dark)) (:foreground "blue") ))
   "*Face for tags."
+  :group 'rpm-spec-faces)
+
+(defface rpm-spec-obsolete-tag-face
+  '(( ((class color)) (:foreground "white" :background "red") ))
+  "*Face for obsolete tags."
   :group 'rpm-spec-faces)
 
 (defface rpm-spec-macro-face
@@ -316,6 +322,8 @@ value returned by function `user-mail-address'."
   'rpm-spec-var-face "*Face for environment variables.")
 (defvar rpm-spec-tag-face
   'rpm-spec-tag-face "*Face for tags.")
+(defvar rpm-spec-obsolete-tag-face
+  'rpm-spec-tag-face "*Face for obsolete tags.")
 (defvar rpm-spec-package-face
   'rpm-spec-package-face "*Face for package tag.")
 (defvar rpm-spec-dir-face
@@ -340,7 +348,7 @@ value returned by function `user-mail-address'."
 (defvar rpm-spec-nobuild-option "--nobuild" "Option for no build.")
 
 (defvar rpm-tags-list
-  ;; From RPM 4.4.1 sources, file build/parsePreamble.c: preambleList[], and
+  ;; From RPM 4.4.9 sources, file build/parsePreamble.c: preambleList[], and
   ;; a few macros that aren't tags, but useful here.
   '(("AutoProv")
     ("AutoReq")
@@ -348,16 +356,20 @@ value returned by function `user-mail-address'."
     ("BuildArch")
     ("BuildArchitectures")
     ("BuildConflicts")
+    ("BuildEnhances")
+    ("BuildPlatforms")
     ("BuildPreReq")
     ("BuildRequires")
     ("BuildRoot")
+    ("BuildSuggests")
     ("Conflicts")
-    ("Copyright")
+    ("CVSId")
     ("%description")
     ("Distribution")
     ("DistTag")
     ("DistURL")
     ("DocDir")
+    ("Enhances")
     ("Epoch")
     ("ExcludeArch")
     ("ExcludeOS")
@@ -367,6 +379,8 @@ value returned by function `user-mail-address'."
     ("Group")
     ("Icon")
     ("%ifarch")
+    ("Keyword")
+    ("Keywords")
     ("License")
     ("Name")
     ("NoPatch")
@@ -381,17 +395,40 @@ value returned by function `user-mail-address'."
     ("Provides")
     ("Release")
     ("Requires")
-    ("RHNPlatform")
-    ("Serial")
+    ("RepoTag")
     ("Source")
+    ("Suggests")
     ("Summary")
+    ("SVNId")
     ("URL")
+    ("Variant")
+    ("Variants")
     ("Vendor")
-    ("Version"))
+    ("Version")
+    ("XMajor")
+    ("XMinor")
+    )
   "List of elements that are valid tags.")
 
+(defvar rpm-tags-regexp
+  (concat "\\(\\<" (regexp-opt (mapcar 'car rpm-tags-list))
+	  "\\|\\(Patch\\|Source\\)[0-9]+\\>\\)")
+  "Regular expression for matching valid tags.")
+
+(defvar rpm-obsolete-tags-list
+  ;; From RPM sources, file build/parsePreamble.c: preambleList[].
+  '(("Copyright")    ;; 4.4.2
+    ("RHNPlatform")  ;; 4.4.2, 4.4.9
+    ("Serial")       ;; 4.4.2, 4.4.9
+    )
+  "List of elements that are obsolete tags in some versions of rpm.")
+
+(defvar rpm-obsolete-tags-regexp
+  (regexp-opt (mapcar 'car rpm-obsolete-tags-list) 'words)
+  "Regular expression for matching obsolete tags.")
+
 (defvar rpm-group-tags-list
-  ;; From RPM 4.4.1 sources, file GROUPS.
+  ;; From RPM 4.4.9 sources, file GROUPS.
   '(("Amusements/Games")
     ("Amusements/Graphics")
     ("Applications/Archiving")
@@ -553,11 +590,17 @@ value returned by function `user-mail-address'."
   (list
    (cons rpm-section-regexp rpm-spec-section-face)
    '("%[a-zA-Z0-9_]+" 0 rpm-spec-macro-face)
-   '("^\\([a-zA-Z0-9]+\\)\\(\([a-zA-Z0-9,_]+\)\\):"
-     (1 rpm-spec-tag-face)
-     (2 rpm-spec-ghost-face))
-   '("^\\([a-zA-Z0-9]+\\):" 1 rpm-spec-tag-face)
-   '("%\\(de\\(fine\\|scription\\)\\|files\\|package\\)[ \t]+\\([^-][^ \t\n]*\\)"
+   (cons (concat "^" rpm-obsolete-tags-regexp "\\(\([a-zA-Z0-9,_]+\)\\)[ \t]*:")
+         '((1 'rpm-spec-obsolete-tag-face)
+           (2 'rpm-spec-ghost-face)))
+   (cons (concat "^" rpm-tags-regexp "\\(\([a-zA-Z0-9,_]+\)\\)[ \t]*:")
+         '((1 'rpm-spec-tag-face)
+           (3 'rpm-spec-ghost-face)))
+   (cons (concat "^" rpm-obsolete-tags-regexp "[ \t]*:")
+         '(1 'rpm-spec-obsolete-tag-face))
+   (cons (concat "^" rpm-tags-regexp "[ \t]*:")
+         '(1 'rpm-spec-tag-face))
+   '("%\\(de\\(fine\\|scription\\)\\|files\\|global\\|package\\)[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
    '("%p\\(ost\\|re\\)\\(un\\)?[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
@@ -798,7 +841,7 @@ controls whether case is significant."
           (replace-match
            (concat what ": " (read-from-minibuffer
                               (concat "New " what ": ") (match-string 1))))
-        (message (concat what " tag not found...")))))))
+        (message "%s tag not found..." what))))))
 
 (defun rpm-change-n (what &optional arg)
   "Change given tag with possible number."
@@ -812,7 +855,7 @@ controls whether case is significant."
              (concat what number ": "
                      (read-file-name (concat "New " what number " file: ")
                                      "" "" nil (match-string 1)))))
-        (message (concat what " number \"" number "\" not found..."))))))
+        (message "%s number \"%s\" not found..." what number)))))
 
 (defun rpm-insert-group (group)
   "Insert Group tag."
@@ -1001,8 +1044,8 @@ leave point at previous location."
   "Run a `rpmbuild -bp'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message (concat "Cannot run `" rpm-spec-build-command
-		       " -bp' with --short-circuit"))
+      (message "Cannot run `%s -bp' with --short-circuit"
+	       rpm-spec-build-command)
     (setq rpm-no-gpg t)
     (rpm-build "-bp")))
 
@@ -1010,8 +1053,8 @@ leave point at previous location."
   "Run a `rpmbuild -bl'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message (concat "Cannot run `" rpm-spec-build-command
-		       " -bl' with --short-circuit"))
+      (message "Cannot run `%s -bl' with --short-circuit"
+	       rpm-spec-build-command)
     (setq rpm-no-gpg t)
     (rpm-build "-bl")))
 
@@ -1031,8 +1074,8 @@ leave point at previous location."
   "Run a `rpmbuild -bb'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message (concat "Cannot run `" rpm-spec-build-command
-		       " -bb' with --short-circuit"))
+      (message "Cannot run `%s -bb' with --short-circuit"
+	       rpm-spec-build-command)
     (setq rpm-no-gpg nil)
     (rpm-build "-bb")))
 
@@ -1040,8 +1083,8 @@ leave point at previous location."
   "Run a `rpmbuild -bs'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message (concat "Cannot run `" rpm-spec-build-command
-		       " -bs' with --short-circuit"))
+      (message "Cannot run `%s -bs' with --short-circuit"
+	       rpm-spec-build-command)
     (setq rpm-no-gpg nil)
     (rpm-build "-bs")))
 
@@ -1049,8 +1092,8 @@ leave point at previous location."
   "Run a `rpmbuild -ba'."
   (interactive "p")
   (if rpm-spec-short-circuit
-      (message (concat "Cannot run `" rpm-spec-build-command
-		       " -ba' with --short-circuit"))
+      (message "Cannot run `%s -ba' with --short-circuit"
+	       rpm-spec-build-command)
     (setq rpm-no-gpg nil)
     (rpm-build "-ba")))
 
@@ -1189,12 +1232,13 @@ command."
   (interactive "p")
   (save-excursion
     (goto-char (point-min))
-    (if (search-forward-regexp "^Release:[ \t]*\\([0-9]+\\)\\(.*\\)" nil t)
-        (let ((release (1+ (string-to-int (match-string 1)))))
-          (setq release (concat (int-to-string release) (match-string 2)))
-          (replace-match (concat "Release: " release))
-          (message (concat "Release tag changed to " release ".")))
-      (if (search-forward-regexp "^Release:[ \t]*%{?\\([^}]*\\)}?$" nil t)
+    (if (search-forward-regexp
+         "^\\(Release[ \t]*:[ \t]*\\)\\([0-9]+\\)\\(.*\\)" nil t)
+        (let ((release (1+ (string-to-int (match-string 2)))))
+          (setq release (concat (int-to-string release) (match-string 3)))
+          (replace-match (concat (match-string 1) release))
+          (message "Release tag changed to %s." release))
+      (if (search-forward-regexp "^Release[ \t]*:[ \t]*%{?\\([^}]*\\)}?$" nil t)
           (rpm-increase-release-with-macros)
         (message "No Release tag found...")))))
 
@@ -1204,7 +1248,7 @@ command."
   "Get the value of FIELD, searching up to buffer position MAX.
 See `search-forward-regexp'."
   (save-excursion
-    (ignore-errors
+    (condition-case nil
       (let ((str
              (progn
                (goto-char (point-min))
@@ -1228,7 +1272,8 @@ See `search-forward-regexp'."
                     (concat start-string end-string)
                   ;; Leave as is.
                   str)))
-          str)))))
+          str))
+      (error nil))))
 
 (defun rpm-find-spec-version (&optional with-epoch)
   "Get the version string.
@@ -1251,7 +1296,7 @@ if one is present in the file."
     (let ((str
            (progn
              (goto-char (point-min))
-             (search-forward-regexp (concat "Release:[ \t]*\\(.+\\).*$") nil)
+             (search-forward-regexp (concat "Release[ \t]*:[ \t]*\\(.+\\).*$") nil)
              (match-string 1))))
       (let ((inrel
              (if (string-match "%{?\\([^}]*\\)}?$" str)
@@ -1268,7 +1313,7 @@ if one is present in the file."
                str)))
         (setq dinrel inrel)
         (replace-match (concat "%define " dinrel))
-        (message (concat "Release tag changed to " dinrel "."))))))
+        (message "Release tag changed to %s." dinrel)))))
 
 ;;------------------------------------------------------------
 

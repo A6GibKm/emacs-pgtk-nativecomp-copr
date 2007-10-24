@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -299,6 +299,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Oct 24 2007 Jeremy Katz <katzj@redhat.com> - 22.1-6
+- Update rpm-spec-mode to the current upstream (#306841)
+
 * Wed Sep 12 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-5
 - require xorg-x11-fonts-ISO8859-1-100dpi instead of 75dpi (Resolves: bz281861)
 - drop broken python mode (Resolves: bz262801)
