@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -17,7 +17,6 @@ Source7: http://download.sourceforge.net/php-mode/php-mode-1.2.0.tgz
 Source8: php-mode-init.el
 Source9: ssl.el
 Source11: rpm-spec-mode-init.el
-Source12: rpm-spec-mode.el-0.14-xemacs-compat.patch
 Source13: focus-init.el
 Source14: po-mode.el
 Source15: po-mode-init.el
@@ -27,6 +26,7 @@ Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
+Patch1: files-el.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -100,13 +100,12 @@ Emacs packages or see some elisp examples.
 %prep
 %setup -q
 %patch0 -p1 -b .glibc-open-macro
+%patch1 -p0 -b .files-el
 
 # install rest of site-lisp files
 ( cd site-lisp
   cp %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
   tar xfz %SOURCE7  # php-mode
-  # xemacs compat patch for rpm-spec-mode
-  patch < %SOURCE12
   # fix po-auto-replace-revision-date nil
   patch < %SOURCE16 )
 
@@ -299,6 +298,12 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Nov  6 2007 Chip Coldwell <coldwell@redhat.com> 22.1-8
+- fix insufficient safe-mode checks (Resolves: bz367601)
+
+* Thu Nov  1 2007 Chip Coldwell <coldwell@redhat.com> 22.1-7
+- Update rpm-spec-mode to the current upstream, drop compat patch (bz306841)
+
 * Wed Oct 24 2007 Jeremy Katz <katzj@redhat.com> - 22.1-6
 - Update rpm-spec-mode to the current upstream (#306841)
 

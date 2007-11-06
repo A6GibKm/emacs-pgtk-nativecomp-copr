@@ -711,7 +711,7 @@ with no args, if that value is non-nil."
   (interactive "sChange log entry: ")
   (save-excursion
     (rpm-goto-section "changelog")
-    (let* ((address (or rpm-spec-user-mail-address (user-mail-address)))
+    (let* ((address (rpm-spec-user-mail-address))
            (fullname (or rpm-spec-user-full-name (user-full-name)))
            (string (concat "* " (substring (current-time-string) 0 11)
                            (substring (current-time-string) -4) " "
@@ -892,7 +892,7 @@ controls whether case is significant."
   (interactive "p")
   (beginning-of-line)
   (insert "Packager: " (or rpm-spec-user-full-name (user-full-name))
-          " <" (or rpm-spec-user-mail-address (user-mail-address)) ">\n"))
+          " <" (rpm-spec-user-mail-address) ">\n"))
 
 (defun rpm-change-packager (&optional arg)
   "Update Packager tag."
@@ -1380,6 +1380,18 @@ if one is present in the file."
 
     (end-of-line 1)
     (rpm-add-change-log-entry "Initial build.")))
+
+;;------------------------------------------------------------
+
+(defun rpm-spec-user-mail-address ()
+  "User mail address helper."
+  (cond
+   (rpm-spec-user-mail-address
+    rpm-spec-user-mail-address)
+   ((fboundp 'user-mail-address)
+    (user-mail-address))
+   (t
+    user-mail-address)))
 
 ;;------------------------------------------------------------
 
