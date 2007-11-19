@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -179,6 +179,7 @@ install -m 0644 %SOURCE18 %{buildroot}%{site_lisp}
 
 mv %{buildroot}%{_bindir}/{etags,etags.emacs}
 mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
+mv %{buildroot}%{_mandir}/man1/{etags.1,etags.emacs.1}
 mv %{buildroot}%{_bindir}/{ctags,gctags}
 
 # GNOME / KDE files
@@ -230,17 +231,13 @@ rm -rf %{buildroot}
 %define info_files ada-mode autotype calc ccmode cl dired-x ebrowse ediff efaq eintr elisp0 elisp1 elisp emacs emacs-mime emacs-xtra erc eshell eudc flymake forms gnus idlwave info message mh-e newsticker org pcl-cvs pgg rcirc reftex sc ses sieve smtpmail speedbar tramp url viper vip widget woman
 
 %preun
-if [ $1 -eq 0 ] ; then
-  alternatives --remove emacs %{_bindir}/emacs-%{version}
-fi
+alternatives --remove emacs %{_bindir}/emacs-%{version}
 
 %posttrans
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
 %preun nox
-if [ $1 -eq 0 ] ; then
-  alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
-fi
+alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
 
 %posttrans nox
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
@@ -249,15 +246,18 @@ alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 for f in %{info_files}; do
   /sbin/install-info %{_infodir}/$f.gz %{_infodir}/dir 2> /dev/null || :
 done
-alternatives --install %{_bindir}/etags etags %{_bindir}/etags.emacs 80
 
 %preun common
+alternatives --remove etags %{_bindir}/etags.emacs
 if [ "$1" = 0 ]; then
   for f in %{info_files}; do
     /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir 2> /dev/null || :
   done
-  alternatives --remove etags %{_bindir}/etags.emacs
 fi
+
+%posttrans common
+alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
+	--slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
 
 %files
 %defattr(-,root,root)
@@ -298,6 +298,9 @@ fi
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-1
+- fixup alternatives mess (bz239745, bz246540)
+
 * Tue Nov  6 2007 Chip Coldwell <coldwell@redhat.com> 22.1-8
 - fix insufficient safe-mode checks (Resolves: bz367601)
 
