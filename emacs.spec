@@ -2,8 +2,8 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 22.1
-Release: 9%{?dist}
+Version: 22.1.50
+Release: 1%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -100,7 +100,6 @@ Emacs packages or see some elisp examples.
 %prep
 %setup -q
 %patch0 -p1 -b .glibc-open-macro
-%patch1 -p0 -b .files-el
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -121,11 +120,6 @@ rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
-
-# stack-protector causes crashing on i386 (#174730)
-%ifarch %{ix86}
-CFLAGS=`echo $CFLAGS | sed -e "s/ -fstack-protector//"`
-%endif
 
 %configure --with-pop --with-sound --with-gtk
 
@@ -298,6 +292,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-1
+- pulled sources from GNU CVS
+
 * Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1-9
 - fixup alternatives mess (bz239745, bz246540)
 
