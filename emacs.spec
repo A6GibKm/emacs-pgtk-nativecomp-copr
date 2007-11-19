@@ -298,7 +298,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
-* Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-1
+* Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1-9
 - fixup alternatives mess (bz239745, bz246540)
 
 * Tue Nov  6 2007 Chip Coldwell <coldwell@redhat.com> 22.1-8
