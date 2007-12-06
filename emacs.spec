@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1.50
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -119,7 +119,7 @@ rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
 %build
-export CFLAGS="-DMAIL_USE_LOCKF -DSYSTEM_PURESIZE_EXTRA=16777216 $RPM_OPT_FLAGS"
+export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
 %configure --with-pop --with-sound --with-gtk
 
@@ -292,6 +292,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Dec  6 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-2
+- drop -DSYSTEM_PURESIZE_EXTRA=16777216 (bz409581)
+
 * Mon Nov 19 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-1
 - pulled sources from GNU CVS
 
