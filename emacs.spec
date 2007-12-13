@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1.50
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -225,16 +225,16 @@ rm -rf %{buildroot}
 %define info_files ada-mode autotype calc ccmode cl dired-x ebrowse ediff efaq eintr elisp0 elisp1 elisp emacs emacs-mime emacs-xtra erc eshell eudc flymake forms gnus idlwave info message mh-e newsticker org pcl-cvs pgg rcirc reftex sc ses sieve smtpmail speedbar tramp url viper vip widget woman
 
 %preun
-alternatives --remove emacs %{_bindir}/emacs-%{version}
+alternatives --remove emacs %{_bindir}/emacs-%{version} || :
 
 %posttrans
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80 || :
 
 %preun nox
-alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
+alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
 
 %posttrans nox
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
+alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
 
 %post common
 for f in %{info_files}; do
@@ -242,7 +242,7 @@ for f in %{info_files}; do
 done
 
 %preun common
-alternatives --remove etags %{_bindir}/etags.emacs
+alternatives --remove etags %{_bindir}/etags.emacs || :
 if [ "$1" = 0 ]; then
   for f in %{info_files}; do
     /sbin/install-info --delete %{_infodir}/$f.gz %{_infodir}/dir 2> /dev/null || :
@@ -292,6 +292,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Dec  7 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-3
+- scriptlets shouldn't fail needlessly.
+- new upstream tarball
+
 * Thu Dec  6 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-2
 - drop -DSYSTEM_PURESIZE_EXTRA=16777216 (bz409581)
 
