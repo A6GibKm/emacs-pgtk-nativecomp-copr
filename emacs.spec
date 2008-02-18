@@ -3,7 +3,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Version: 22.1.50
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -292,6 +292,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Feb 18 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 22.1.50-4
+- Autorebuild for GCC 4.3
+
 * Fri Dec  7 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-3
 - scriptlets shouldn't fail needlessly.
 - new upstream tarball
