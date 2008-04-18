@@ -2,14 +2,13 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 22.1.50
-Release: 4%{?dist}
+Version: 23.0.60
+Release: 2%{?dist}
 License: GPL
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
 Source1: emacs.desktop
-Source2: emacs.png
 Source3: dotemacs.el
 Source4: site-start.el
 Source6: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
@@ -26,7 +25,6 @@ Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
-Patch1: files-el.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -108,10 +106,12 @@ Emacs packages or see some elisp examples.
   # fix po-auto-replace-revision-date nil
   patch < %SOURCE16 )
 
-%if %{paranoid}
+# we prefer our emacs.desktop file
+cp %SOURCE1 etc/emacs.desktop
+
 # avoid trademark issues
-( cd lisp/play
-  rm -f tetris.el tetris.elc )
+%if %{paranoid}
+rm -f lisp/play/tetris.el lisp/play/tetris.elc
 %endif
 
 %if %{expurgate}
@@ -121,7 +121,7 @@ rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
-%configure --with-pop --with-sound --with-gtk
+%configure --with-pop --with-sound --with-x-toolkit=gtk --enable-font-backend
 
 %__make bootstrap
 %__make %{?_smp_mflags}
@@ -175,12 +175,6 @@ mv %{buildroot}%{_bindir}/{etags,etags.emacs}
 mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
 mv %{buildroot}%{_mandir}/man1/{etags.1,etags.emacs.1}
 mv %{buildroot}%{_bindir}/{ctags,gctags}
-
-# GNOME / KDE files
-mkdir -p %{buildroot}%{_datadir}/applications
-install -m 0644 %SOURCE1 %{buildroot}%{_datadir}/applications/gnu-emacs.desktop
-mkdir -p %{buildroot}%{_datadir}/pixmaps
-install -m 0644 %SOURCE2 %{buildroot}%{_datadir}/pixmaps/
 
 # install site-lisp files
 install -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
@@ -259,8 +253,8 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
-%{_datadir}/applications/gnu-emacs.desktop
-%{_datadir}/pixmaps/emacs.png 
+%{_datadir}/applications/emacs.desktop
+%{_datadir}/icons/hicolor/*/apps/emacs*.png
 
 %files nox
 %defattr(-,root,root)
@@ -292,8 +286,17 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Apr 18 2008 Chip Coldwell <coldwell@redhat.com> 23.0.60-2
+- New upstream tarball (fixes bz435767)
+- configure tweaks
+- drop files.el patch (now upstream)
+- drop parallel build patch (now upstream)
+
 * Mon Feb 18 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 22.1.50-4
 - Autorebuild for GCC 4.3
+
+* Wed Jan  2 2008 Chip Coldwell <coldwell@redhat.com> 22.1.50-3.1
+- parallel build patch from Dan Nicolaescu <dann@ics.uci.edu>
 
 * Fri Dec  7 2007 Chip Coldwell <coldwell@redhat.com> 22.1.50-3
 - scriptlets shouldn't fail needlessly.
