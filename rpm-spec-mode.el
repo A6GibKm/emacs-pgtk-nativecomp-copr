@@ -63,7 +63,7 @@
 
 ;;; Code:
 
-(defconst rpm-spec-mode-version "0.12x" "Version of `rpm-spec-mode'.")
+(defconst rpm-spec-mode-version "0.12.1x" "Version of `rpm-spec-mode'.")
 
 (defgroup rpm-spec nil
   "RPM spec mode with Emacs/XEmacs enhancements."
@@ -1233,14 +1233,17 @@ command."
   (save-excursion
     (goto-char (point-min))
     (if (search-forward-regexp
-         "^\\(Release[ \t]*:[ \t]*\\)\\([0-9]+\\)\\(.*\\)" nil t)
-        (let ((release (1+ (string-to-int (match-string 2)))))
-          (setq release (concat (int-to-string release) (match-string 3)))
+         ;; Try to find the last digit-only group of a dot-separated release string
+         (concat "^\\(Release[ \t]*:[ \t]*\\)"
+                 "\\(.*[ \t\\.}]\\)\\([0-9]+\\)\\([ \t\\.%].*\\|$\\)") nil t)
+        (let ((release (1+ (string-to-int (match-string 3)))))
+          (setq release
+                (concat (match-string 2) (int-to-string release) (match-string 4)))
           (replace-match (concat (match-string 1) release))
           (message "Release tag changed to %s." release))
       (if (search-forward-regexp "^Release[ \t]*:[ \t]*%{?\\([^}]*\\)}?$" nil t)
           (rpm-increase-release-with-macros)
-        (message "No Release tag found...")))))
+        (message "No Release tag to increase found...")))))
 
 ;;------------------------------------------------------------
 

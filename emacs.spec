@@ -2,29 +2,31 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
-Version: 23.0.60
-Release: 2%{?dist}
-License: GPL
+Version: 22.2
+Release: 1%{?dist}
+License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
 Source1: emacs.desktop
 Source3: dotemacs.el
 Source4: site-start.el
-Source6: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
-Source7: http://download.sourceforge.net/php-mode/php-mode-1.2.0.tgz
+Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.4.0/php-mode.el
 Source8: php-mode-init.el
 Source9: ssl.el
+# rpm-spec-mode from Xemacs
+Source10: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
 Source13: focus-init.el
 Source14: po-mode.el
 Source15: po-mode-init.el
-Source16: po-mode-auto-replace-date-71264.patch
 Source18: default.el
 Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
+Patch1: rpm-spec-mode.patch
+Patch2: po-mode-auto-replace-date-71264.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -100,11 +102,13 @@ Emacs packages or see some elisp examples.
 %patch0 -p1 -b .glibc-open-macro
 
 # install rest of site-lisp files
-( cd site-lisp
-  cp %SOURCE6 %SOURCE9 %SOURCE14 %SOURCE20 .
-  tar xfz %SOURCE7  # php-mode
+( ! [ -d site-lisp ] && mkdir site-lisp
+  cd site-lisp
+  cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 %SOURCE20 .
+  # rpm-spec-mode can use compilation-mode
+  patch < %PATCH1
   # fix po-auto-replace-revision-date nil
-  patch < %SOURCE16 )
+  patch < %PATCH2 )
 
 # we prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -121,7 +125,7 @@ rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
-%configure --with-pop --with-sound --with-x-toolkit=gtk --enable-font-backend
+%configure --with-x-toolkit=gtk
 
 %__make bootstrap
 %__make %{?_smp_mflags}
@@ -194,6 +198,17 @@ install -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 rm -f %{buildroot}%{_infodir}/dir
 rm %{buildroot}%{_localstatedir}/games/emacs/*
 
+# Open desktop application
+mkdir -p %{buildroot}%{_datadir}/applications
+install -m 0644 %SOURCE1 %{buildroot}%{_datadir}/applications/emacs.desktop
+
+# put the icons where they belong
+for i in 16 24 32 48 ; do
+   mkdir -p %{buildroot}%{_datadir}/icons/hicolor/${i}x${i}/apps
+   cp %{buildroot}%{_datadir}/emacs/%{version}/etc/images/icons/emacs_${i}.png \
+      %{buildroot}%{_datadir}/icons/hicolor/${i}x${i}/apps/emacs.png
+done
+
 #
 # create file lists
 #
@@ -254,7 +269,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/icons/hicolor/*/apps/emacs*.png
+%{_datadir}/icons/hicolor/*/apps/emacs.png
 
 %files nox
 %defattr(-,root,root)
@@ -266,7 +281,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %files -f common-filelist common
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
-%doc etc/NEWS BUGS README 
+%doc etc/NEWS BUGS README
 %exclude %{_bindir}/emacs-*
 %{_bindir}/*
 %{_mandir}/*/*
@@ -286,6 +301,15 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Apr 22 2008 Chip Coldwell <coldwell@redhat.com> 22.2-1
+- revert back to emacs-22.2 (bz443639)
+- update to php-mode-1.4.0
+- update to rpm-spec-mode.el v0.12.1x (bz432209)
+- patch rpm-spec-mode to use compilation mode (bz227418)
+- fix the Release tag (bz440624)
+- drop superfluous configure options
+- move the new icons into the right destination directory
+
 * Fri Apr 18 2008 Chip Coldwell <coldwell@redhat.com> 23.0.60-2
 - New upstream tarball (fixes bz435767)
 - configure tweaks
