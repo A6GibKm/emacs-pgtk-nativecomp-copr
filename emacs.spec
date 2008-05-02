@@ -2,8 +2,9 @@
 
 Summary: GNU Emacs text editor
 Name: emacs
+Epoch: 1
 Version: 22.2
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -21,19 +22,23 @@ Source13: focus-init.el
 Source14: po-mode.el
 Source15: po-mode-init.el
 Source18: default.el
-Source19: wrapper
 Source20: igrep.el
 Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch2: po-mode-auto-replace-date-71264.patch
+Patch3: emacs-22.1.50-sparc64.patch
+Patch4: emacs-22.1.50-regex.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
 BuildRequires: autoconf, automake, bzip2, cairo, texinfo
+%ifarch %{ix86}
+BuildRequires: setarch
+%endif
 Requires: xorg-x11-fonts-ISO8859-1-100dpi
-Requires: emacs-common = %{version}-%{release}
+Requires: emacs-common = %{epoch}:%{version}-%{release}
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin)
 
@@ -58,7 +63,7 @@ This package provides an emacs binary with support for X windows.
 %package nox
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
-Requires: emacs-common = %{version}-%{release}
+Requires: emacs-common = %{epoch}:%{version}-%{release}
 Provides: emacs(bin)
 
 %description nox
@@ -100,10 +105,11 @@ Emacs packages or see some elisp examples.
 %prep
 %setup -q
 %patch0 -p1 -b .glibc-open-macro
+%patch3 -p1 -b .sparc64-libdir
+%patch4 -p1 -b .regexp
 
 # install rest of site-lisp files
-( ! [ -d site-lisp ] && mkdir site-lisp
-  cd site-lisp
+( cd site-lisp
   cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 %SOURCE20 .
   # rpm-spec-mode can use compilation-mode
   patch < %PATCH1
@@ -122,13 +128,19 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
+%ifarch %{ix86}
+%define setarch setarch %{_arch} -R
+%else
+%define setarch %{nil}
+%endif
+
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
 %configure --with-x-toolkit=gtk
 
 %__make bootstrap
-%__make %{?_smp_mflags}
+%{setarch} %__make %{?_smp_mflags}
 
 # remove versioned file so that we end up with .1 suffix and only one DOC file
 rm src/emacs-%{version}.*
@@ -148,7 +160,7 @@ sitestartdir=%{site_lisp}/site-start.d
 
 Name: emacs
 Description: GNU Emacs text editor
-Version: %{version}
+Version: %{epoch}:%{version}
 EOF
 
 %install
@@ -301,6 +313,19 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu May 01 2008 Tom "spot" Callaway <tcallawa@redhat.com>
+- fix requires to include epoch
+
+* Thu May 01 2008 Dennis Gilmore <dennis@ausil.us> 1:22.2-4
+- add patch from bz#435767
+
+* Thu May 01 2008 Dennis Gilmore <dennis@ausil.us> 1:22.2-3
+- add epoch
+- put epoch in .pc file
+
+* Thu Apr 24 2008 Dennis Gilmore <dennis@ausil.us> 22.2-2
+- add patch fixing libdir on sparc64
+
 * Tue Apr 22 2008 Chip Coldwell <coldwell@redhat.com> 22.2-1
 - revert back to emacs-22.2 (bz443639)
 - update to php-mode-1.4.0
@@ -309,6 +334,8 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 - fix the Release tag (bz440624)
 - drop superfluous configure options
 - move the new icons into the right destination directory
+- the heuristics for detecting address space randomization in the emacs dumper
+  seem insufficient, so bring back setarch -R
 
 * Fri Apr 18 2008 Chip Coldwell <coldwell@redhat.com> 23.0.60-2
 - New upstream tarball (fixes bz435767)
