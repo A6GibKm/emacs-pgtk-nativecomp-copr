@@ -1255,7 +1255,7 @@ See `search-forward-regexp'."
       (let ((str
              (progn
                (goto-char (point-min))
-               (search-forward-regexp (concat
+               (search-forward-regexp (concat "^"
                                        field ":[ \t]*\\(.*?\\)[ \t]*$") max)
                (match-string 1))))
         ;; Try to expand macros
