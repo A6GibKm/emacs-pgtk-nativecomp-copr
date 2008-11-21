@@ -15,8 +15,8 @@ Source4: site-start.el
 Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.4.0/php-mode.el
 Source8: php-mode-init.el
 Source9: ssl.el
-# rpm-spec-mode from Xemacs
-Source10: http://cvs.xemacs.org/viewcvs.cgi/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
+# rpm-spec-mode from XEmacs
+Source10: http://cvs.xemacs.org/viewcvs.cgi/*checkout*/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
 Source13: focus-init.el
 Source14: po-mode.el
