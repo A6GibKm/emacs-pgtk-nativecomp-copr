@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 22.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -309,6 +309,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Dec 01 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 1:22.3-2
+- Rebuild for Python 2.6
+
 * Sat Nov  8 2008 Jens Petersen <petersen@redhat.com> - 1:22.3-1
 - update to 22.3 (#461448)
 - emacs-22.1.50-sparc64.patch and emacs-22.1.50-regex.patch no longer needed
