@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 22.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -258,12 +258,28 @@ rm -rf %{buildroot}
 alternatives --remove emacs %{_bindir}/emacs-%{version} || :
 
 %posttrans
+#check if there is "remainder" old version, which was not deleted
+if alternatives --display emacs > /dev/null; then
+VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
+if [ ${VER} != %{version} ]; then
+alternatives --remove emacs %{_bindir}/emacs-${VER} || :
+fi
+fi
+#end check
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80 || :
 
 %preun nox
 alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
 
 %posttrans nox
+#check if there is "remainder" old version, which was not deleted
+if alternatives --display emacs > /dev/null; then
+VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
+if [ ${VER} != %{version} ]; then
+alternatives --remove emacs %{_bindir}/emacs-${VER}-nox || :
+fi
+fi
+#end check
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
 
 %post common
@@ -323,6 +339,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Feb 16 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-5
+- fix #474578 - /usr/bin/emacs link not updated on upgrade
+  (added a script to scan the alternatives and update them)
+
 * Mon Feb 09 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-4
 - fix bz#484309 (alternatives error message)
 
