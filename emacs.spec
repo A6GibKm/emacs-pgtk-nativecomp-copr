@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 22.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -37,6 +37,10 @@ BuildRequires: setarch
 %endif
 Requires: xorg-x11-fonts-ISO8859-1-100dpi
 Requires: emacs-common = %{epoch}:%{version}-%{release}
+Requires: hicolor-icon-theme
+# Desktop integration
+BuildRequires: desktop-file-utils
+Requires:      desktop-file-utils
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin)
 
@@ -219,9 +223,9 @@ install -m 0644 macros.emacs %{buildroot}%{_sysconfdir}/rpm/
 rm -f %{buildroot}%{_infodir}/dir
 rm %{buildroot}%{_localstatedir}/games/emacs/*
 
-# Open desktop application
-mkdir -p %{buildroot}%{_datadir}/applications
-install -m 0644 %SOURCE1 %{buildroot}%{_datadir}/applications/emacs.desktop
+# install desktop file
+desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
+                     %SOURCE1
 
 # put the icons where they belong
 for i in 16 24 32 48 ; do
@@ -253,6 +257,20 @@ cat el-*-files common-lisp-dir-files > el-filelist
 rm -rf %{buildroot}
 
 %define info_files ada-mode autotype calc ccmode cl dired-x ebrowse ediff efaq eintr elisp0 elisp1 elisp emacs emacs-mime emacs-xtra erc eshell eudc flymake forms gnus idlwave info message mh-e newsticker org pcl-cvs pgg rcirc reftex sc ses sieve smtpmail speedbar tramp url viper vip widget woman
+
+%post
+update-desktop-database &> /dev/null || :
+touch --no-create %{_datadir}/icons/hicolor
+if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
+  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
+fi
+
+%postun
+update-desktop-database &> /dev/null || :
+touch --no-create %{_datadir}/icons/hicolor
+if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
+  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
+fi
 
 %preun
 alternatives --remove emacs %{_bindir}/emacs-%{version} || :
@@ -297,7 +315,7 @@ fi
 
 %posttrans common
 alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
-	--slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
+       --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
 
 %files
 %defattr(-,root,root)
@@ -339,6 +357,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Mar  4 2009 Michel Salim <salimma@fedoraproject.org> - 1:22.3-8
+- Use desktop-file-utils to handle desktop file
+- Update icon cache if GTK2 is installed
+
 * Wed Feb 25 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-7
 - site-lisp/default.el is now config(noreplace)
 
