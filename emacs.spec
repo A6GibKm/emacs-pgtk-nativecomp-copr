@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 22.3
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -27,6 +27,7 @@ Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch2: po-mode-auto-replace-date-71264.patch
+Patch3: rpm-spec-mode-utc.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -116,7 +117,10 @@ Emacs packages or see some elisp examples.
   # rpm-spec-mode can use compilation-mode
   patch < %PATCH1
   # fix po-auto-replace-revision-date nil
-  patch < %PATCH2 )
+  patch < %PATCH2 
+  # rpm-spec-mode: added rpm-change-log-uses-utc variable
+  patch < %PATCH3
+  )
 
 # we prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -357,6 +361,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Mar 12 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-9
+- implement UTC change log option in rpm-spec-mode.el (#489829)
+
 * Wed Mar  4 2009 Michel Salim <salimma@fedoraproject.org> - 1:22.3-8
 - Use desktop-file-utils to handle desktop file
 - Update icon cache if GTK2 is installed
