@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 22.3
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -40,6 +40,7 @@ BuildRequires: setarch
 Requires: xorg-x11-fonts-ISO8859-1-100dpi
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 Requires: hicolor-icon-theme
+Requires: hunspell
 # Desktop integration
 BuildRequires: desktop-file-utils
 Requires:      desktop-file-utils
@@ -363,6 +364,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Apr 10 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-11
+- fix bz#443549 -  spell-buffer, flyspell-mode do not work
+
 * Fri Mar 27 2009 Daniel Novotny <dnovotny@redhat.com> 1:22.3-10
 - fix segfaults when emacsclient connects to a tcp emacs server (#489066)
 
