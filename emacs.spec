@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.0.93
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -367,6 +367,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Jun 11 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-2
+- fix bz#505083 - rpm-add-change-log-entry date format rejected by rpmbuild
+
 * Mon May 18 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-1
 - new upstream version
 
