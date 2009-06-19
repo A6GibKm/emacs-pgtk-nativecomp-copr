@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.0.93
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -22,8 +22,6 @@ Source13: focus-init.el
 Source14: po-mode.el
 Source15: po-mode-init.el
 Source18: default.el
-Source20: igrep.el
-Source21: igrep-init.el
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch2: po-mode-auto-replace-date-71264.patch
@@ -116,7 +114,7 @@ Emacs packages or see some elisp examples.
 
 # install rest of site-lisp files
 ( cd site-lisp
-  cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 %SOURCE20 .
+  cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 .
   # rpm-spec-mode can use compilation-mode
   patch < %PATCH1
   # fix po-auto-replace-revision-date nil
@@ -216,7 +214,7 @@ mv %{buildroot}%{_bindir}/{ctags,gctags}
 install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
-install -p -m 0644 $RPM_SOURCE_DIR/*-init.el %{buildroot}%{site_lisp}/site-start.d
+install -p -m 0644 %SOURCE8 %SOURCE11 %SOURCE13 %SOURCE15 %{buildroot}%{site_lisp}/site-start.d
 
 # default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
@@ -367,6 +365,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Jun 19 2009 Jens Petersen <petersen@redhat.com> - 1:23.0.93-3
+- drop igrep since lgrep and rgrep are maintained in emacs now
+- specify the list of *-init.el files to be install explicitly
+
 * Thu Jun 11 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-2
 - fix bz#505083 - rpm-add-change-log-entry date format rejected by rpmbuild
 
