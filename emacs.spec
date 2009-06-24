@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.0.93
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -35,7 +35,7 @@ BuildRequires: autoconf, automake, bzip2, cairo, texinfo
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
-Requires: xorg-x11-fonts-ISO8859-1-100dpi
+Requires: xorg-x11-fonts-ISO8859-1-100dpi, xorg-x11-fonts-misc
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 #Requires: hicolor-icon-theme
 Requires: hunspell
@@ -365,6 +365,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Jun 24 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-4
+- added xorg-x11-fonts-misc to dependencies (#469220)
+
 * Fri Jun 19 2009 Jens Petersen <petersen@redhat.com> - 1:23.0.93-3
 - drop igrep since lgrep and rgrep are maintained in emacs now
 - specify the list of *-init.el files to be install explicitly
