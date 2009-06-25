@@ -4,5 +4,3 @@
 ;;; prevents loading of this file.  Also the "-q" option to emacs
 ;;; prevents both "~/.emacs" and this file from being loaded at startup.
 
-; bz#443549
-(setq ispell-program-name "hunspell")
