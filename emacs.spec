@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.0.93
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -35,7 +35,7 @@ BuildRequires: autoconf, automake, bzip2, cairo, texinfo
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
-Requires: xorg-x11-fonts-ISO8859-1-100dpi, xorg-x11-fonts-misc
+#Requires: xorg-x11-fonts-ISO8859-1-100dpi, xorg-x11-fonts-misc
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 #Requires: hicolor-icon-theme
 # bz#443549, bz#508033
@@ -369,6 +369,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Jun 26 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-6
+- removed dependency to bitmap fonts: emacs version 23 does not need them
+
 * Thu Jun 25 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-5
 - revoked default.el change (#508033)
 - added build dependency: librsvg2-devel (#507852)
