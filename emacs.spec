@@ -3,8 +3,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 23.0.93
-Release: 7%{?dist}
+Version: 23.1
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -369,6 +369,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Jul 31 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-1
+- new upstream version 23.1
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:23.0.93-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
