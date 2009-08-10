@@ -4,11 +4,11 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.gz
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
 Source1: emacs.desktop
 Source3: dotemacs.el
 Source4: site-start.el
@@ -369,6 +369,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Aug 10 2009 Ville Skyttä <ville.skytta@iki.fi> - 1:23.1-2
+- Use bzipped upstream tarball.
+
 * Fri Jul 31 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-1
 - new upstream version 23.1
 
