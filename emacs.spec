@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -369,6 +369,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Aug 13 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-3
+- fixed Name and GenericName in desktop file (#514599)
+
 * Mon Aug 10 2009 Ville Skyttä <ville.skytta@iki.fi> - 1:23.1-2
 - Use bzipped upstream tarball.
 

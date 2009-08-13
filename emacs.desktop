@@ -1,26 +1,5 @@
 [Desktop Entry]
-Name=Emacs Text Editor
-Name[bg]=редактор Emacs
-Name[ca]=Editor Emacs
-Name[cs]=Editor Emacs
-Name[da]=Emacs tekstredigerer
-Name[de]=Emacs Texteditor
-Name[eo]=La redaktilo Emakso
-Name[et]=Võimas tekstiredaktor Emacs
-Name[fi]=Emacs editori
-Name[fr]=Éditeur Emacs
-Name[hu]=Emacs szövegszerkesztő
-Name[is]=Emacs-ritill
-Name[ja]=Emacs テキスト・エディター
-Name[mk]=Софистицираниот Emacs уредувач
-Name[no]=Emacs-tekstredigerer
-Name[pt]=Editor Emacs
-Name[ro]=Editorul Emacs
-Name[ru]=Редактор Emacs
-Name[sk]=Editor Emacs
-Name[sl]=Urejevalnik Emacs
-Name[uk]=Редактор Emacs
-Name[zh_TW]=Emacs 文字編輯器
+Name=Emacs
 GenericName=Text Editor
 Comment=Edit text
 Comment[zh_TW]=編輯文字
