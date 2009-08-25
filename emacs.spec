@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -42,6 +42,7 @@ Requires: emacs-common = %{epoch}:%{version}-%{release}
 Requires: hunspell, aspell
 # bz#507852
 BuildRequires: librsvg2-devel
+BuildRequires: alsa-lib-devel, libotf
 Requires: librsvg2
 # Desktop integration
 BuildRequires: desktop-file-utils
@@ -369,6 +370,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Aug 25 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-4
+- alsa-lib-devel added to BuildRequires (#518659)
+
 * Thu Aug 13 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-3
 - fixed Name and GenericName in desktop file (#514599)
 
