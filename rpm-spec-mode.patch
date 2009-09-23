@@ -4,10 +4,10 @@
  
  ;;; Code:
  
--(defconst rpm-spec-mode-version "0.12.1x" "Version of `rpm-spec-mode'.")
+-(defconst rpm-spec-mode-version "0.12.3x" "Version of `rpm-spec-mode'.")
 +(require 'compile)
 +
-+(defconst rpm-spec-mode-version "0.12.1x.rh1" "Version of `rpm-spec-mode'.")
++(defconst rpm-spec-mode-version "0.12.3x.rh1" "Version of `rpm-spec-mode'.")
  
  (defgroup rpm-spec nil
    "RPM spec mode with Emacs/XEmacs enhancements."

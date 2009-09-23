@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -375,6 +375,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Sep 23 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-8
+- updated rpm-spec-mode.el to latest upstream version (#524851)
+
 * Tue Sep 22 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-7
 - updated %%info_files (#510750)
 

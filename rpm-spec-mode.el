@@ -63,7 +63,7 @@
 
 ;;; Code:
 
-(defconst rpm-spec-mode-version "0.12.1x" "Version of `rpm-spec-mode'.")
+(defconst rpm-spec-mode-version "0.12.3x" "Version of `rpm-spec-mode'.")
 
 (defgroup rpm-spec nil
   "RPM spec mode with Emacs/XEmacs enhancements."
@@ -252,7 +252,7 @@ value returned by function `user-mail-address'."
   (eval-when-compile
     (concat "^%"
             (regexp-opt
-             ;; From RPM 4.4.9 sources, file build/parseSpec.c: partList[].
+             ;; From RPM 4.6.0 sources, file build/parseSpec.c: partList[].
              '("build" "changelog" "check" "clean" "description" "files"
                "install" "package" "post" "postun" "pretrans" "posttrans"
                "pre" "prep" "preun" "trigger" "triggerin" "triggerpostun"
@@ -602,7 +602,7 @@ value returned by function `user-mail-address'."
          '(1 'rpm-spec-tag-face))
    '("%\\(de\\(fine\\|scription\\)\\|files\\|global\\|package\\)[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
-   '("%p\\(ost\\|re\\)\\(un\\)?[ \t]+\\([^-][^ \t\n]*\\)"
+   '("%p\\(ost\\|re\\)\\(un\\|trans\\)?[ \t]+\\([^-][^ \t\n]*\\)"
      (3 rpm-spec-package-face))
    '("%configure " 0 rpm-spec-macro-face)
    '("%dir[ \t]+\\([^ \t\n]+\\)[ \t]*" 1 rpm-spec-dir-face)
@@ -1255,8 +1255,8 @@ See `search-forward-regexp'."
       (let ((str
              (progn
                (goto-char (point-min))
-               (search-forward-regexp (concat "^"
-                                       field ":[ \t]*\\(.*?\\)[ \t]*$") max)
+               (search-forward-regexp
+                (concat "^" field ":[ \t]*\\(.*?\\)[ \t]*$") max)
                (match-string 1))))
         ;; Try to expand macros
         (if (string-match "\\(%{?\\(\\?\\)?\\)\\([a-zA-Z0-9_]*\\)\\(}?\\)" str)
@@ -1299,7 +1299,7 @@ if one is present in the file."
     (let ((str
            (progn
              (goto-char (point-min))
-             (search-forward-regexp (concat "Release[ \t]*:[ \t]*\\(.+\\).*$") nil)
+             (search-forward-regexp "^Release[ \t]*:[ \t]*\\(.+\\).*$" nil)
              (match-string 1))))
       (let ((inrel
              (if (string-match "%{?\\([^}]*\\)}?$" str)
