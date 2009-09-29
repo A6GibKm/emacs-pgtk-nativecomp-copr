@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -51,6 +51,9 @@ BuildRequires: desktop-file-utils
 Requires:      desktop-file-utils
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin)
+# #516391
+Obsoletes: emacs-nxml-mode < 0.20041004-10
+Provides: emacs-nxml-mode = 0.20041004-10
 
 # C and build patches
 
@@ -378,6 +381,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Sep 29 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-10
+- emacs contains nxml-mode (#516391)
+
 * Thu Sep 24 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-9
 - use xdg-open(1) for opening URLs (#316131)
 
