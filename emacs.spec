@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -183,7 +183,7 @@ ${TOPDIR}/src/emacs %{bytecompargs} site-lisp/*.el
 # Create pkgconfig file
 cat > emacs.pc << EOF
 sitepkglispdir=%{site_lisp}
-sitestartdir=%{site_lisp}/site-start.d
+sitestartdir=%{site_start_d}
 
 Name: emacs
 Description: GNU Emacs text editor
@@ -193,7 +193,8 @@ EOF
 # Create macros.emacs RPM macro file
 cat > macros.emacs << EOF
 %%_emacs_version %{version}
-%%_emacs_epoch %{epoch}
+%%_emacs_ev %{?epoch:%{epoch}:}%{version}
+%%_emacs_evr %{?epoch:%{epoch}:}%{version}-%{release}
 %%_emacs_sitelispdir %{site_lisp}
 %%_emacs_sitestartdir %{site_start_d}
 %%_emacs_bytecompile /usr/bin/emacs %bytecompargs 
@@ -381,6 +382,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Oct 14 2009 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-11
+- Update macros.xemacs to treat epoch correctly and be consistent with xemacs package
+- Use site_start_d macro consistently
+
 * Tue Sep 29 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-10
 - emacs contains nxml-mode (#516391)
 
