@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -33,7 +33,7 @@ Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
-BuildRequires: autoconf, automake, bzip2, cairo, texinfo
+BuildRequires: autoconf, automake, bzip2, cairo, texinfo, gzip
 %ifarch %{ix86}
 BuildRequires: setarch
 %endif
@@ -207,6 +207,10 @@ make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
 
 # let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
+
+# do not compress the files which implement compression itself (#484830)
+gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
+gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
 # rebuild without X support
 # remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
@@ -382,6 +386,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Oct 14 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-12
+- do not compress the files which implement compression itself (#484830)
+
 * Wed Oct 14 2009 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-11
 - Update macros.xemacs to treat epoch correctly and be consistent with xemacs package
 - Use site_start_d macro consistently
