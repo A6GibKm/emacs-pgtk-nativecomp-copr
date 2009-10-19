@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -228,6 +228,11 @@ mkdir -p %{buildroot}%{site_lisp}
 install -p -m 0644 %SOURCE4 %{buildroot}%{site_lisp}/site-start.el
 install -p -m 0644 %SOURCE18 %{buildroot}%{site_lisp}
 
+#this solves bz#474958, "update-directory-autoloads" now finally works
+#the path is different each version, so we'll generate it here
+echo "(setq source-directory \"%{_datadir}/emacs/%{version}/\")" \
+ >> %{buildroot}%{site_lisp}/site-start.el
+
 mv %{buildroot}%{_bindir}/{etags,etags.emacs}
 mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
 mv %{buildroot}%{_mandir}/man1/{etags.1,etags.emacs.1}
@@ -386,6 +391,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Oct 19 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-13
+- fixed update-directory-autoloads (#474958)
+
 * Wed Oct 14 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-12
 - do not compress the files which implement compression itself (#484830)
 
