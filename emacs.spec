@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -29,6 +29,7 @@ Patch3: rpm-spec-mode-utc.patch
 Patch4: emacs-gtk.patch
 Patch5: emacs-23.1-xdg.patch
 Patch6: emacs-23.1-cpp.patch
+Patch7: emacs-23.1-scroll.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
@@ -124,6 +125,7 @@ Emacs packages or see some elisp examples.
 %patch4 -p1 -b .gtk
 %patch5 -p1 -b .xdg
 %patch6 -p1
+%patch7 -p1 -b .scroll
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -395,6 +397,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Wed Dec 02 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-15
+- fix #543046 -  Using scroll bar in emacs highlights/selects text
+
 * Mon Nov 30 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.1-14
 - fixed FTBFS in F12 and higher (#540921)
 
