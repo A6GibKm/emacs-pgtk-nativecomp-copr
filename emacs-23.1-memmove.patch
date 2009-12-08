@@ -1,0 +1,19 @@
+diff -up emacs-23.1/lib-src/etags.c.memmove emacs-23.1/lib-src/etags.c
+--- emacs-23.1/lib-src/etags.c.memmove	2009-06-21 06:37:34.000000000 +0200
++++ emacs-23.1/lib-src/etags.c	2009-12-08 17:55:41.442792036 +0100
+@@ -6695,13 +6695,13 @@ absolute_filename (file, dir)
+ 	      else if (cp[0] != '/')
+ 		cp = slashp;
+ #endif
+-	      strcpy (cp, slashp + 3);
++	      memmove (cp, slashp + 3, strlen(slashp + 2));
+ 	      slashp = cp;
+ 	      continue;
+ 	    }
+ 	  else if (slashp[2] == '/' || slashp[2] == '\0')
+ 	    {
+-	      strcpy (slashp, slashp + 2);
++	      memmove (slashp, slashp + 2, strlen(slashp + 1));
+ 	      continue;
+ 	    }
+ 	}
