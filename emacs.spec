@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -34,6 +34,10 @@ Patch7: emacs-23.1-scroll.patch
 Patch8: emacs-23.1-indian.patch
 # Fixed in upstream CVS
 Patch9: emacs-23.1-memmove.patch
+# Taken from upstream GIT repository
+# http://git.savannah.gnu.org/cgit/emacs.git/diff/src/xsettings.c?id=b3a25b88e82569f916712c635207c8bdd590e13b
+# rhbz#517272
+Patch10: emacs-23.1-fontdpi.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
@@ -133,6 +137,7 @@ Emacs packages or see some elisp examples.
 %patch7 -p1 -b .scroll
 %patch8 -p1
 %patch9 -p1 -b .memmove
+%patch10 -p1 -b .fontdpi
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -404,6 +409,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Jan  4 2010 Karel Klic <kklic@redhat.com> 1:23.1-18
+- Fixed rhbz#517272 - emacs-23.1 update shows fonts in double the normal size
+
 * Tue Dec  8 2009 Karel Klic <kklic@redhat.com> 1:23.1-17
 - Fixed rhbz#545398 - ETags messes up filenames
 
