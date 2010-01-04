@@ -1,7 +1,283 @@
 diff -up emacs-23.1/src/xterm.c.fontdpi emacs-23.1/src/xterm.c
---- emacs-23.1/src/xterm.c.fontdpi	2010-01-04 09:11:45.000000000 +0100
-+++ emacs-23.1/src/xterm.c	2010-01-04 11:50:19.627777180 +0100
-@@ -10380,17 +10380,31 @@ x_term_init (display_name, xrm_option, r
+--- emacs-23.1/src/xterm.c.fontdpi	2010-01-04 15:12:48.367249218 +0100
++++ emacs-23.1/src/xterm.c	2010-01-04 15:14:47.029248464 +0100
+@@ -101,6 +101,9 @@ along with GNU Emacs.  If not, see <http
+ #include "gtkutil.h"
+ #endif
+ 
++#include <X11/Xft/Xft.h>
++#include <X11/Xproto.h>
++
+ #ifdef USE_LUCID
+ extern int xlwmenu_window_p P_ ((Widget w, Window window));
+ extern void xlwmenu_redisplay P_ ((Widget));
+@@ -5829,6 +5832,237 @@ event_handler_gdk (gxev, ev, data)
+ }
+ #endif /* USE_GTK */
+ 
++#define SWAP32(nr) (((nr) << 24) | (((nr) << 8) & 0xff0000) \
++		    | (((nr) >> 8) & 0xff00) | ((nr) >> 24))
++#define SWAP16(nr) (((nr) << 8) | ((nr) >> 8))
++#define PAD(nr) (((nr) + 3) & ~3)
++
++static int
++parse_xft_dpi (prop, bytes, dpi)
++     unsigned char *prop;
++     unsigned long bytes;
++     double *dpi;
++{
++  Lisp_Object byteorder = Fbyteorder ();
++  int my_bo = XFASTINT (byteorder) == 'B' ? MSBFirst : LSBFirst;
++  int that_bo = prop[0];
++  CARD32 n_settings;
++  int bytes_parsed = 0;
++  int settings_seen = 0;
++  int i = 0;
++
++  /* First 4 bytes is a serial number, skip that. */
++
++  if (bytes < 12) return BadLength;
++  memcpy (&n_settings, prop+8, 4);
++  if (my_bo != that_bo) n_settings = SWAP32 (n_settings);
++  bytes_parsed = 12;
++
++  *dpi = 0;
++
++  while (bytes_parsed+4 < bytes && settings_seen < 6
++	 && i < n_settings)
++    {
++      int type = prop[bytes_parsed++];
++      CARD16 nlen;
++      CARD32 vlen, ival = 0;
++      char name[128]; /* The names we are looking for are not this long. */
++      int is_xft;
++      int to_cpy;
++
++      ++i;
++      ++bytes_parsed; /* Padding */
++
++      memcpy (&nlen, prop+bytes_parsed, 2);
++      bytes_parsed += 2;
++      if (my_bo != that_bo) nlen = SWAP16 (nlen);
++      if (bytes_parsed+nlen > bytes) return BadLength;
++      to_cpy = nlen > 127 ? 127 : nlen;
++      memcpy (name, prop+bytes_parsed, to_cpy);
++      name[to_cpy] = '\0';
++
++      bytes_parsed += nlen;
++      bytes_parsed = PAD (bytes_parsed);
++
++      bytes_parsed += 4; /* Skip serial for this value */
++      if (bytes_parsed > bytes) return BadLength;
++
++      is_xft = nlen > 6 && strncmp (name, "Xft/", 4) == 0;
++
++      switch (type)
++	{
++	case 0: /* Integer */
++	  if (bytes_parsed+4 > bytes) return BadLength;
++	  if (is_xft)
++	    {
++	      memcpy (&ival, prop+bytes_parsed, 4);
++	      if (my_bo != that_bo) ival = SWAP32 (ival);
++	    }
++	  bytes_parsed += 4;
++	  break;
++
++	case 1: /* String */
++	  /* No need to parse this */
++	  if (bytes_parsed+4 > bytes) return BadLength;
++	  memcpy (&vlen, prop+bytes_parsed, 4);
++	  bytes_parsed += 4;
++	  if (my_bo != that_bo) vlen = SWAP32 (vlen);
++	  bytes_parsed += vlen;
++	  bytes_parsed = PAD (bytes_parsed);
++	  break;
++
++	case 2: /* RGB value */
++	  /* No need to parse this */
++	  if (bytes_parsed+8 > bytes) return BadLength;
++	  bytes_parsed += 8; /* 4 values (r, b, g, alpha), 2 bytes each. */
++	  break;
++
++	default: /* Parse Error */
++	  return BadValue;
++	}
++ 
++      if (is_xft)
++	{
++	  ++settings_seen;
++	  if (strcmp (name, "Xft/DPI") == 0)
++	    *dpi = (double)ival/1024.0;
++	}
++    }
++
++  return Success;
++}
++
++static int
++read_xft_dpi (dpyinfo, dpi)
++     struct x_display_info *dpyinfo;
++     double *dpi;
++{
++  long long_len;
++  Atom act_type;
++  int act_form;
++  unsigned long nitems, bytes_after;
++  unsigned char *prop = NULL;
++  Display *dpy = dpyinfo->display;
++  int rc;
++  
++  x_catch_errors (dpy);
++  rc = XGetWindowProperty (dpy,
++			   dpyinfo->xsettings_window,
++			   dpyinfo->Xatom_xsettings_prop,
++			   0, LONG_MAX, False, AnyPropertyType,
++			   &act_type, &act_form, &nitems, &bytes_after,
++			   &prop);
++  
++  if (rc == Success && prop != NULL && act_form == 8 && nitems > 0
++      && act_type == dpyinfo->Xatom_xsettings_prop)
++    {
++      rc = parse_xft_dpi (prop, nitems, dpi);
++    }
++  
++  XFree (prop);
++  x_uncatch_errors ();
++  return rc == Success;
++}
++
++static void
++get_prop_window (dpyinfo)
++     struct x_display_info *dpyinfo;
++{
++  Display *dpy = dpyinfo->display;
++  XGrabServer (dpy);
++  dpyinfo->xsettings_window = XGetSelectionOwner (dpy,
++						  dpyinfo->Xatom_xsettings_sel);
++  if (dpyinfo->xsettings_window != None)
++    /* Select events so we can detect if window is deleted or if settings
++       are changed. */
++    XSelectInput (dpy, dpyinfo->xsettings_window,
++		  PropertyChangeMask|StructureNotifyMask);
++  
++  XUngrabServer (dpy);
++}
++
++static void
++apply_xft_settings (dpyinfo, send_event_p)
++ struct x_display_info *dpyinfo;
++ int send_event_p;
++{
++ double dpi;
++ if (!read_xft_dpi (dpyinfo, &dpi))
++   return;
++
++ /* Change the DPI on this display and all frames on the display. */
++ Lisp_Object frame, tail;
++ dpyinfo->resy = dpyinfo->resx = dpi;
++ FOR_EACH_FRAME (tail, frame)
++   if (FRAME_X_P (XFRAME (frame))
++       && FRAME_X_DISPLAY_INFO (XFRAME (frame)) == dpyinfo)
++     XFRAME (frame)->resy = XFRAME (frame)->resx = dpi;
++}
++
++static void
++xft_settings_event (dpyinfo, event)
++     struct x_display_info *dpyinfo;
++     XEvent *event;
++{
++  int check_window_p = 0;
++  
++  switch (event->type)
++    {
++    case DestroyNotify:
++      if (dpyinfo->xsettings_window == event->xany.window)
++	check_window_p = 1;
++      break;
++      
++    case ClientMessage:
++      if (event->xclient.message_type == dpyinfo->Xatom_xsettings_mgr
++	  && event->xclient.data.l[1] == dpyinfo->Xatom_xsettings_sel
++	  && event->xclient.window == dpyinfo->root_window)
++	check_window_p = 1;
++      break;
++      
++    case PropertyNotify:
++      if (event->xproperty.window == dpyinfo->xsettings_window
++	  && event->xproperty.state == PropertyNewValue
++	  && event->xproperty.atom == dpyinfo->Xatom_xsettings_prop)
++	{
++	  apply_xft_settings (dpyinfo, True);
++	}
++      break;
++    }
++  
++  if (check_window_p)
++    {
++      dpyinfo->xsettings_window = None;
++      get_prop_window (dpyinfo);
++      if (dpyinfo->xsettings_window != None)
++	apply_xft_settings (dpyinfo, True);
++    }
++}
++
++static void
++init_xfd_settings (dpyinfo)
++     struct x_display_info *dpyinfo;
++{
++  char sel[64];
++  Display *dpy = dpyinfo->display;
++  BLOCK_INPUT;
++  sprintf (sel, "_XSETTINGS_S%d", XScreenNumberOfScreen (dpyinfo->screen));
++  dpyinfo->Xatom_xsettings_sel = XInternAtom (dpy, sel, False);
++  dpyinfo->Xatom_xsettings_prop = XInternAtom (dpy,
++					       "_XSETTINGS_SETTINGS",
++					       False);
++  dpyinfo->Xatom_xsettings_mgr = XInternAtom (dpy, "MANAGER", False);
++  
++  /* Select events so we can detect client messages sent when selection
++     owner changes. */
++  XSelectInput (dpy, dpyinfo->root_window, StructureNotifyMask);
++  
++  get_prop_window (dpyinfo);
++  if (dpyinfo->xsettings_window != None)
++    apply_xft_settings (dpyinfo, False);
++
++  UNBLOCK_INPUT;
++}
+ 
+ /* Handles the XEvent EVENT on display DPYINFO.
+ 
+@@ -6043,6 +6277,8 @@ handle_one_xevent (dpyinfo, eventp, fini
+             goto done;
+           }
+ 
++	xft_settings_event (dpyinfo, &event);
++
+ 	f = x_any_window_to_frame (dpyinfo, event.xclient.window);
+ 	if (!f)
+ 	  goto OTHER;
+@@ -6113,6 +6349,7 @@ handle_one_xevent (dpyinfo, eventp, fini
+         x_handle_net_wm_state (f, &event.xproperty);
+ 
+       x_handle_property_notify (&event.xproperty);
++      xft_settings_event (dpyinfo, &event);
+       goto OTHER;
+ 
+     case ReparentNotify:
+@@ -7069,6 +7306,10 @@ handle_one_xevent (dpyinfo, eventp, fini
+         }
+       goto OTHER;
+ 
++    case DestroyNotify:
++      xft_settings_event (dpyinfo, &event);
++      break;
++
+     default:
+     OTHER:
+ #ifdef USE_X_TOOLKIT
+@@ -10380,17 +10621,31 @@ x_term_init (display_name, xrm_option, r
  				     dpyinfo->visual, AllocNone);
  
    {
@@ -42,3 +318,26 @@ diff -up emacs-23.1/src/xterm.c.fontdpi emacs-23.1/src/xterm.c
    dpyinfo->Xatom_wm_protocols
      = XInternAtom (dpyinfo->display, "WM_PROTOCOLS", False);
    dpyinfo->Xatom_wm_take_focus
+@@ -10492,6 +10747,8 @@ x_term_init (display_name, xrm_option, r
+   xim_initialize (dpyinfo, resource_name);
+ #endif
+ 
++  init_xfd_settings (dpyinfo);
++  
+ #ifdef subprocesses
+   /* This is only needed for distinguishing keyboard and process input.  */
+   if (connection != 0)
+diff -up emacs-23.1/src/xterm.h.fontdpi emacs-23.1/src/xterm.h
+--- emacs-23.1/src/xterm.h.fontdpi	2009-06-21 06:38:20.000000000 +0200
++++ emacs-23.1/src/xterm.h	2010-01-04 15:12:48.393248813 +0100
+@@ -360,6 +360,10 @@ struct x_display_info
+   /* Atoms dealing with maximization and fullscreen */
+   Atom Xatom_net_wm_state, Xatom_net_wm_state_fullscreen_atom,
+     Xatom_net_wm_state_maximized_horz, Xatom_net_wm_state_maximized_vert;
++
++  /* XSettings atoms and windows. */
++  Atom Xatom_xsettings_sel, Xatom_xsettings_prop, Xatom_xsettings_mgr;
++  Window xsettings_window;
+ };
+ 
+ #ifdef HAVE_X_I18N
