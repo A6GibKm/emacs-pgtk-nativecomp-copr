@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 19%{?dist}
+Release: 20%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -408,6 +408,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Jan  7 2010 Karel Klic <kklic@redhat.com> 1:23.1-20
+- Simpler fix for rhbz#517272
+
 * Thu Jan  7 2010 Jens Petersen <petersen@redhat.com> - 1:23.1-19
 - m17n-lib-flt requires m17n-db-flt so no longer need to require explicitly
   m17n-db-datafiles for complex text rendering (#542657)
