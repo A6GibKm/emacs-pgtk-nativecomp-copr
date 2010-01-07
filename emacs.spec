@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 20%{?dist}
+Release: 21%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -103,7 +103,9 @@ on a terminal.
 %package common
 Summary: Emacs common files
 Group: Applications/Editors
-PreReq: /sbin/install-info, dev, %{_sbindir}/alternatives
+Requires(preun): %{_sbindir}/alternatives, /sbin/install-info, dev
+Requires(posttrans): %{_sbindir}/alternatives
+Requires(post): /sbin/install-info, dev
 Obsoletes: emacs-leim
 
 %description common
@@ -408,6 +410,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Jan  7 2010 Karel Klic <kklic@redhat.com> 1:23.1-21
+- Removed PreReq from spec file
+
 * Thu Jan  7 2010 Karel Klic <kklic@redhat.com> 1:23.1-20
 - Simpler fix for rhbz#517272
 
