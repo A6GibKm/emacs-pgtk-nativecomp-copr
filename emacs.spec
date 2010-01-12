@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -16,7 +16,7 @@ Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.4.
 Source8: php-mode-init.el
 Source9: ssl.el
 # rpm-spec-mode from XEmacs
-Source10: http://cvs.xemacs.org/viewcvs.cgi/*checkout*/XEmacs/packages/xemacs-packages/prog-modes/rpm-spec-mode.el
+Source10: rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
 Source13: focus-init.el
 Source14: po-mode.el
@@ -410,6 +410,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Jan 12 2010 Karel Klic <kklic@redhat.com> 1:23.1-22
+- Removed invalid URL for rpm-spec-mode.el. This mode is no longer
+  found on Internet in this version.
+
 * Thu Jan  7 2010 Karel Klic <kklic@redhat.com> 1:23.1-21
 - Removed PreReq from spec file
 
