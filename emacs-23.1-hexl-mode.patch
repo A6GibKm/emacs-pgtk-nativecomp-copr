@@ -1,0 +1,12 @@
+=== modified file 'lisp/hexl.el'
+--- lisp/hexl.el	2010-01-13 08:35:10 +0000
++++ lisp/hexl.el	2010-01-14 00:38:04 +0000
+@@ -779,7 +779,7 @@
+
+ (defun hexl-printable-character (ch)
+   "Return a displayable string for character CH."
+-  (format "%c" (if hexl-iso
++  (format "%c" (if (not (equal hexl-iso ""))
+ 		   (if (or (< ch 32) (and (>= ch 127) (< ch 160)))
+ 		       46
+ 		     ch)
