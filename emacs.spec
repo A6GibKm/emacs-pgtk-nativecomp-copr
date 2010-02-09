@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 23%{?dist}
+Release: 24%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -331,6 +331,8 @@ alternatives --remove emacs %{_bindir}/emacs-%{version} || :
 
 %posttrans
 #check if there is "remainder" old version, which was not deleted
+# the check can be removed for Fedora 14, as the bug it handled was
+# present only in some old Emacs package version
 if alternatives --display emacs > /dev/null; then
 VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
 if [ ${VER} != %{version} ]; then
@@ -345,6 +347,8 @@ alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
 
 %posttrans nox
 #check if there is "remainder" old version, which was not deleted
+# the check can be removed for Fedora 14, as the bug it handled was
+# present only in some old Emacs package version
 if alternatives --display emacs > /dev/null; then
 VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
 if [ ${VER} != %{version} ]; then
@@ -415,6 +419,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Feb  9 2010 Karel Klic <kklic@redhat.com> 1:23.1-24
+- Added a comment about alternatives(8) in %%posttrans to the spec file
+
 * Thu Jan 14 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> 1:23.1-23
 - Add patch to fix rhbz#547566 (from Juanma Barranquero)
 
