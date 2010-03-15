@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 24%{?dist}
+Release: 25%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -221,7 +221,7 @@ cat > macros.emacs << EOF
 %%_emacs_evr %{?epoch:%{epoch}:}%{version}-%{release}
 %%_emacs_sitelispdir %{site_lisp}
 %%_emacs_sitestartdir %{site_start_d}
-%%_emacs_bytecompile /usr/bin/emacs %bytecompargs 
+%%_emacs_bytecompile /usr/bin/emacs -batch --no-init-file --no-site-file --eval '(progn (setq load-path (cons "." load-path)))' -f batch-byte-compile
 EOF
 
 %install
@@ -419,6 +419,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Mar 15 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-25
+- Add --eval '(progn (setq load-path (cons "." load-path)))' to byte
+  compilation macro for packaging add-ons
+
 * Tue Feb  9 2010 Karel Klic <kklic@redhat.com> 1:23.1-24
 - Added a comment about alternatives(8) in %%posttrans to the spec file
 
