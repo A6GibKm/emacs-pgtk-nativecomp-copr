@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -68,6 +68,15 @@ Provides: emacs(bin)
 # #516391
 Obsoletes: emacs-nxml-mode < 0.20041004-10
 Provides: emacs-nxml-mode = 0.20041004-10
+
+# Buildrequire both python2 and python3 since below we turn off the
+# brp-python-bytecompile script
+BuildRequires: python2-devel python3-devel
+
+# Turn off the brp-python-bytecompile script since this script doesn't
+# properly dtect the correct python runtime for the files emacs2.py and
+# emacs3.py 
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 
 # C and build patches
 
@@ -289,6 +298,10 @@ mkdir -p %{buildroot}%{_datadir}/applications
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE1
 
+# Byte compile emacs*.py with correct python interpreters
+%py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs.py
+%py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs2.py
+%py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
 
 #
 # create file lists
@@ -419,6 +432,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Fri Mar 19 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-26
+- Fix broken byte compilation of emacs2.py and emacs3.py with the relevant
+  python binaries - requires turning off brp-python-bytecompile script
+
 * Mon Mar 15 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-25
 - Add --eval '(progn (setq load-path (cons "." load-path)))' to byte
   compilation macro for packaging add-ons
