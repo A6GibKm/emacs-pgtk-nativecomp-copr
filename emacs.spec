@@ -3,12 +3,13 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 23.1
-Release: 26%{?dist}
+Version: 23.1.94
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
+#Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
+Source0: ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
 Source1: emacs.desktop
 Source3: dotemacs.el
 Source4: site-start.el
@@ -26,22 +27,7 @@ Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch2: po-mode-auto-replace-date-71264.patch
 Patch3: rpm-spec-mode-utc.patch
-Patch4: emacs-gtk.patch
-Patch5: emacs-23.1-xdg.patch
-# Fixed in upstream CVS.
-Patch6: emacs-23.1-cpp.patch
-Patch7: emacs-23.1-scroll.patch
-Patch8: emacs-23.1-indian.patch
-# Fixed in upstream CVS
-Patch9: emacs-23.1-memmove.patch
-# Taken from upstream GIT repository
-# http://git.savannah.gnu.org/cgit/emacs.git/diff/src/xsettings.c?id=b3a25b88e82569f916712c635207c8bdd590e13b
-# rhbz#517272
-Patch10: emacs-23.1-fontdpi.patch
-
-# Fix https://bugzilla.redhat.com/show_bug.cgi?id=547566
-# Reported upstream: http://debbugs.gnu.org/cgi/bugreport.cgi?bug=5313
-Patch11: emacs-23.1-hexl-mode.patch
+Patch4: emacs-23.1-xdg.patch
 
 Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
@@ -145,14 +131,7 @@ Emacs packages or see some elisp examples.
 %prep
 %setup -q
 %patch0 -p1 -b .glibc-open-macro
-%patch4 -p1 -b .gtk
-%patch5 -p1 -b .xdg
-%patch6 -p1
-%patch7 -p1 -b .scroll
-%patch8 -p1
-%patch9 -p1 -b .memmove
-%patch10 -p1 -b .fontdpi
-%patch11 -p0
+%patch4 -p1 -b .xdg
 
 # install rest of site-lisp files
 ( cd site-lisp
@@ -180,7 +159,7 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ediff efaq eintr elisp emacs emacs-mime epa erc eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc ses sieve smtpmail speedbar tramp url vip viper widget woman
+%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-mime epa erc eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
 
 if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
   echo Please update info_files >&2
@@ -432,6 +411,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon Mar 22 2010 Karel Klic <kklic@redhat.com> - 1:23.1.94-1
+- Update to 23.2 pretest version
+- Removed patches applied by upstream
+
 * Fri Mar 19 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1-26
 - Fix broken byte compilation of emacs2.py and emacs3.py with the relevant
   python binaries - requires turning off brp-python-bytecompile script
