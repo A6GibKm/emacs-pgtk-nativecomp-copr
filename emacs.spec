@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1.94
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -322,32 +322,12 @@ fi
 alternatives --remove emacs %{_bindir}/emacs-%{version} || :
 
 %posttrans
-#check if there is "remainder" old version, which was not deleted
-# the check can be removed for Fedora 14, as the bug it handled was
-# present only in some old Emacs package version
-if alternatives --display emacs > /dev/null; then
-VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
-if [ ${VER} != %{version} ]; then
-alternatives --remove emacs %{_bindir}/emacs-${VER} || :
-fi
-fi
-#end check
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80 || :
 
 %preun nox
 alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
 
 %posttrans nox
-#check if there is "remainder" old version, which was not deleted
-# the check can be removed for Fedora 14, as the bug it handled was
-# present only in some old Emacs package version
-if alternatives --display emacs > /dev/null; then
-VER=$(alternatives --display emacs | sed -ne 's/.*emacs-\([0-9\.]\+\).*/\1/p' | head -1)
-if [ ${VER} != %{version} ]; then
-alternatives --remove emacs %{_bindir}/emacs-${VER}-nox || :
-fi
-fi
-#end check
 alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
 
 %post common
@@ -411,6 +391,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Mar 23 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-2
+- Remove checks for old version of Emacs in postrtrans
+
 * Mon Mar 22 2010 Karel Klic <kklic@redhat.com> - 1:23.1.94-1
 - Update to 23.2 pretest version
 - Removed patches applied by upstream
