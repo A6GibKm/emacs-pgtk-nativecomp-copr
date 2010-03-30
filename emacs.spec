@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1.94
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -29,7 +29,6 @@ Patch2: po-mode-auto-replace-date-71264.patch
 Patch3: rpm-spec-mode-utc.patch
 Patch4: emacs-23.1-xdg.patch
 
-Buildroot: %{_tmppath}/%{name}-%{version}-root
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
@@ -45,12 +44,12 @@ Requires: hunspell, aspell
 # bz#507852
 BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel
 BuildRequires: alsa-lib-devel
-Requires: librsvg2
+
 # Desktop integration
 BuildRequires: desktop-file-utils
 Requires:      desktop-file-utils
 Conflicts: gettext < 0.10.40
-Provides: emacs(bin)
+Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 # #516391
 Obsoletes: emacs-nxml-mode < 0.20041004-10
 Provides: emacs-nxml-mode = 0.20041004-10
@@ -88,7 +87,7 @@ This package provides an emacs binary with support for X windows.
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
 Requires: emacs-common = %{epoch}:%{version}-%{release}
-Provides: emacs(bin)
+Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
 %description nox
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -105,7 +104,6 @@ Group: Applications/Editors
 Requires(preun): %{_sbindir}/alternatives, /sbin/install-info, dev
 Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info, dev
-Obsoletes: emacs-leim
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -116,7 +114,7 @@ without leaving the editor.
 This package contains all the common files needed by emacs or emacs-nox.
 
 %package el
-Summary: Emacs Lisp source files included with Emacs.
+Summary: Lisp source files included with GNU Emacs
 Group: Applications/Editors
 
 %description el
@@ -182,7 +180,7 @@ autoconf
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-	   --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -395,6 +393,14 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-3
+- Remove unnecessary buildroot tag
+- Remove explicit dependency on librsvg2 (but keep BuildRequires for
+  librsvg2-devel)
+- Add properly versioned Provides for emacs(bin)
+- Remove long unneeded Obsoletes for emacs-leim
+- Fix summary for emacs-el
+
 * Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-3
 - Use out of tree builds so that we can build multibple versions in the
   %%build section 
@@ -774,7 +780,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
   emacs-21-personality-linux32-101818.patch from cvs (Jan Djärv)
   which also turns off address randomization during dumping (Masatake Yamato)
   - no longer need to pass SETARCH to make on i386 (#160814)
-- move ownership of %%{_datadir}/emacs/ and %%{_datadir}/emacs/%{version}/
+- move ownership of %%{_datadir}/emacs/ and %%{_datadir}/emacs/%%{version}/
   from emacs to emacs-el and emacs-leim subpackages
 - don't build tramp html and dvi documentation
 - drop src/config.in part of bzero-and-have-stdlib.dpatch to avoid
