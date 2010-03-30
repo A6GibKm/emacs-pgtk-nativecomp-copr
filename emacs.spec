@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1.94
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -177,20 +177,28 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
 #we patch configure.in so we have to do this
 autoconf
+
+# Build GTK+2 binary
+mkdir build-gtk && cd build-gtk
+ln -s ../configure .
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-   --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
+	   --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
+make bootstrap
+%{setarch} make %{?_smp_mflags}
+cd ..
 
-%__make bootstrap
-%{setarch} %__make %{?_smp_mflags}
+# Build binary without X support
+mkdir build-nox && cd build-nox
+ln -s ../configure .
+%configure --with-x=no
+%{setarch} make %{?_smp_mflags}
+cd ..
 
-# remove versioned file so that we end up with .1 suffix and only one DOC file
-rm src/emacs-%{version}.*
+# Make sure patched lisp files get byte-compiled
+build-gtk/src/emacs %{bytecompargs} site-lisp/*.el
 
-# make sure patched lisp files get byte-compiled
-TOPDIR=${PWD}
-${TOPDIR}/src/emacs %{bytecompargs} site-lisp/*.el
-
-%__make %{?_smp_mflags} -C lisp updates
+# Remove versioned file so that we end up with .1 suffix and only one DOC file
+rm build-{gtk,nox}/src/emacs-%{version}.*
 
 # Create pkgconfig file
 cat > emacs.pc << EOF
@@ -215,7 +223,9 @@ EOF
 %install
 rm -rf %{buildroot}
 
+cd build-gtk
 make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
+cd ..
 
 # let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
@@ -224,14 +234,8 @@ rm %{buildroot}%{_bindir}/emacs
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
-# rebuild without X support
-# remove the versioned binary with X support so that we end up with .1 suffix for emacs-nox too
-rm src/emacs-%{version}.*
-%configure --without-x
-%__make %{?_smp_mflags}
-
 # install the emacs without X
-install -p -m 0755 src/emacs-%{version}.1 %{buildroot}%{_bindir}/emacs-%{version}-nox
+install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
 
 # make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -391,6 +395,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-3
+- Use out of tree builds so that we can build multibple versions in the
+  %%build section 
+
 * Tue Mar 23 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-2
 - Remove checks for old version of Emacs in postrtrans
 
