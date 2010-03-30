@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1.94
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -128,19 +128,17 @@ Emacs packages or see some elisp examples.
 
 %prep
 %setup -q
+
 %patch0 -p1 -b .glibc-open-macro
 %patch4 -p1 -b .xdg
 
-# install rest of site-lisp files
-( cd site-lisp
-  cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 .
-  # rpm-spec-mode can use compilation-mode
-  patch < %PATCH1
-  # fix po-auto-replace-revision-date nil
-  patch < %PATCH2 
-  # rpm-spec-mode: added rpm-change-log-uses-utc variable
-  patch < %PATCH3
-  )
+# Install site-lisp files
+cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 site-lisp
+pushd site-lisp
+%patch1 -p0
+%patch2 -p0
+%patch3 -p0
+popd
 
 # we prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -393,7 +391,11 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
-* Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-3
+* Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-5
+- Fix typo in spec file changelog
+- Use standard %%patch macro to apply all patches to silent rpmlint warnings
+
+* Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-4
 - Remove unnecessary buildroot tag
 - Remove explicit dependency on librsvg2 (but keep BuildRequires for
   librsvg2-devel)
