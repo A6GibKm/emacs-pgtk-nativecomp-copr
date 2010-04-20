@@ -3,8 +3,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 23.1.94
-Release: 6%{?dist}
+Version: 23.1.96
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -28,10 +28,6 @@ Patch1: rpm-spec-mode.patch
 Patch2: po-mode-auto-replace-date-71264.patch
 Patch3: rpm-spec-mode-utc.patch
 Patch4: emacs-23.1-xdg.patch
-
-# Fix https://bugzilla.redhat.com/show_bug.cgi?id=578272
-# CVE-2010-0825
-Patch5: emacs-23.1-movemail.patch
 
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -143,8 +139,6 @@ pushd site-lisp
 %patch2 -p0
 %patch3 -p0
 popd
-
-%patch5 -p1
 
 # we prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -397,6 +391,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue Apr 20 2010 Karel Klic <kklic@redhat.com> - 1:23.1.96-1
+- Updated to the newest prerelease
+- Remove -movemail patch as it has been merged by upstream
+
 * Thu Apr  1 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-6
 - Add patch to fix RHBZ #578272 - security vulnerability with movemail
   (CVE-2010-0825) 
