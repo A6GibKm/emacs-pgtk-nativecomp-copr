@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.1.96
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -20,12 +20,9 @@ Source9: ssl.el
 Source10: rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
 Source13: focus-init.el
-Source14: po-mode.el
-Source15: po-mode-init.el
 Source18: default.el
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
-Patch2: po-mode-auto-replace-date-71264.patch
 Patch3: rpm-spec-mode-utc.patch
 Patch4: emacs-23.1-xdg.patch
 
@@ -133,10 +130,9 @@ Emacs packages or see some elisp examples.
 %patch4 -p1 -b .xdg
 
 # Install site-lisp files
-cp %SOURCE7 %SOURCE9 %SOURCE10 %SOURCE14 site-lisp
+cp %SOURCE7 %SOURCE9 %SOURCE10 site-lisp
 pushd site-lisp
 %patch1 -p0
-%patch2 -p0
 %patch3 -p0
 popd
 
@@ -254,7 +250,7 @@ mv %{buildroot}%{_bindir}/{ctags,gctags}
 install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
-install -p -m 0644 %SOURCE8 %SOURCE11 %SOURCE13 %SOURCE15 %{buildroot}%{site_lisp}/site-start.d
+install -p -m 0644 %SOURCE8 %SOURCE11 %SOURCE13 %{buildroot}%{site_lisp}/site-start.d
 
 # default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
@@ -391,6 +387,10 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Sun Apr 25 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.96-2
+- Remove po-mode files since they are now packaged separately as a sub-package
+  of gettext (RHBZ #579452)
+
 * Tue Apr 20 2010 Karel Klic <kklic@redhat.com> - 1:23.1.96-1
 - Updated to the newest prerelease
 - Remove -movemail patch as it has been merged by upstream
