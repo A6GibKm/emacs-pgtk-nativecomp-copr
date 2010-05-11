@@ -3,13 +3,12 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 23.1.96
-Release: 3%{?dist}
+Version: 23.2
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-#Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
-Source0: ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
 Source1: emacs.desktop
 Source3: dotemacs.el
 Source4: site-start.el
@@ -59,7 +58,7 @@ BuildRequires: python2-devel python3-devel
 
 # Turn off the brp-python-bytecompile script since this script doesn't
 # properly dtect the correct python runtime for the files emacs2.py and
-# emacs3.py 
+# emacs3.py
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 
 # C and build patches
@@ -389,6 +388,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Mon May 10 2010 Karel Klic <kklic@redhat.com> - 1:23.2-1
+- Updated the prerelase to final version
+
 * Sun Apr 25 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.96-3
 - Add BuildRequires for GConf2-devel to build in Gconf2 support (RHBZ #585447)
 
