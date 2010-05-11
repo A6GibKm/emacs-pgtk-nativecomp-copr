@@ -25,7 +25,7 @@ Patch1: rpm-spec-mode.patch
 Patch3: rpm-spec-mode-utc.patch
 # Not sent to upstream.
 Patch4: emacs-23.1-xdg.patch
-# Not sent to upstream.
+# Accepted by upstream.
 Patch5: emacs-23.2-m17ncheck.patch
 
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
