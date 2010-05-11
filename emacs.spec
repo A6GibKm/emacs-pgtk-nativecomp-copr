@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -23,7 +23,10 @@ Source18: default.el
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch3: rpm-spec-mode-utc.patch
+# Not sent to upstream.
 Patch4: emacs-23.1-xdg.patch
+# Not sent to upstream.
+Patch5: emacs-23.2-m17ncheck.patch
 
 BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -129,6 +132,7 @@ Emacs packages or see some elisp examples.
 
 %patch0 -p1 -b .glibc-open-macro
 %patch4 -p1 -b .xdg
+%patch5 -p1 -b .m17ncheck
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE9 %SOURCE10 site-lisp
@@ -388,6 +392,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Tue May 11 2010 Karel Klic <kklic@redhat.com> - 1:23.2-2
+- Added a patch fixing m17n and libotf version checking (m17ncheck)
+
 * Mon May 10 2010 Karel Klic <kklic@redhat.com> - 1:23.2-1
 - Updated the prerelase to final version
 

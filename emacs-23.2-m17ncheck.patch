@@ -1,0 +1,14 @@
+diff -up emacs-23.2/src/ftfont.c.m17ncheck emacs-23.2/src/ftfont.c
+--- emacs-23.2/src/ftfont.c.m17ncheck	2010-05-11 11:22:19.977753842 +0200
++++ emacs-23.2/src/ftfont.c	2010-05-11 11:22:44.545753979 +0200
+@@ -1578,8 +1578,8 @@ ftfont_otf_capability (font)
+ 
+ #ifdef HAVE_M17N_FLT
+ 
+-#if ((LIBOTF_MAJOR_VERSION > 1) || (LIBOTF_RELEASE_NUMBER >= 10) \
+-     && (M17NLIB_MAJOR_VERSION > 1) || (M17NLIB_MINOR_VERSION >= 6))
++#if (((LIBOTF_MAJOR_VERSION > 1) || (LIBOTF_RELEASE_NUMBER >= 10))	\
++     && ((M17NLIB_MAJOR_VERSION > 1) || (M17NLIB_MINOR_VERSION >= 6)))
+ /* We can use the new feature of libotf and m17n-flt to handle the
+    character encoding scheme introduced in Unicode 5.1 and 5.2 for
+    some Agian scripts.  */
