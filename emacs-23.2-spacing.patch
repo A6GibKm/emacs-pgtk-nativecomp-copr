@@ -1,0 +1,26 @@
+diff --git a/src/ftfont.c b/src/ftfont.c
+index 4ebc4be..bac9a4f 100644
+--- a/src/ftfont.c
++++ b/src/ftfont.c
+@@ -1262,7 +1262,7 @@ ftfont_open (f, entity, pixel_size)
+     spacing = XINT (AREF (entity, FONT_SPACING_INDEX));
+   else
+     spacing = FC_PROPORTIONAL;
+-  if (spacing != FC_PROPORTIONAL)
++  if (spacing != FC_PROPORTIONAL && spacing != FC_DUAL)
+     font->min_width = font->average_width = font->space_width
+       = (scalable ? ft_face->max_advance_width * size / upEM
+ 	 : ft_face->size->metrics.max_advance >> 6);
+diff --git a/src/xftfont.c b/src/xftfont.c
+index 82701ce..e74ce31 100644
+--- a/src/xftfont.c
++++ b/src/xftfont.c
+@@ -418,7 +418,7 @@ xftfont_open (f, entity, pixel_size)
+ 	ascii_printable[i] = ' ' + i;
+     }
+   BLOCK_INPUT;
+-  if (spacing != FC_PROPORTIONAL)
++  if (spacing != FC_PROPORTIONAL && spacing != FC_DUAL)
+     {
+       font->min_width = font->average_width = font->space_width
+ 	= xftfont->max_advance_width;
