@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -59,9 +59,6 @@ BuildRequires: desktop-file-utils
 Requires:      desktop-file-utils
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
-# #516391
-Obsoletes: emacs-nxml-mode < 0.20041004-10
-Provides: emacs-nxml-mode = 0.20041004-10
 
 # Buildrequire both python2 and python3 since below we turn off the
 # brp-python-bytecompile script
@@ -182,7 +179,7 @@ fi
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
-#we patch configure.in so we have to do this
+# We patch configure.in so we have to do this
 autoconf
 
 # Build GTK+2 binary
@@ -386,13 +383,14 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %config(noreplace) %{_sysconfdir}/rpm/macros.emacs
-%doc etc/NEWS BUGS README
+%doc etc/NEWS BUGS README etc/COPYING
 %exclude %{_bindir}/emacs-*
 %{_bindir}/*
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
+%exclude %{_datadir}/emacs/%{version}/etc/COPYING
 %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
@@ -402,14 +400,19 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %files -f el-filelist el
 %defattr(-,root,root)
 %{pkgconfig}/emacs.pc
+%doc etc/COPYING
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
-* Thu Jun  3 2010 Karel Klic  <kklic@redhat.com> - 1:23.2-5
+* Thu Jul  8 2010 Karel Klic <kklic@redhat.com> - 1:23.2-6
+- Removed Obsoletes: emacs-nxml-mode, it was obsoleted in F-11
+- Added COPYING to emacs-el, moved COPYING in emacs-common to %doc
+
+* Thu Jun  3 2010 Karel Klic <kklic@redhat.com> - 1:23.2-5
 - Fixed handling of dual spacing fonts rhbz#599437
 
-* Thu May 27 2010 Karel Klíč <karel@agata> - 1:23.2-4
+* Thu May 27 2010 Karel Klíč <kklic@redhat.com> - 1:23.2-4
 - Add patch to fix rhbz#595546 hideshow library matches wrong parenthesis
   under certain circumstances
 - Removed %%clean section
@@ -436,7 +439,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 
 * Thu Apr  1 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-6
 - Add patch to fix RHBZ #578272 - security vulnerability with movemail
-  (CVE-2010-0825) 
+  (CVE-2010-0825)
 
 * Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-5
 - Fix typo in spec file changelog
@@ -452,7 +455,7 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 
 * Tue Mar 30 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-3
 - Use out of tree builds so that we can build multibple versions in the
-  %%build section 
+  %%build section
 
 * Tue Mar 23 2010 Jonathan G. Underwood <jonathan.underwood@gmail.com> - 1:23.1.94-2
 - Remove checks for old version of Emacs in postrtrans
