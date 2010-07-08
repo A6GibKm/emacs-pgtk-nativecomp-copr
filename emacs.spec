@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -185,7 +185,11 @@ autoconf
 # Build GTK+2 binary
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
-%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
+
+# Emacs crashes when running in a terminal, if compiled with GCC 4.5.0
+# Work around this error in gcc-4.5 by omitting sibling call optimization.
+# CFLAGS should be removed when GCC is updated to 4.5.1 or higher.
+CFLAGS="$CFLAGS -fno-optimize-sibling-calls" %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
 make bootstrap
 %{setarch} make %{?_smp_mflags}
@@ -194,7 +198,10 @@ cd ..
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-%configure --with-x=no
+# Emacs crashes when running in a terminal, if compiled with GCC 4.5.0
+# Work around this error in gcc-4.5 by omitting sibling call optimization.
+# CFLAGS should be removed when GCC is updated to 4.5.1 or higher.
+CFLAGS="$CFLAGS -fno-optimize-sibling-calls" %configure --with-x=no
 %{setarch} make %{?_smp_mflags}
 cd ..
 
@@ -405,6 +412,9 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs/%{version}
 
 %changelog
+* Thu Jul  8 2010 Karel Klic <kklic@redhat.com> - 1:23.2-7
+- Added workaround for an GCC 4.5.0 bug
+
 * Thu Jul  8 2010 Karel Klic <kklic@redhat.com> - 1:23.2-6
 - Removed Obsoletes: emacs-nxml-mode, it was obsoleted in F-11
 - Added COPYING to emacs-el, moved COPYING in emacs-common to %doc
