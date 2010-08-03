@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -20,7 +20,7 @@ Source10: rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
 Source13: focus-init.el
 Source18: default.el
-# Emacs Terminal Mode, #551949
+# Emacs Terminal Mode, #551949, #617355
 Source19: emacs-terminal.desktop
 Source20: emacs-terminal.sh
 Patch0: glibc-open-macro.patch
@@ -129,6 +129,18 @@ programs included with the main Emacs text editor package.
 
 You need to install emacs-el only if you intend to modify any of the
 Emacs packages or see some elisp examples.
+
+%package terminal
+Summary: A desktop menu item for GNU Emacs terminal.
+Group: Applications/Editors
+
+%description terminal
+
+Contains a desktop menu item running GNU Emacs terminal. Install
+emacs-terminal if you need a terminal with Malayalam support.
+
+Please note that emacs-terminal is a temporary package and it will be
+removed when anther terminal becomes capable of handling Malayalam.
 
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
@@ -364,20 +376,23 @@ fi
 alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
        --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
 
+%post terminal
+update-desktop-database &> /dev/null || :
+
+%postun terminal
+update-desktop-database &> /dev/null || :
+
 %files
 %defattr(-,root,root)
 %{_bindir}/emacs-%{version}
-%{_bindir}/emacs-terminal
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/applications/emacs-terminal.desktop
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/*/apps/emacs22.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
-
 
 %files nox
 %defattr(-,root,root)
@@ -411,7 +426,15 @@ alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 
+%files terminal
+%defattr(-,root,root)
+%{_bindir}/emacs-terminal
+%{_datadir}/applications/emacs-terminal.desktop
+
 %changelog
+* Mon Aug  2 2010 Karel Klic <kklic@redhat.com> - 1:23.2-8
+- Moved the terminal desktop menu item to a separate package (rhbz#617355)
+
 * Thu Jul  8 2010 Karel Klic <kklic@redhat.com> - 1:23.2-7
 - Added workaround for an GCC 4.5.0 bug
 
