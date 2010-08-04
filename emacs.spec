@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -49,7 +49,10 @@ BuildRequires: setarch
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 #Requires: hicolor-icon-theme
 # bz#443549, bz#508033
-Requires: hunspell, aspell
+Requires: hunspell
+%if 0%{?fedora}
+Requires: aspell
+%endif
 # bz#507852
 BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel
 BuildRequires: alsa-lib-devel
@@ -74,7 +77,11 @@ BuildRequires: python2-devel python3-devel
 # Lisp and doc patches
 
 %define paranoid 1
+%if 0%{?fedora}
 %define expurgate 0
+%else
+%define expurgate 1
+%endif
 
 %define site_lisp %{_datadir}/emacs/site-lisp
 %define site_start_d %{site_lisp}/site-start.d
@@ -432,6 +439,9 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
+* Wed Aug  4 2010 Karel Klic <kklic@redhat.com> - 1:23.2-9
+- Added Fedora conditionals
+
 * Mon Aug  2 2010 Karel Klic <kklic@redhat.com> - 1:23.2-8
 - Moved the terminal desktop menu item to a separate package (rhbz#617355)
 
