@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -26,7 +26,7 @@ Source20: emacs-terminal.sh
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch3: rpm-spec-mode-utc.patch
-# Not sent to upstream.
+# Upstream implemented the change in revno. 101105
 Patch4: emacs-23.1-xdg.patch
 # Accepted by upstream.
 Patch5: emacs-23.2-m17ncheck.patch
@@ -114,8 +114,9 @@ on a terminal.
 %package common
 Summary: Emacs common files
 Group: Applications/Editors
-Requires(preun): %{_sbindir}/alternatives, /sbin/install-info, dev
-Requires(posttrans): %{_sbindir}/alternatives
+Requires(preun): /sbin/install-info, dev
+Requires(post): %{_sbindir}/update-alternatives
+Requires(postun): %{_sbindir}/update-alternatives
 Requires(post): /sbin/install-info, dev
 
 %description common
@@ -259,6 +260,7 @@ cd ..
 
 # let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
+touch %{buildroot}%{_bindir}/emacs
 
 # do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
@@ -346,6 +348,7 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
   %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
+%{_sbindir}/update-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
 %postun
 update-desktop-database &> /dev/null || :
@@ -353,18 +356,17 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
   %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
+if [ $1 -eq 0 ] ; then
+  %{_sbindir}/update-alternatives --remove emacs %{_bindir}/emacs-%{version}
+fi
 
-%preun
-alternatives --remove emacs %{_bindir}/emacs-%{version} || :
+%post nox
+%{_sbindir}/update-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 
-%posttrans
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80 || :
-
-%preun nox
-alternatives --remove emacs %{_bindir}/emacs-%{version}-nox || :
-
-%posttrans nox
-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70 || :
+%postun nox
+if [ $1 -eq 0 ] ; then
+  %{_sbindir}/update-alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
+fi
 
 %post common
 for f in %{info_files}; do
@@ -392,6 +394,7 @@ update-desktop-database &> /dev/null || :
 %files
 %defattr(-,root,root)
 %{_bindir}/emacs-%{version}
+%attr(0755,-,-) %ghost %{_bindir}/emacs
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
@@ -404,6 +407,7 @@ update-desktop-database &> /dev/null || :
 %files nox
 %defattr(-,root,root)
 %{_bindir}/emacs-%{version}-nox
+%attr(0755,-,-) %ghost %{_bindir}/emacs
 %dir %{_libexecdir}/emacs
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
@@ -415,6 +419,7 @@ update-desktop-database &> /dev/null || :
 %doc etc/NEWS BUGS README etc/COPYING
 %exclude %{_bindir}/emacs-*
 %{_bindir}/*
+%exclude %{_bindir}/emacs
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs
@@ -439,6 +444,11 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
+* Tue Aug 17 2010 Karel Klic <kklic@redhat.com> - 1:23.2-11
+- Own /usr/bin/emacs (rhbz#614935)
+- Updated the handling of alternatives to match
+  https://fedoraproject.org/wiki/Packaging:Alternatives
+
 * Mon Aug 16 2010 Karel Klic <kklic@redhat.com> - 1:23.2-10
 - Removed the png extension from the Icon entry in emacs.desktop (rhbz#507231)
 
