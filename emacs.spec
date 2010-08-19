@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -444,6 +444,10 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
+* Thu Aug 19 2010 Karel Klic <kklic@redhat.com> - 1:23.2-12
+- Mention xdg-open in browse-url-default-browser docstring (rhbz#624359)
+  Updates emacs-23.1-xdg.patch
+
 * Tue Aug 17 2010 Karel Klic <kklic@redhat.com> - 1:23.2-11
 - Own /usr/bin/emacs (rhbz#614935)
 - Updated the handling of alternatives to match
