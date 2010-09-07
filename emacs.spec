@@ -57,8 +57,6 @@ Requires: aspell
 BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel
 BuildRequires: alsa-lib-devel
 
-# Desktop integration
-BuildRequires: desktop-file-utils
 Requires:      desktop-file-utils
 Conflicts: gettext < 0.10.40
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
