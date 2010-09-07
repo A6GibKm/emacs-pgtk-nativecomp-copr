@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 14%{?dist}
+Release: 13%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -444,9 +444,6 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
-* Mon Sep 7 2010 Karel Klic <kklic@redhat.com> - 1:23.2-14
-- Rebuild
-
 * Mon Sep 6 2010 Karel Klic <kklic@redhat.com> - 1:23.2-13
 - Removed transient-mark-mode suggestion from dotemacs.el, as this
   minor mode is enabled by default in recent versions of Emacs
