@@ -1,10 +1,9 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
-
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -35,46 +34,28 @@ Patch5: emacs-23.2-m17ncheck.patch
 Patch6: emacs-23.2-hideshow-comment.patch
 # Reported upstream http://debbugs.gnu.org/cgi/bugreport.cgi?bug=4129
 Patch7: emacs-23.2-spacing.patch
-
-BuildRequires: atk-devel, cairo-devel, desktop-file-utils, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
+BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
-BuildRequires: autoconf, automake, bzip2, cairo, texinfo, gzip
-BuildRequires: GConf2-devel
-
-%ifarch %{ix86}
-BuildRequires: setarch
-%endif
-#Requires: xorg-x11-fonts-ISO8859-1-100dpi, xorg-x11-fonts-misc
-Requires: emacs-common = %{epoch}:%{version}-%{release}
-#Requires: hicolor-icon-theme
-# bz#443549, bz#508033
-Requires: hunspell
-%if 0%{?fedora}
-Requires: aspell
-%endif
-# bz#507852
 BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel
-BuildRequires: alsa-lib-devel
-
+BuildRequires: autoconf, automake, bzip2, cairo, texinfo, gzip
+BuildRequires: GConf2-devel, alsa-lib-devel
 # Desktop integration
 BuildRequires: desktop-file-utils
-Requires:      desktop-file-utils
-Conflicts: gettext < 0.10.40
-Provides: emacs(bin) = %{epoch}:%{version}-%{release}
-
 # Buildrequire both python2 and python3 since below we turn off the
 # brp-python-bytecompile script
 BuildRequires: python2-devel python3-devel
+%ifarch %{ix86}
+BuildRequires: setarch
+%endif
+Requires: desktop-file-utils
+Requires: emacs-common = %{epoch}:%{version}-%{release}
+Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
 # Turn off the brp-python-bytecompile script since this script doesn't
 # properly dtect the correct python runtime for the files emacs2.py and
 # emacs3.py
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-
-# C and build patches
-
-# Lisp and doc patches
 
 %define paranoid 1
 %if 0%{?fedora}
@@ -87,6 +68,7 @@ BuildRequires: python2-devel python3-devel
 %define site_start_d %{site_lisp}/site-start.d
 %define bytecompargs -batch --no-init-file --no-site-file -f batch-byte-compile
 %define pkgconfig %{_datadir}/pkgconfig
+%define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
 %description
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -151,8 +133,6 @@ emacs-terminal if you need a terminal with Malayalam support.
 Please note that emacs-terminal is a temporary package and it will be
 removed when anther terminal becomes capable of handling Malayalam.
 
-%define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
-
 %prep
 %setup -q
 
@@ -207,10 +187,7 @@ autoconf
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
-# Emacs crashes when running in a terminal, if compiled with GCC 4.5.0
-# Work around this error in gcc-4.5 by omitting sibling call optimization.
-# CFLAGS should be removed when GCC is updated to 4.5.1 or higher.
-CFLAGS="$CFLAGS -fno-optimize-sibling-calls" %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
+%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
 make bootstrap
 %{setarch} make %{?_smp_mflags}
@@ -219,10 +196,7 @@ cd ..
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-# Emacs crashes when running in a terminal, if compiled with GCC 4.5.0
-# Work around this error in gcc-4.5 by omitting sibling call optimization.
-# CFLAGS should be removed when GCC is updated to 4.5.1 or higher.
-CFLAGS="$CFLAGS -fno-optimize-sibling-calls" %configure --with-x=no
+%configure --with-x=no
 %{setarch} make %{?_smp_mflags}
 cd ..
 
@@ -445,6 +419,16 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
+* Thu Jan 7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-16
+- Removed dependency on both hunspell and aspell. Emacs does not
+  _require_ spell checker, e.g. if user wants to uninstall one, there
+  is no reason why Emacs should also be uninstalled. Emacs can run one
+  like it can run GDB, pychecker, (La)TeX, make, gcc, and all VCSs out
+  there.
+- Removed conflict with old gettext package
+- Cleaned spec file header
+- Removed gcc-4.5.0 specific CFLAGS
+
 * Thu Jan 7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
 - The emacs-terminal package now requires emacs package
 
