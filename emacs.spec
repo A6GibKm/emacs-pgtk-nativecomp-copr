@@ -4,7 +4,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -141,6 +141,7 @@ Emacs packages or see some elisp examples.
 %package terminal
 Summary: A desktop menu item for GNU Emacs terminal.
 Group: Applications/Editors
+Requires: emacs = %{epoch}:%{version}-%{release}
 
 %description terminal
 
@@ -444,6 +445,9 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs-terminal.desktop
 
 %changelog
+* Thu Jan 7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
+- The emacs-terminal package now requires emacs package
+
 * Thu Jan 6 2011 Karel Klic <kklic@redhat.com> - 1:23.2-14
 - Patch emacs-terminal to use /usr/bin/emacs (rhbz#635213)
 
