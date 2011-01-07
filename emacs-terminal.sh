@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec emacs -Q --eval '(ansi-term "/bin/bash")'
+exec /usr/bin/emacs -Q --eval '(term "/bin/bash")'
