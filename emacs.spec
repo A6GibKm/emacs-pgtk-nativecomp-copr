@@ -3,12 +3,13 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.2
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
 Source1: emacs.desktop
+Source2: emacsclient.desktop
 Source3: dotemacs.el
 Source4: site-start.el
 Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.4.0/php-mode.el
@@ -100,6 +101,7 @@ Requires(preun): /sbin/install-info, dev
 Requires(post): %{_sbindir}/update-alternatives
 Requires(postun): %{_sbindir}/update-alternatives
 Requires(post): /sbin/install-info, dev
+Requires: %{name}-filesystem
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -112,6 +114,7 @@ This package contains all the common files needed by emacs or emacs-nox.
 %package el
 Summary: Lisp source files included with GNU Emacs
 Group: Applications/Editors
+Requires: %{name}-filesystem
 
 %description el
 Emacs-el contains the emacs-elisp sources for many of the elisp
@@ -133,6 +136,14 @@ emacs-terminal if you need a terminal with Malayalam support.
 Please note that emacs-terminal is a temporary package and it will be
 removed when anther terminal becomes capable of handling Malayalam.
 
+%package filesystem
+Summary: Emacs filesystem layout
+Group: Applications/Editors
+
+%description filesystem
+This package provides some directories which are required by other
+packages that add functionality to Emacs.
+
 %prep
 %setup -q
 
@@ -149,13 +160,13 @@ pushd site-lisp
 %patch3 -p0
 popd
 
-# we prefer our emacs.desktop file
+# We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
 
 grep -v "tetris.elc" lisp/Makefile.in > lisp/Makefile.in.new \
    && mv lisp/Makefile.in.new lisp/Makefile.in
 
-# avoid trademark issues
+# Avoid trademark issues
 %if %{paranoid}
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 %endif
@@ -233,26 +244,26 @@ cd build-gtk
 make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
 cd ..
 
-# let alternatives manage the symlink
+# Let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
-# do not compress the files which implement compression itself (#484830)
+# Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
-# install the emacs without X
+# Install the emacs without X
 install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
 
-# make sure movemail isn't setgid
+# Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
 
 mkdir -p %{buildroot}%{site_lisp}
 install -p -m 0644 %SOURCE4 %{buildroot}%{site_lisp}/site-start.el
 install -p -m 0644 %SOURCE18 %{buildroot}%{site_lisp}
 
-#this solves bz#474958, "update-directory-autoloads" now finally works
-#the path is different each version, so we'll generate it here
+# This solves bz#474958, "update-directory-autoloads" now finally
+# works the path is different each version, so we'll generate it here
 echo "(setq source-directory \"%{_datadir}/emacs/%{version}/\")" \
  >> %{buildroot}%{site_lisp}/site-start.el
 
@@ -261,32 +272,35 @@ mv %{buildroot}%{_mandir}/man1/{ctags.1,gctags.1}
 mv %{buildroot}%{_mandir}/man1/{etags.1,etags.emacs.1}
 mv %{buildroot}%{_bindir}/{ctags,gctags}
 
-# install site-lisp files
+# Install site-lisp files
 install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
 install -p -m 0644 %SOURCE8 %SOURCE11 %SOURCE13 %{buildroot}%{site_lisp}/site-start.d
 
-# default initialization file
+# Default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
 install -p -m 0644 %SOURCE3 %{buildroot}%{_sysconfdir}/skel/.emacs
 
-# install pkgconfig file
+# Install pkgconfig file
 mkdir -p %{buildroot}/%{pkgconfig}
 install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
-# install rpm macro definition file
+# Install emacsclient desktop file
+install -p -m 0644 %SOURCE2 %{buildroot}/%{_datadir}/applications/emacsclient.desktop
+
+# Install rpm macro definition file
 mkdir -p %{buildroot}%{_sysconfdir}/rpm
 install -p -m 0644 macros.emacs %{buildroot}%{_sysconfdir}/rpm/
 
-# installing emacs-terminal binary
+# Installing emacs-terminal binary
 install -p -m 755 %SOURCE20 %{buildroot}%{_bindir}/emacs-terminal
 
-# after everything is installed, remove info dir
+# After everything is installed, remove info dir
 rm -f %{buildroot}%{_infodir}/dir
 rm %{buildroot}%{_localstatedir}/games/emacs/*
 
-# install desktop files
+# Install desktop files
 mkdir -p %{buildroot}%{_datadir}/applications
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE1
@@ -299,7 +313,7 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
 
 #
-# create file lists
+# Create file lists
 #
 rm -f *-filelist {common,el}-*-files
 
@@ -312,7 +326,7 @@ rm -f *-filelist {common,el}-*-files
 
 )
 
-# put the lists together after filtering  ./usr to /usr
+# Put the lists together after filtering  ./usr to /usr
 sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
 cat common-*-files > common-filelist
 cat el-*-files common-lisp-dir-files > el-filelist
@@ -374,6 +388,7 @@ update-desktop-database &> /dev/null || :
 %dir %{_libexecdir}/emacs/%{version}
 %dir %{emacs_libexecdir}
 %{_datadir}/applications/emacs.desktop
+%{_datadir}/applications/emacsclient.desktop
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/*/apps/emacs22.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
@@ -397,7 +412,6 @@ update-desktop-database &> /dev/null || :
 %exclude %{_bindir}/emacs
 %{_mandir}/*/*
 %{_infodir}/*
-%dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 %exclude %{_datadir}/emacs/%{version}/etc/COPYING
 %{_datadir}/emacs/%{version}/etc
@@ -410,7 +424,6 @@ update-desktop-database &> /dev/null || :
 %defattr(-,root,root)
 %{pkgconfig}/emacs.pc
 %doc etc/COPYING
-%dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/%{version}
 
 %files terminal
@@ -418,8 +431,18 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/emacs-terminal
 %{_datadir}/applications/emacs-terminal.desktop
 
+%files filesystem
+%defattr(-,root,root)
+%dir %{_datadir}/emacs
+%dir %{_datadir}/emacs/site-lisp
+%dir %{_datadir}/emacs/site-lisp/site-start.d
+
 %changelog
-* Thu Jan 7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-16
+* Mon Jan 10 2011 Karel Klic <kklic@redhat.com> - 1:23.2-17
+- Added filesystem subpackage (rhbz#661866)
+- Added emacsclient desktop file (rhbz#665362)
+
+* Thu Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-16
 - Removed dependency on both hunspell and aspell. Emacs does not
   _require_ spell checker, e.g. if user wants to uninstall one, there
   is no reason why Emacs should also be uninstalled. Emacs can run one
@@ -429,13 +452,13 @@ update-desktop-database &> /dev/null || :
 - Cleaned spec file header
 - Removed gcc-4.5.0 specific CFLAGS
 
-* Thu Jan 7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
+* Thu Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
 - The emacs-terminal package now requires emacs package
 
-* Thu Jan 6 2011 Karel Klic <kklic@redhat.com> - 1:23.2-14
+* Thu Jan  6 2011 Karel Klic <kklic@redhat.com> - 1:23.2-14
 - Patch emacs-terminal to use /usr/bin/emacs (rhbz#635213)
 
-* Mon Sep 6 2010 Karel Klic <kklic@redhat.com> - 1:23.2-13
+* Mon Sep  6 2010 Karel Klic <kklic@redhat.com> - 1:23.2-13
 - Removed transient-mark-mode suggestion from dotemacs.el, as this
   minor mode is enabled by default in recent versions of Emacs
 
