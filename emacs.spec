@@ -2,8 +2,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 23.2
-Release: 18%{?dist}
+Version: 23.3
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -28,13 +28,9 @@ Patch1: rpm-spec-mode.patch
 Patch3: rpm-spec-mode-utc.patch
 # Upstream implemented the change in revno. 101105
 Patch4: emacs-23.1-xdg.patch
-# Accepted by upstream.
-Patch5: emacs-23.2-m17ncheck.patch
 # Fix rhbz#595546
 # Upstream: http://emacsbugs.donarmstrong.com/cgi/bugreport.cgi?bug=6158
 Patch6: emacs-23.2-hideshow-comment.patch
-# Reported upstream http://debbugs.gnu.org/cgi/bugreport.cgi?bug=4129
-Patch7: emacs-23.2-spacing.patch
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
@@ -149,9 +145,7 @@ packages that add functionality to Emacs.
 
 %patch0 -p1 -b .glibc-open-macro
 %patch4 -p1 -b .xdg
-%patch5 -p1 -b .m17ncheck
 %patch6 -p0 -b .hideshow-comment
-%patch7 -p1 -b .spacing
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE9 %SOURCE10 site-lisp
@@ -438,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Mar 10 2011 Karel Klic <kklic@redhat.com> - 1:23.3-1
+- New upstream release
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:23.2-18
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
