@@ -43,7 +43,7 @@ BuildRequires: desktop-file-utils
 # brp-python-bytecompile script
 BuildRequires: python2-devel python3-devel
 %ifarch %{ix86}
-BuildRequires: setarch
+BuildRequires: util-linux
 %endif
 Requires: desktop-file-utils
 Requires: emacs-common = %{epoch}:%{version}-%{release}
@@ -434,6 +434,7 @@ update-desktop-database &> /dev/null || :
 %changelog
 * Thu Mar 10 2011 Karel Klic <kklic@redhat.com> - 1:23.3-1
 - New upstream release
+- Depend on util-linux directly, as the package no longer provides setarch
 
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:23.2-18
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
