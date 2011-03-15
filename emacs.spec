@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -46,6 +46,8 @@ BuildRequires: python2-devel python3-devel
 BuildRequires: util-linux
 %endif
 Requires: desktop-file-utils
+Requires(preun): %{_sbindir}/alternatives
+Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
@@ -78,6 +80,8 @@ This package provides an emacs binary with support for X windows.
 %package nox
 Summary: GNU Emacs text editor without X support
 Group: Applications/Editors
+Requires(preun): %{_sbindir}/alternatives
+Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
@@ -94,8 +98,8 @@ on a terminal.
 Summary: Emacs common files
 Group: Applications/Editors
 Requires(preun): /sbin/install-info, dev
-Requires(post): %{_sbindir}/update-alternatives
-Requires(postun): %{_sbindir}/update-alternatives
+Requires(preun): %{_sbindir}/alternatives
+Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info, dev
 Requires: %{name}-filesystem
 
@@ -232,8 +236,6 @@ cat > macros.emacs << EOF
 EOF
 
 %install
-rm -rf %{buildroot}
-
 cd build-gtk
 make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
 cd ..
@@ -331,7 +333,9 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
   %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
-%{_sbindir}/update-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
+
+%preun
+%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}
 
 %postun
 update-desktop-database &> /dev/null || :
@@ -339,17 +343,15 @@ touch --no-create %{_datadir}/icons/hicolor
 if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
   %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
-if [ $1 -eq 0 ] ; then
-  %{_sbindir}/update-alternatives --remove emacs %{_bindir}/emacs-%{version}
-fi
 
-%post nox
-%{_sbindir}/update-alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
+%posttrans
+%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
-%postun nox
-if [ $1 -eq 0 ] ; then
-  %{_sbindir}/update-alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
-fi
+%preun nox
+%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
+
+%posttrans nox
+%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 
 %post common
 for f in %{info_files}; do
@@ -357,7 +359,7 @@ for f in %{info_files}; do
 done
 
 %preun common
-alternatives --remove emacs.etags %{_bindir}/etags.emacs || :
+%{_sbindir}/alternatives --remove emacs.etags %{_bindir}/etags.emacs
 if [ "$1" = 0 ]; then
   for f in %{info_files}; do
     /sbin/install-info --delete %{_infodir}/$f %{_infodir}/dir 2> /dev/null || :
@@ -365,7 +367,7 @@ if [ "$1" = 0 ]; then
 fi
 
 %posttrans common
-alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
+%{_sbindir}/alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
        --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
 
 %post terminal
@@ -432,6 +434,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Mar 15 2011 Karel Klic <kklic@redhat.com> - 1:23.3-2
+- Another attempt to fix the handling of alternatives (rhbz#684447)
+- Removed 'rm -rf %%{buildroot}' from %%install section
+
 * Thu Mar 10 2011 Karel Klic <kklic@redhat.com> - 1:23.3-1
 - New upstream release
 - Depend on util-linux directly, as the package no longer provides setarch
