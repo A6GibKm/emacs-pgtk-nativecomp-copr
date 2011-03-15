@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -434,6 +434,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Mar 15 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-3
+- Use UTC timestamps in rpm-spec-mode changelog entries by default (rhbz#672350)
+- Consider *.elc in addition to *.el when loading files from site-start.d (rhbz#672324)
+
 * Tue Mar 15 2011 Karel Klic <kklic@redhat.com> - 1:23.3-2
 - Another attempt to fix the handling of alternatives (rhbz#684447)
   The current process loses alternatives preference on every upgrade,
