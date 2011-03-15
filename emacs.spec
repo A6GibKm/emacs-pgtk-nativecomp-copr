@@ -436,6 +436,9 @@ update-desktop-database &> /dev/null || :
 %changelog
 * Tue Mar 15 2011 Karel Klic <kklic@redhat.com> - 1:23.3-2
 - Another attempt to fix the handling of alternatives (rhbz#684447)
+  The current process loses alternatives preference on every upgrade,
+  but there seems to be no elegant way how to prevent this while
+  having versioned binaries (/bin/emacs-%%{version}) at the same time.
 - Removed 'rm -rf %%{buildroot}' from %%install section
 
 * Thu Mar 10 2011 Karel Klic <kklic@redhat.com> - 1:23.3-1
