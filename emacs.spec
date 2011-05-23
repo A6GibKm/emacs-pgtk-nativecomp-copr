@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -377,12 +377,8 @@ update-desktop-database &> /dev/null || :
 update-desktop-database &> /dev/null || :
 
 %files
-%defattr(-,root,root)
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
-%dir %{_libexecdir}/emacs
-%dir %{_libexecdir}/emacs/%{version}
-%dir %{emacs_libexecdir}
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/icons/hicolor/*/apps/emacs.png
@@ -391,15 +387,10 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
 %files nox
-%defattr(-,root,root)
 %{_bindir}/emacs-%{version}-nox
 %attr(0755,-,-) %ghost %{_bindir}/emacs
-%dir %{_libexecdir}/emacs
-%dir %{_libexecdir}/emacs/%{version}
-%dir %{emacs_libexecdir}
 
 %files -f common-filelist common
-%defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %config(noreplace) %{_sysconfdir}/rpm/macros.emacs
 %doc etc/NEWS BUGS README etc/COPYING
@@ -417,23 +408,26 @@ update-desktop-database &> /dev/null || :
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 
 %files -f el-filelist el
-%defattr(-,root,root)
 %{pkgconfig}/emacs.pc
 %doc etc/COPYING
 %dir %{_datadir}/emacs/%{version}
 
 %files terminal
-%defattr(-,root,root)
 %{_bindir}/emacs-terminal
 %{_datadir}/applications/emacs-terminal.desktop
 
 %files filesystem
-%defattr(-,root,root)
 %dir %{_datadir}/emacs
 %dir %{_datadir}/emacs/site-lisp
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon May 23 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-5
+- Removed %%defattr from %%files sections, as RPM no longer needs it
+- Removed %%dir %%{_libexecdir}/emacs and similar from emacs and
+  emacs-nox packages, as the directories are used and present only in
+  emacs-common (rhbz#704067)
+
 * Tue Mar 22 2011 Karel Klic <kklic@redhat.com> - 1:23.3-4
 - Rebuild to fix an RPM issue (rhbz689182)
 
