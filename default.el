@@ -4,3 +4,5 @@
 ;;; prevents loading of this file.  Also the "-q" option to emacs
 ;;; prevents both "~/.emacs" and this file from being loaded at startup.
 
+;; default to better frame titles
+(setq-default frame-title-format (concat "%b - emacs@" (system-name)))

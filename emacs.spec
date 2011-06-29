@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -426,6 +426,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Jun 30 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-7
+- Use custom-set-variables for customizable variables in .emacs (#716440).
+- Move frame-title-format default from .emacs to default.el (#716443).
+
 * Thu May 26 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-6
 - Enumerate binaries in emacs-common to avoid packaging single binary
   multiple times by accident
