@@ -3,11 +3,11 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}a.tar.bz2
 Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
@@ -426,6 +426,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Aug  8 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-8
+- Updated release archive to 23.3a, which includes grammar files that are
+  necessary to modify Semantic parsers
+
 * Thu Jun 30 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-7
 - Use custom-set-variables for customizable variables in .emacs (#716440).
 - Move frame-title-format default from .emacs to default.el (#716443).
