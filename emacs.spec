@@ -46,7 +46,8 @@ BuildRequires: python2-devel python3-devel
 BuildRequires: util-linux
 %endif
 Requires: desktop-file-utils
-Requires: xorg-x11-fonts-misc # rhbz bug 732422
+# Emacs doesn't run without these fonts, rhbz#732422
+Requires: xorg-x11-fonts-misc
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
