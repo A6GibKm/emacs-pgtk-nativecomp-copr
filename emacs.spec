@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -46,6 +46,7 @@ BuildRequires: python2-devel python3-devel
 BuildRequires: util-linux
 %endif
 Requires: desktop-file-utils
+Requires: xorg-x11-fonts-misc # rhbz bug 732422
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
@@ -426,6 +427,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Sep 27 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-9
+- Added dependency on xorg-x11-fonts-misc (rhbz#732422)
+
 * Mon Aug  8 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-8
 - Updated release archive to 23.3a, which includes grammar files that are
   necessary to modify Semantic parsers
