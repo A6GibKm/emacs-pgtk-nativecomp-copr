@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -187,6 +187,10 @@ fi
 %else
 %define setarch %{nil}
 %endif
+
+# Avoid duplicating doc files in the common subpackage
+ln -s ../../%{name}/%{version}/etc/COPYING doc
+ln -s ../../%{name}/%{version}/etc/NEWS doc
 
 %build
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
@@ -395,7 +399,7 @@ update-desktop-database &> /dev/null || :
 %files -f common-filelist common
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %config(noreplace) %{_sysconfdir}/rpm/macros.emacs
-%doc etc/NEWS BUGS README etc/COPYING
+%doc doc/NEWS BUGS README doc/COPYING
 %{_bindir}/b2m
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
@@ -406,7 +410,6 @@ update-desktop-database &> /dev/null || :
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs/%{version}
-%exclude %{_datadir}/emacs/%{version}/etc/COPYING
 %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
@@ -428,6 +431,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Sep 27 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-10
+- Keep COPYING and NEWS in the etc subdir, and symlinks in the docs (rhbz#714212)
+  Author: fedora.dm0@gmail.com
+
 * Tue Sep 27 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-9
 - Added dependency on xorg-x11-fonts-misc (rhbz#732422)
 
