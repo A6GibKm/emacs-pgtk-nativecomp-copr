@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -12,9 +12,8 @@ Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
 Source4: site-start.el
-Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.4.0/php-mode.el
+Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.5.0/php-mode.el
 Source8: php-mode-init.el
-Source9: ssl.el
 # rpm-spec-mode from XEmacs
 Source10: rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
@@ -36,7 +35,7 @@ BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmc
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
 BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel
 BuildRequires: autoconf, automake, bzip2, cairo, texinfo, gzip
-BuildRequires: GConf2-devel, alsa-lib-devel
+BuildRequires: GConf2-devel, alsa-lib-devel, gpm-devel, liblockfile-devel
 # Desktop integration
 BuildRequires: desktop-file-utils
 # Buildrequire both python2 and python3 since below we turn off the
@@ -154,7 +153,7 @@ packages that add functionality to Emacs.
 %patch6 -p0 -b .hideshow-comment
 
 # Install site-lisp files
-cp %SOURCE7 %SOURCE9 %SOURCE10 site-lisp
+cp %SOURCE7 %SOURCE10 site-lisp
 pushd site-lisp
 %patch1 -p0
 %patch3 -p0
@@ -431,6 +430,11 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Sat Oct 22 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-11
+- Build with gpm and liblockfile support.
+- Drop ssl.el (superseded by tls.el).
+- Update php-mode to 1.5.0.
+
 * Tue Sep 27 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-10
 - Keep COPYING and NEWS in the etc subdir, and symlinks in the docs (rhbz#714212)
   Author: fedora.dm0@gmail.com
