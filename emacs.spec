@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -430,6 +430,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Nov 14 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-12
+- Rebuild (rhbz#751154, rhbz#752936)
+
 * Sat Oct 22 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-11
 - Build with gpm and liblockfile support.
 - Drop ssl.el (superseded by tls.el).
