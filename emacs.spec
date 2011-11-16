@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -30,6 +30,8 @@ Patch4: emacs-23.1-xdg.patch
 # Fix rhbz#595546
 # Upstream: http://emacsbugs.donarmstrong.com/cgi/bugreport.cgi?bug=6158
 Patch6: emacs-23.2-hideshow-comment.patch
+# rhbz#713600
+Patch7: emacs-spellchecker.patch
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
@@ -151,6 +153,7 @@ packages that add functionality to Emacs.
 %patch0 -p1 -b .glibc-open-macro
 %patch4 -p1 -b .xdg
 %patch6 -p0 -b .hideshow-comment
+%patch7 -p1 -b .spellchecker
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -430,6 +433,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Nov 16 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-13
+- Check the presence of hunspell before checking for aspell (rhbz#713600)
+
 * Mon Nov 14 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-12
 - Rebuild (rhbz#751154, rhbz#752936)
 
