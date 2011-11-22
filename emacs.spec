@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -205,7 +205,7 @@ mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk --with-gpm=no
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -433,6 +433,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Nov 22 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-14
+- Build Gtk+ version without gpm
+
 * Wed Nov 16 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-13
 - Check the presence of hunspell before checking for aspell (rhbz#713600)
 
