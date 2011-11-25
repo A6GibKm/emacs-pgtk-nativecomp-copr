@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -35,6 +35,9 @@ Patch7: emacs-spellchecker.patch
 # rhbz#711739
 # http://bzr.savannah.gnu.org/lh/emacs/trunk/revision/106247
 Patch8: emacs-wm-state-hidden.patch
+# rhbz#751154
+Patch9: emacs-xgselect.patch
+
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
 BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel
@@ -158,6 +161,7 @@ packages that add functionality to Emacs.
 %patch6 -p0 -b .hideshow-comment
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .wm-state-hidden
+%patch9 -p1 -b .xgselect
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -437,6 +441,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Nov 25 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-16
+- Initialize xgselect in function xg_select when
+  gfds_size == 0 (rhbz#751154)
+
 * Wed Nov 23 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-15
 - Check for _NET_WM_STATE_HIDDEN (rhbz#711739)
 
