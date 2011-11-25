@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -24,7 +24,8 @@ Source19: emacs-terminal.desktop
 Source20: emacs-terminal.sh
 Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
-Patch3: rpm-spec-mode-utc.patch
+Patch2: rpm-spec-mode-utc.patch
+Patch3: rpm-spec-mode-changelog.patch
 # Upstream implemented the change in revno. 101105
 Patch4: emacs-23.1-xdg.patch
 # Fix rhbz#595546
@@ -167,6 +168,7 @@ packages that add functionality to Emacs.
 cp %SOURCE7 %SOURCE10 site-lisp
 pushd site-lisp
 %patch1 -p0
+%patch2 -p0
 %patch3 -p0
 popd
 
@@ -441,6 +443,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Nov 25 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-17
+- Add a new command rpm-goto-add-change-log-entry (C-c C-w) to
+  rpm-spec mode (Jaroslav Skarvada)
+
 * Fri Nov 25 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-16
 - Initialize xgselect in function xg_select when
   gfds_size == 0 (rhbz#751154)
