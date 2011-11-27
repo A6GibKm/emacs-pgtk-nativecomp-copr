@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 23.3
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -38,6 +38,8 @@ Patch7: emacs-spellchecker.patch
 Patch8: emacs-wm-state-hidden.patch
 # rhbz#751154
 Patch9: emacs-xgselect.patch
+# http://bzr.savannah.gnu.org/lh/emacs/trunk/revision/103228
+Patch10: 103228_103227.diff
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -163,6 +165,7 @@ packages that add functionality to Emacs.
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .wm-state-hidden
 %patch9 -p1 -b .xgselect
+%patch10 -p0 -b .svn17
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -443,6 +446,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Sun Nov 27 2011 Ville Skyttä <ville.skytta@iki.fi> - 1:23.3-18
+- Apply upstream Subversion >= 1.7 dir structure fix for vc-svn.el.
+
 * Fri Nov 25 2011 Karel Klíč <kklic@redhat.com> - 1:23.3-17
 - Add a new command rpm-goto-add-change-log-entry (C-c C-w) to
   rpm-spec mode (Jaroslav Skarvada)
