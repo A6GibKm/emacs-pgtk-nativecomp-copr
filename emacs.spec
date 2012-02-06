@@ -2,7 +2,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.0.92
+Version: 24.0.93
 Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
@@ -29,8 +29,6 @@ Patch2: rpm-spec-mode-utc.patch
 Patch3: rpm-spec-mode-changelog.patch
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
-# http://lists.gnu.org/archive/html/emacs-devel/2012-01/msg00387.html
-Patch11: emacs-ede-cve-2012-0035.patch
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -152,7 +150,6 @@ packages that add functionality to Emacs.
 
 %patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
-%patch11 -p1 -b .ede-cve-2012-0035
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -433,6 +430,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb  6 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.93-1
+- Update to newer pre-release version
+
 * Thu Jan 19 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.92-1
 - Upstream pre-release
 
