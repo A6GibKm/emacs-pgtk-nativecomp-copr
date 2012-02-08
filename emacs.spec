@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.0.93
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -98,10 +98,10 @@ on a terminal.
 %package common
 Summary: Emacs common files
 Group: Applications/Editors
-Requires(preun): /sbin/install-info, dev
+Requires(preun): /sbin/install-info
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
-Requires(post): /sbin/install-info, dev
+Requires(post): /sbin/install-info
 Requires: %{name}-filesystem
 
 %description common
@@ -430,6 +430,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Feb  8 2012 Kay Sievers <kay@redhat.com> - 1:24.0.93-2
+- Drop dependency on 'dev' package; it is gone since many years
+
 * Mon Feb  6 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.93-1
 - Update to newer pre-release version
 
