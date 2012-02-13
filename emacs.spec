@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.0.93
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -203,7 +203,11 @@ ln -s ../configure .
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk --with-gpm=no \
+%ifnarch ppc s390
 	   --with-wide-int
+%else
+	  %{nil}
+%endif
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -430,6 +434,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb 13 2012 Dan Horák <dan[at]danny.cz> - 1:24.0.93-3
+- workaround build failure on ppc and s390 (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=10780)
+
 * Wed Feb  8 2012 Kay Sievers <kay@redhat.com> - 1:24.0.93-2
 - Drop dependency on 'dev' package; it is gone since many years
 
