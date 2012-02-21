@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.0.93
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -29,6 +29,8 @@ Patch2: rpm-spec-mode-utc.patch
 Patch3: rpm-spec-mode-changelog.patch
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
+# emacs#10780
+Patch8: emacs-bug10780.patch
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk2-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -150,6 +152,7 @@ packages that add functionality to Emacs.
 
 %patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
+%patch8 -p1 -b .bug10780
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -203,11 +206,7 @@ ln -s ../configure .
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk --with-gpm=no \
-%ifnarch ppc s390
 	   --with-wide-int
-%else
-	  %{nil}
-%endif
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -434,6 +433,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Feb 21 2012 Dan Horák <dan[at]danny.cz> - 1:24.0.93-4
+- add upstream fix for emacs bug 10780, revert the workaround
+
 * Mon Feb 13 2012 Dan Horák <dan[at]danny.cz> - 1:24.0.93-3
 - workaround build failure on ppc and s390 (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=10780)
 
