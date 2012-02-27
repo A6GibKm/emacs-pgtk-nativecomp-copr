@@ -439,6 +439,13 @@ update-desktop-database &> /dev/null || :
 - Remove unpatched files in the lisp directory, where all files are
   installed
 
+* Tue Feb 21 2012 Dan Horák <dan[at]danny.cz> - 1:24.0.93-4
+- add upstream fix for emacs bug 10780, revert the workaround
+
+* Mon Feb 13 2012 Dan Horák <dan[at]danny.cz> - 1:24.0.93-3
+- workaround build failure on ppc and s390
+  (http://debbugs.gnu.org/cgi/bugreport.cgi?bug=10780)
+
 * Wed Feb  8 2012 Kay Sievers <kay@redhat.com> - 1:24.0.93-2
 - Drop dependency on 'dev' package; it is gone since many years
 
