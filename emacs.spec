@@ -2,8 +2,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.0.93
-Release: 2%{?dist}
+Version: 24.0.94
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -192,6 +192,10 @@ ln -s ../../%{name}/%{version}/etc/COPYING doc
 ln -s ../../%{name}/%{version}/etc/NEWS doc
 
 %build
+# Remove unpatched files as all files in the lisp directory are
+# installed.
+rm lisp/textmodes/ispell.el.spellchecker
+
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
 # We patch configure.in so we have to do this
@@ -430,6 +434,11 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb 27 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.94-1
+- Update to the newest prerelease
+- Remove unpatched files in the lisp directory, where all files are
+  installed
+
 * Wed Feb  8 2012 Kay Sievers <kay@redhat.com> - 1:24.0.93-2
 - Drop dependency on 'dev' package; it is gone since many years
 
