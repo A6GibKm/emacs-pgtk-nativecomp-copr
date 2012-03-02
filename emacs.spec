@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.0.94
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -434,6 +434,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Mar  2 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.94-2
+- Rebuild for ImageMagick update
+
 * Mon Feb 27 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.94-1
 - Update to the newest prerelease
 - Remove unpatched files in the lisp directory, where all files are
