@@ -2,7 +2,7 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.0.95
+Version: 24.0.97
 Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
@@ -174,7 +174,7 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
+%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-gnutls emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
 
 if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
   echo Please update info_files >&2
@@ -434,6 +434,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon May 21 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.97-1
+- Newest prerelease
+
 * Fri Apr  6 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.95-1
 - New upstream prerelease
 
