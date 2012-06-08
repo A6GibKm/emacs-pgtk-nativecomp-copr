@@ -1592,7 +1592,7 @@ update-desktop-database &> /dev/null || :
 - don't use bcopy without a prototype
 
 * Thu Aug 24 2000 Trond Eivind Glomsrød <teg@redhat.com>
-- define MAIL_USE_LOCKF 
+- define MAIL_USE_LOCKF
 - remove setgid on movemail
 
 * Mon Aug 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
@@ -1618,7 +1618,7 @@ update-desktop-database &> /dev/null || :
 
 * Wed Jun 28 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - include python mode and change in site-start.el related to this
-- some changes to the default .emacs 
+- some changes to the default .emacs
 
 * Mon Jun 26 2000 Matt Wilson <msw@redhat.com>
 - don't build with -O2 on alpha until we can track down the compiler
@@ -1680,11 +1680,11 @@ update-desktop-database &> /dev/null || :
 - gzip man pages
 
 * Thu Apr 20 2000 Trond Eivind Glomsrød <teg@redhat.com>
-- added a security patch from RUS-CERT, which fixes 
+- added a security patch from RUS-CERT, which fixes
   bugs mentioned in "Advisory 200004-01: GNU Emacs 20"
 
 * Tue Apr 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
-- patched to detect bash2 scripts. 
+- patched to detect bash2 scripts.
 
 * Thu Apr 06 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - removed configuraton file status from /usr/share/pixmaps/emacs.png
