@@ -2,13 +2,13 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.0.97
-Release: 1%{?dist}
+Version: 24.1
+Release: 0.rc1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 #Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
-Source0: http://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.gz
+Source0: http://alpha.gnu.org/gnu/emacs/pretest/emacs-24.1-rc.tar.gz
 Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
@@ -434,6 +434,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jun  8 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-0.rc1
+- New upstream prerelease
+- Cleanup of the %%changelog section
+
 * Mon May 21 2012 Karel Klíč <kklic@redhat.com> - 1:24.0.97-1
 - Newest prerelease
 
@@ -740,7 +744,7 @@ update-desktop-database &> /dev/null || :
 * Thu Jun 25 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-5
 - revoked default.el change (#508033)
 - added build dependency: librsvg2-devel (#507852)
-- added dependency: aspell (#443549) 
+- added dependency: aspell (#443549)
 
 * Wed Jun 24 2009 Daniel Novotny <dnovotny@redhat.com> 1:23.0.93-4
 - added xorg-x11-fonts-misc to dependencies (#469220)
@@ -864,7 +868,7 @@ update-desktop-database &> /dev/null || :
 * Mon Aug 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-2
 - add pkgconfig file for emacs-common and virtual provides (Resolves: bz242176)
 - glibc-open-macro.patch to deal with glibc turning "open" into a macro.
-- leave emacs info pages in default section (Resolves: bz199008) 
+- leave emacs info pages in default section (Resolves: bz199008)
 
 * Fri Jun  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-1
 - move alternatives install to posttrans scriptlet (Resolves: bz239745)
@@ -1468,8 +1472,8 @@ update-desktop-database &> /dev/null || :
 - Drop all old patches
 - Misc cleanups
 - Update the elisp manual to 21-2.7
-- Deprecate the emacs-nox and emacs-X11 subpackages. 
-  Simplify build procedure to match. 
+- Deprecate the emacs-nox and emacs-X11 subpackages.
+  Simplify build procedure to match.
 - Update php-mode to 1.0.0
 
 * Mon Oct 15 2001 Trond Eivind Glomsrød <teg@redhat.com> 20.7-43
@@ -1534,7 +1538,7 @@ update-desktop-database &> /dev/null || :
 * Mon Dec 18 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - add /usr/share/emacs/locale.alias , which had gone AWOL
 - update rpm-spec-mode to 0.11a, fresh from the author
-  (Stig Bjorlykke <stigb@tihlde.org>). The changes we made 
+  (Stig Bjorlykke <stigb@tihlde.org>). The changes we made
   are integrated.
 
 * Fri Dec 15 2000 Trond Eivind Glomsrød <teg@redhat.com>
@@ -1551,10 +1555,10 @@ update-desktop-database &> /dev/null || :
 * Thu Dec 07 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - add rpm-spec-mode after modifying (use Red Hat groups,
   from /usr/share/doc/rpm-version/GROUPS) and fixing
-  colours(don't specify "yellow" on "bright") Also, 
+  colours(don't specify "yellow" on "bright") Also,
   use gpg, not pgp.
 - use it (site-start.el)
-- add mwheel 
+- add mwheel
 - use it, in /etc/skel/.emacs
 
 * Thu Nov 30 2000 Trond Eivind Glomsrød <teg@redhat.com>
@@ -1562,7 +1566,7 @@ update-desktop-database &> /dev/null || :
 - change site-start.el so files in the above directory
   are automatically run on startup
 - don't set the ispell name in site-start.el, use the
-  above directory instead  
+  above directory instead
 
 * Thu Oct 19 2000 Trond Eivind Glomsrød <teg@redhat.com>
 - fix icon name in the .desktop file
@@ -1631,7 +1635,7 @@ update-desktop-database &> /dev/null || :
 
 * Wed Jun 14 2000 Matt Wilson <msw@redhat.com>
 - edited japanese patch not to patch configure
-- fixed a missing escaped " in a wc string
+- fixed a missing escaped \" in a wc string
 - merge japanese support to head of development
 
 * Tue Jun 13 2000 Trond Eivind Glomsrød <teg@redhat.com>
@@ -1750,7 +1754,7 @@ update-desktop-database &> /dev/null || :
 * Wed Mar 31 1999 Preston Brown <pbrown@redhat.com>
 - updated mh-utils emacs lisp file to match our nmh path locations
 
-* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com> 
+* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com>
 - auto rebuild in the new build environment (release 9)
 
 * Fri Feb 26 1999 Cristian Gafton <gafton@redhat.com>
