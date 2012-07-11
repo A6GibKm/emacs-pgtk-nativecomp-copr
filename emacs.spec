@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -28,6 +28,8 @@ Patch2: rpm-spec-mode-utc.patch
 Patch3: rpm-spec-mode-changelog.patch
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
+# rhbz#830162
+Patch8: emacs-locate-library.patch
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk3-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -149,6 +151,7 @@ packages that add functionality to Emacs.
 
 %patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
+%patch8 -p1 -b .locate-library
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -433,6 +436,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Jul 11 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-2
+- Fix org-mode to work without emacs-el installed.
+  rhbz#830162
+
 * Mon Jun 18 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-1
 - New upstream release
 - Switch from GTK 2 to GTK 3
