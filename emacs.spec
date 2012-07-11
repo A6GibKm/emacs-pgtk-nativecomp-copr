@@ -30,6 +30,9 @@ Patch3: rpm-spec-mode-changelog.patch
 Patch7: emacs-spellchecker.patch
 # rhbz#830162
 Patch8: emacs-locate-library.patch
+# Fix building without gets function, which is removed from recent
+# version of glibc.
+Patch9: emacs-nogets.patch
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk3-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -155,6 +158,7 @@ packages that add functionality to Emacs.
 %patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
+%patch9 -p1 -b .nogets
 
 # Install site-lisp files
 cp %SOURCE7 %SOURCE10 site-lisp
@@ -440,8 +444,8 @@ update-desktop-database &> /dev/null || :
 
 %changelog
 * Wed Jul 11 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-3
-- Fix org-mode to work without emacs-el installed.
-  rhbz#830162
+- Fix org-mode to work without emacs-el installed. rhbz#830162
+- Fix building without gets function, which is removed from recent version of glibc.
 
 * Wed Jul 11 2012 Ville Skyttä <ville.skytta@iki.fi> - 1:24.1-2
 - Build -el, -terminal, and -filesystem as noarch (rhbz#834907).
