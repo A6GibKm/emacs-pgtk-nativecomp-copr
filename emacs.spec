@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -115,6 +115,7 @@ This package contains all the common files needed by emacs or emacs-nox.
 Summary: Lisp source files included with GNU Emacs
 Group: Applications/Editors
 Requires: %{name}-filesystem
+BuildArch: noarch
 
 %description el
 Emacs-el contains the emacs-elisp sources for many of the elisp
@@ -127,6 +128,7 @@ Emacs packages or see some elisp examples.
 Summary: A desktop menu item for GNU Emacs terminal.
 Group: Applications/Editors
 Requires: emacs = %{epoch}:%{version}-%{release}
+BuildArch: noarch
 
 %description terminal
 
@@ -134,11 +136,12 @@ Contains a desktop menu item running GNU Emacs terminal. Install
 emacs-terminal if you need a terminal with Malayalam support.
 
 Please note that emacs-terminal is a temporary package and it will be
-removed when anther terminal becomes capable of handling Malayalam.
+removed when another terminal becomes capable of handling Malayalam.
 
 %package filesystem
 Summary: Emacs filesystem layout
 Group: Applications/Editors
+BuildArch: noarch
 
 %description filesystem
 This package provides some directories which are required by other
@@ -433,6 +436,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Jul 11 2012 Ville Skyttä <ville.skytta@iki.fi> - 1:24.1-2
+- Build -el, -terminal, and -filesystem as noarch (rhbz#834907).
+
 * Mon Jun 18 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-1
 - New upstream release
 - Switch from GTK 2 to GTK 3
