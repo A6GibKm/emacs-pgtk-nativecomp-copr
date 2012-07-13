@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -12,8 +12,6 @@ Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
 Source4: site-start.el
-Source7: http://php-mode.svn.sourceforge.net/svnroot/php-mode/tags/php-mode-1.5.0/php-mode.el
-Source8: php-mode-init.el
 # rpm-spec-mode from XEmacs
 Source10: rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
@@ -161,7 +159,7 @@ packages that add functionality to Emacs.
 %patch9 -p1 -b .nogets
 
 # Install site-lisp files
-cp %SOURCE7 %SOURCE10 site-lisp
+cp %SOURCE10 site-lisp
 pushd site-lisp
 %patch1 -p0
 %patch2 -p0
@@ -291,7 +289,7 @@ mv %{buildroot}%{_bindir}/{ctags,gctags}
 install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
-install -p -m 0644 %SOURCE8 %SOURCE11 %SOURCE13 %{buildroot}%{site_lisp}/site-start.d
+install -p -m 0644 %SOURCE11 %SOURCE13 %{buildroot}%{site_lisp}/site-start.d
 
 # Default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
@@ -443,6 +441,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jul 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-4
+- Remove php-mode from the main package. It should be packaged separately. rhbz#751749
+
 * Wed Jul 11 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-3
 - Fix org-mode to work without emacs-el installed. rhbz#830162
 - Fix building without gets function, which is removed from recent version of glibc.
