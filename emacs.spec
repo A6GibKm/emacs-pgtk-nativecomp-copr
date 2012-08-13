@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -31,6 +31,8 @@ Patch8: emacs-locate-library.patch
 # Fix building without gets function, which is removed from recent
 # version of glibc.
 Patch9: emacs-nogets.patch
+# rhbz#847702
+Patch10: emacs-cve-2012-3479.patch
 
 BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk3-devel, libpng-devel
 BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
@@ -157,6 +159,7 @@ packages that add functionality to Emacs.
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
 %patch9 -p1 -b .nogets
+%patch10 -p1 -b .cve-2012-3479
 
 # Install site-lisp files
 cp %SOURCE10 site-lisp
@@ -441,6 +444,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Aug 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-6
+- Fix CVE-2012-3479: Evaluation of 'eval' forms in file-local variable
+  sections, when 'enable-local-variables' set to ':safe'
+
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.1-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
