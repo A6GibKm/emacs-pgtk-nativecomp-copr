@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -13,9 +13,8 @@ Source2: emacsclient.desktop
 Source3: dotemacs.el
 Source4: site-start.el
 # rpm-spec-mode from XEmacs
-Source10: rpm-spec-mode.el
+Source10: https://bitbucket.org/xemacs/prog-modes/raw/eacc4cb30d0c/rpm-spec-mode.el
 Source11: rpm-spec-mode-init.el
-Source13: focus-init.el
 Source18: default.el
 # Emacs Terminal Mode, #551949, #617355
 Source19: emacs-terminal.desktop
@@ -136,7 +135,6 @@ Requires: emacs = %{epoch}:%{version}-%{release}
 BuildArch: noarch
 
 %description terminal
-
 Contains a desktop menu item running GNU Emacs terminal. Install
 emacs-terminal if you need a terminal with Malayalam support.
 
@@ -293,7 +291,7 @@ mv %{buildroot}%{_bindir}/{ctags,gctags}
 install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
-install -p -m 0644 %SOURCE11 %SOURCE13 %{buildroot}%{site_lisp}/site-start.d
+install -p -m 0644 %SOURCE11 %{buildroot}%{site_lisp}/site-start.d
 
 # Default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
@@ -447,6 +445,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Sep 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-2
+- Removed focus-init.el which used to set focus-follows-mouse to nil.
+  It is set to nil by default in Emacs 24.2.
+
 * Thu Sep 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-1
 - Updated to the newest upstream release
 - Switched from bz2 upstream package to xz
