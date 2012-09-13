@@ -2,12 +2,12 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.1
-Release: 6%{?dist}
+Version: 24.2
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.bz2
+Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
 Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
@@ -28,38 +28,37 @@ Patch3: rpm-spec-mode-changelog.patch
 Patch7: emacs-spellchecker.patch
 # rhbz#830162
 Patch8: emacs-locate-library.patch
-# Fix building without gets function, which is removed from recent
-# version of glibc.
-Patch9: emacs-nogets.patch
-# rhbz#847702
-Patch10: emacs-cve-2012-3479.patch
 
-BuildRequires: atk-devel, cairo-devel, freetype-devel, fontconfig-devel, dbus-devel, giflib-devel, glibc-devel, gtk3-devel, libpng-devel
-BuildRequires: libjpeg-devel, libtiff-devel, libX11-devel, libXau-devel, libXdmcp-devel, libXrender-devel, libXt-devel
-BuildRequires: libXpm-devel, ncurses-devel, xorg-x11-proto-devel, zlib-devel, gnutls-devel
-BuildRequires: librsvg2-devel, m17n-lib-devel, libotf-devel, ImageMagick-devel, libselinux-devel
-BuildRequires: GConf2-devel, alsa-lib-devel, gpm-devel, liblockfile-devel, libxml2-devel
-BuildRequires: autoconf, automake, bzip2, cairo, texinfo, gzip
-# Desktop integration
-BuildRequires: desktop-file-utils
-# Buildrequire both python2 and python3 since below we turn off the
-# brp-python-bytecompile script
-BuildRequires: python2-devel python3-devel
+BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
+BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
+BuildRequires: libXpm-devel ncurses-devel xorg-x11-proto-devel zlib-devel gnutls-devel
+BuildRequires: librsvg2-devel m17n-lib-devel libotf-devel ImageMagick-devel libselinux-devel
+BuildRequires: GConf2-devel alsa-lib-devel gpm-devel liblockfile-devel libxml2-devel
+BuildRequires: bzip2 cairo texinfo gzip
+%if 0%{?el6}
+BuildRequires: gtk2-devel
+%else
+# Buildrequire both python2 and python3 on systems containing both,
+# since below we turn off the brp-python-bytecompile script
+BuildRequires: gtk3-devel python2-devel python3-devel
+%endif
 %ifarch %{ix86}
 BuildRequires: util-linux
 %endif
-Requires: desktop-file-utils
-# Emacs doesn't run without these fonts, rhbz#732422
-Requires: xorg-x11-fonts-misc
+
+# Emacs doesn't run without xorg-x11-fonts-misc, rhbz#732422
+Requires: desktop-file-utils xorg-x11-fonts-misc
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
+%if 0%{!?el6:1}
 # Turn off the brp-python-bytecompile script since this script doesn't
 # properly dtect the correct python runtime for the files emacs2.py and
 # emacs3.py
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
+%endif
 
 %define paranoid 1
 %if 0%{?fedora}
@@ -101,6 +100,7 @@ on a terminal.
 
 %package common
 Summary: Emacs common files
+License: GPLv3+ and GFDL
 Group: Applications/Editors
 Requires(preun): /sbin/install-info
 Requires(preun): %{_sbindir}/alternatives
@@ -158,8 +158,6 @@ packages that add functionality to Emacs.
 %patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
-%patch9 -p1 -b .nogets
-%patch10 -p1 -b .cve-2012-3479
 
 # Install site-lisp files
 cp %SOURCE10 site-lisp
@@ -208,15 +206,18 @@ rm lisp/textmodes/ispell.el.spellchecker
 
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
-# We patch configure.in so we have to do this
-autoconf
-
-# Build GTK+3 binary
+# Build GTK+ binary
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
+%if 0%{?el6}
+%define toolkit gtk
+%else
+%define toolkit gtk3
+%endif
+
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=%{toolkit} --with-gpm=no \
 	   --with-wide-int
 make bootstrap
 %{setarch} make %{?_smp_mflags}
@@ -324,9 +325,11 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE19
 
 # Byte compile emacs*.py with correct python interpreters
+%if 0%{!?el6:1}
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs.py
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs2.py
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
+%endif
 
 #
 # Create file lists
@@ -444,6 +447,14 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Sep 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-1
+- Updated to the newest upstream release
+- Switched from bz2 upstream package to xz
+- Make the spec file usable on EL6
+- Removed the nogets and CVE-2012-3479 patches, because the upstream
+  package fixes the associated issues
+- Added GFDL license to emacs-common package
+
 * Mon Aug 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.1-6
 - Fix CVE-2012-3479: Evaluation of 'eval' forms in file-local variable
   sections, when 'enable-local-variables' set to ':safe'
