@@ -34,7 +34,7 @@ BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-de
 BuildRequires: libXpm-devel ncurses-devel xorg-x11-proto-devel zlib-devel gnutls-devel
 BuildRequires: librsvg2-devel m17n-lib-devel libotf-devel ImageMagick-devel libselinux-devel
 BuildRequires: GConf2-devel alsa-lib-devel gpm-devel liblockfile-devel libxml2-devel
-BuildRequires: bzip2 cairo texinfo gzip
+BuildRequires: bzip2 cairo texinfo gzip desktop-file-utils
 %if 0%{?el6}
 BuildRequires: gtk2-devel
 %else
