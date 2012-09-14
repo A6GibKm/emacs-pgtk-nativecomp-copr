@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -19,13 +19,12 @@ Source18: default.el
 # Emacs Terminal Mode, #551949, #617355
 Source19: emacs-terminal.desktop
 Source20: emacs-terminal.sh
-Patch0: glibc-open-macro.patch
 Patch1: rpm-spec-mode.patch
 Patch2: rpm-spec-mode-utc.patch
 Patch3: rpm-spec-mode-changelog.patch
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
-# rhbz#830162
+# rhbz#830162, fixed in org-mode upstream
 Patch8: emacs-locate-library.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
@@ -46,6 +45,7 @@ BuildRequires: util-linux
 %endif
 
 # Emacs doesn't run without xorg-x11-fonts-misc, rhbz#732422
+# We should consider depending on some other font!
 Requires: desktop-file-utils xorg-x11-fonts-misc
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
@@ -153,7 +153,6 @@ packages that add functionality to Emacs.
 %prep
 %setup -q
 
-%patch0 -p1 -b .glibc-open-macro
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
 
@@ -445,6 +444,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Sep 14 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-3
+- Removed patch glibc-open-macro, which seems to be no longer necessary
+
 * Thu Sep 13 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-2
 - Removed focus-init.el which used to set focus-follows-mouse to nil.
   It is set to nil by default in Emacs 24.2.
