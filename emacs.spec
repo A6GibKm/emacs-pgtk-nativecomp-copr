@@ -213,9 +213,6 @@ ln -s ../configure .
 %{setarch} make %{?_smp_mflags}
 cd ..
 
-# Make sure patched lisp files get byte-compiled
-build-gtk/src/emacs %{bytecompargs} site-lisp/*.el
-
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
 rm build-{gtk,nox}/src/emacs-%{version}.*
 
@@ -272,11 +269,7 @@ mv %{buildroot}%{_mandir}/man1/{ctags.1.gz,gctags.1.gz}
 mv %{buildroot}%{_mandir}/man1/{etags.1.gz,etags.emacs.1.gz}
 mv %{buildroot}%{_bindir}/{ctags,gctags}
 
-# Install site-lisp files
-install -p -m 0644 site-lisp/*.el{,c} %{buildroot}%{site_lisp}
-
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
-install -p -m 0644 %SOURCE11 %{buildroot}%{site_lisp}/site-start.d
 
 # Default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
