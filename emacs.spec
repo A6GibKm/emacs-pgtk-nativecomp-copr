@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -12,16 +12,10 @@ Source1: emacs.desktop
 Source2: emacsclient.desktop
 Source3: dotemacs.el
 Source4: site-start.el
-# rpm-spec-mode from XEmacs
-Source10: https://bitbucket.org/xemacs/prog-modes/raw/eacc4cb30d0c/rpm-spec-mode.el
-Source11: rpm-spec-mode-init.el
-Source18: default.el
+Source5: default.el
 # Emacs Terminal Mode, #551949, #617355
-Source19: emacs-terminal.desktop
-Source20: emacs-terminal.sh
-Patch1: rpm-spec-mode.patch
-Patch2: rpm-spec-mode-utc.patch
-Patch3: rpm-spec-mode-changelog.patch
+Source6: emacs-terminal.desktop
+Source7: emacs-terminal.sh
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
 # rhbz#830162, fixed in org-mode upstream
@@ -156,14 +150,6 @@ packages that add functionality to Emacs.
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
 
-# Install site-lisp files
-cp %SOURCE10 site-lisp
-pushd site-lisp
-%patch1 -p0
-%patch2 -p0
-%patch3 -p0
-popd
-
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
 
@@ -274,7 +260,7 @@ chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
 
 mkdir -p %{buildroot}%{site_lisp}
 install -p -m 0644 %SOURCE4 %{buildroot}%{site_lisp}/site-start.el
-install -p -m 0644 %SOURCE18 %{buildroot}%{site_lisp}
+install -p -m 0644 %SOURCE5 %{buildroot}%{site_lisp}
 
 # This solves bz#474958, "update-directory-autoloads" now finally
 # works the path is different each version, so we'll generate it here
@@ -308,7 +294,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/rpm
 install -p -m 0644 macros.emacs %{buildroot}%{_sysconfdir}/rpm/
 
 # Installing emacs-terminal binary
-install -p -m 755 %SOURCE20 %{buildroot}%{_bindir}/emacs-terminal
+install -p -m 755 %SOURCE7 %{buildroot}%{_bindir}/emacs-terminal
 
 # After everything is installed, remove info dir
 rm -f %{buildroot}%{_infodir}/dir
@@ -319,7 +305,7 @@ mkdir -p %{buildroot}%{_datadir}/applications
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE1
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
-                     %SOURCE19
+                     %SOURCE6
 
 # Byte compile emacs*.py with correct python interpreters
 %if 0%{!?el6:1}
@@ -444,6 +430,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Sep 14 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-4
+- Moved RPM spec mode to a separate package (rhbz#857865)
+
 * Fri Sep 14 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-3
 - Removed patch glibc-open-macro, which seems to be no longer necessary
 
