@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -93,7 +93,9 @@ on a terminal.
 
 %package common
 Summary: Emacs common files
-License: GPLv3+ and GFDL
+# The entire source code is GPLv3+ except lib-src/etags.c which is
+# also BSD.  Manual (info) is GFDL.
+License: GPLv3+ and GFDL and BSD
 Group: Applications/Editors
 Requires(preun): /sbin/install-info
 Requires(preun): %{_sbindir}/alternatives
@@ -423,6 +425,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Sep 20 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-5
+- Add BSD to emacs-common licenses because of etags.
+
 * Fri Sep 14 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-4
 - Moved RPM spec mode to a separate package (rhbz#857865)
 
