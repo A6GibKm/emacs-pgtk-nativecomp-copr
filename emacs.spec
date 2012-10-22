@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -38,9 +38,8 @@ BuildRequires: gtk3-devel python2-devel python3-devel
 BuildRequires: util-linux
 %endif
 
-# Emacs doesn't run without xorg-x11-fonts-misc, rhbz#732422
-# We should consider depending on some other font!
-Requires: desktop-file-utils xorg-x11-fonts-misc
+# Emacs doesn't run without dejavu-sans-mono-fonts, rhbz#732422
+Requires: desktop-file-utils dejavu-sans-mono-fonts
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
@@ -425,6 +424,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Oct 22 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-6
+- Change xorg-x11-fonts-misc dependency to dejavu-sans-mono-fonts, rhbz#732422
+
 * Thu Sep 20 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-5
 - Add BSD to emacs-common licenses because of etags.
 
