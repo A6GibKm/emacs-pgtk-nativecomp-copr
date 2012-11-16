@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -20,6 +20,8 @@ Source7: emacs-terminal.sh
 Patch7: emacs-spellchecker.patch
 # rhbz#830162, fixed in org-mode upstream
 Patch8: emacs-locate-library.patch
+# Fix for Emacs bug #11580.
+Patch9: emacs-bz11580-eudc-bbdb.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -150,6 +152,7 @@ packages that add functionality to Emacs.
 
 %patch7 -p1 -b .spellchecker
 %patch8 -p1 -b .locate-library
+%patch9 -p1 -b .emacs-bz11580-eudc-bbdb
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -424,6 +427,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Nov 06 2012 Sergio Durigan Junior <sergiodj@riseup.net> - 1:23.3-11
+- Fix for Emacs bug #11580, 'Fix querying BBDB for entries without a last
+  name'.
+
 * Mon Oct 22 2012 Karel Klíč <kklic@redhat.com> - 1:24.2-6
 - Change xorg-x11-fonts-misc dependency to dejavu-sans-mono-fonts, rhbz#732422
 

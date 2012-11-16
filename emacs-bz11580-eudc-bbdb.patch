@@ -1,0 +1,47 @@
+From: Sergio Durigan Junior <sergiodj@riseup.net>
+Date: Tue, 02 Oct 2012 05:10:16 +0000
+Subject: Bugfix for EUDCB-BBDB queries.
+
+* net/eudcb-bbdb.el (eudc-bbdb-format-record-as-result): Fix
+querying BBDB for entries without a last name.
+
+2012-10-02  Sergio Durigan Junior  <sergiodj@riseup.net>
+
+	* net/eudcb-bbdb.el (eudc-bbdb-format-record-as-result): Fix
+	querying BBDB for entries without a last name (Bug#11580).
+
+Index: emacs-23.3/lisp/net/eudcb-bbdb.el
+===================================================================
+--- emacs-23.3.orig/lisp/net/eudcb-bbdb.el
++++ emacs-23.3/lisp/net/eudcb-bbdb.el
+@@ -169,18 +169,18 @@ The record is filtered according to `eud
+ 				  (symbol-name attr)))
+ 			 'record))))
+        (t
+-	(setq val "Unknown BBDB attribute")))
+-      (if val
+-	(cond
+-	 ((memq attr '(phones addresses))
+-	  (setq eudc-rec (append val eudc-rec)))
+-	 ((and (listp val)
+-	  (= 1 (length val)))
+-	  (setq eudc-rec (cons (cons attr (car val)) eudc-rec)))
+-	 ((> (length val) 0)
+-	  (setq eudc-rec (cons (cons attr val) eudc-rec)))
+-	 (t
+-	  (error "Unexpected attribute value")))))
++	(error "Unknown BBDB attribute")))
++      (cond
++       ((or (not val) (equal val ""))) ; do nothing
++       ((memq attr '(phones addresses))
++	(setq eudc-rec (append val eudc-rec)))
++       ((and (listp val)
++	     (= 1 (length val)))
++	(setq eudc-rec (cons (cons attr (car val)) eudc-rec)))
++       ((> (length val) 0)
++	(setq eudc-rec (cons (cons attr val) eudc-rec)))
++       (t
++	(error "Unexpected attribute value"))))
+     (nreverse eudc-rec)))
+ 
+ 
