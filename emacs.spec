@@ -427,7 +427,7 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
-* Tue Nov 06 2012 Sergio Durigan Junior <sergiodj@riseup.net> - 1:23.3-11
+* Tue Nov 06 2012 Sergio Durigan Junior <sergiodj@riseup.net> - 1:24.2-7
 - Fix for Emacs bug #11580, 'Fix querying BBDB for entries without a last
   name'.
 
