@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -427,6 +427,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jan 18 2013 Adam Tkac <atkac redhat com> - 1:24.2-8
+- rebuild due to "jpeg8-ABI" feature drop
+
 * Tue Nov 06 2012 Sergio Durigan Junior <sergiodj@riseup.net> - 1:24.2-7
 - Fix for Emacs bug #11580, 'Fix querying BBDB for entries without a last
   name'.
