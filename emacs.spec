@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -20,8 +20,10 @@ Source7: emacs-terminal.sh
 Patch7: emacs-spellchecker.patch
 # rhbz#830162, fixed in org-mode upstream
 Patch8: emacs-locate-library.patch
-# Fix for Emacs bug #11580.
+# Fix for Emacs bug #111500.
 Patch9: emacs-bz11580-eudc-bbdb.patch
+# Fix for emacs bug #13460.
+Patch100: emacs-24.2-hunspell.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -154,6 +156,8 @@ packages that add functionality to Emacs.
 %patch8 -p1 -b .locate-library
 %patch9 -p1 -b .emacs-bz11580-eudc-bbdb
 
+%patch100 -p1 -b .hunspell
+
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
 
@@ -189,6 +193,7 @@ ln -s ../../%{name}/%{version}/etc/NEWS doc
 %build
 # Remove unpatched files as all files in the lisp directory are
 # installed.
+rm lisp/textmodes/ispell.el.hunspell
 rm lisp/textmodes/ispell.el.spellchecker
 
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
@@ -427,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Jan 21 2013 Jochen Schmitt <Jochen herr-schmitt de> - 1:24.2-9
+- Fix for emacs bug #13460, ispell-change dictionary hunspell issue (#903151)
+
 * Fri Jan 18 2013 Adam Tkac <atkac redhat com> - 1:24.2-8
 - rebuild due to "jpeg8-ABI" feature drop
 
