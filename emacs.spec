@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -432,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Mar  6 2013 Tomáš Mráz <tmraz@redhat.com> - 1:24.2-10
+- Rebuild with new gnutls
+
 * Mon Jan 21 2013 Jochen Schmitt <Jochen herr-schmitt de> - 1:24.2-9
 - Fix for emacs bug #13460, ispell-change dictionary hunspell issue (#903151)
 
