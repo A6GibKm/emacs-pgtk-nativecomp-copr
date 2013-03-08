@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 10%{?dist}
+Release: 11%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -400,7 +400,7 @@ update-desktop-database &> /dev/null || :
 
 %files -f common-filelist common
 %config(noreplace) %{_sysconfdir}/skel/.emacs
-%config(noreplace) %{_sysconfdir}/rpm/macros.emacs
+%{_sysconfdir}/rpm/macros.emacs
 %doc doc/NEWS BUGS README doc/COPYING
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
@@ -432,6 +432,11 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Mar 08 2013 Ralf Corsépius <corsepiu@fedoraproject.org> - 1:24.2-11
+- Remove %%config from %%{_sysconfdir}/rpm/macros.*
+  (https://fedorahosted.org/fpc/ticket/259).
+- Fix broken spec-file changelog entry.
+
 * Wed Mar  6 2013 Tomáš Mráz <tmraz@redhat.com> - 1:24.2-10
 - Rebuild with new gnutls
 
@@ -651,7 +656,7 @@ update-desktop-database &> /dev/null || :
 
 * Thu Jul  8 2010 Karel Klic <kklic@redhat.com> - 1:23.2-6
 - Removed Obsoletes: emacs-nxml-mode, it was obsoleted in F-11
-- Added COPYING to emacs-el, moved COPYING in emacs-common to %doc
+- Added COPYING to emacs-el, moved COPYING in emacs-common to %%doc
 
 * Thu Jun  3 2010 Karel Klic <kklic@redhat.com> - 1:23.2-5
 - Fixed handling of dual spacing fonts rhbz#599437
