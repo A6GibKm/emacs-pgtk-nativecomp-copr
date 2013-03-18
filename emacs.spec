@@ -2,8 +2,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.2
-Release: 12%{?dist}
+Version: 24.3
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -18,12 +18,8 @@ Source6: emacs-terminal.desktop
 Source7: emacs-terminal.sh
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
-# rhbz#830162, fixed in org-mode upstream
-Patch8: emacs-locate-library.patch
-# Fix for Emacs bug #111500.
-Patch9: emacs-bz11580-eudc-bbdb.patch
 # Fix for emacs bug #13460.
-Patch100: emacs-24.2-hunspell.patch
+Patch100: emacs-24.3-hunspell.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -31,12 +27,16 @@ BuildRequires: libXpm-devel ncurses-devel xorg-x11-proto-devel zlib-devel gnutls
 BuildRequires: librsvg2-devel m17n-lib-devel libotf-devel ImageMagick-devel libselinux-devel
 BuildRequires: GConf2-devel alsa-lib-devel gpm-devel liblockfile-devel libxml2-devel
 BuildRequires: bzip2 cairo texinfo gzip desktop-file-utils
-%if 0%{?el6}
+%if 0%{?rhel} == 6
 BuildRequires: gtk2-devel
 %else
+%if 0%{?rhel} == 7
+BuildRequires: gtk3-devel python2-devel 
 # Buildrequire both python2 and python3 on systems containing both,
 # since below we turn off the brp-python-bytecompile script
+%else
 BuildRequires: gtk3-devel python2-devel python3-devel
+%endif
 %endif
 %ifarch %{ix86}
 BuildRequires: util-linux
@@ -153,8 +153,6 @@ packages that add functionality to Emacs.
 %setup -q
 
 %patch7 -p1 -b .spellchecker
-%patch8 -p1 -b .locate-library
-%patch9 -p1 -b .emacs-bz11580-eudc-bbdb
 
 %patch100 -p1 -b .hunspell
 
@@ -173,12 +171,12 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-gnutls emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
+#%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-gnutls emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
 
-if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
-  echo Please update info_files >&2
-  exit 1
-fi
+#if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
+#  echo Please update info_files >&2
+#  exit 1
+#fi
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -432,6 +430,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-1
+- Updated to the newest upstream release
+- solved problem with distribution flag in case of rhel
+
 * Mon Mar 18 2013 Rex Dieter <rdieter@fedoraproject.org> 1:24.2-12
 - rebuild (ImageMagick)
 
@@ -616,7 +618,7 @@ update-desktop-database &> /dev/null || :
 - Added filesystem subpackage (rhbz#661866)
 - Added emacsclient desktop file (rhbz#665362)
 
-* Thu Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-16
+* Fri Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-16
 - Removed dependency on both hunspell and aspell. Emacs does not
   _require_ spell checker, e.g. if user wants to uninstall one, there
   is no reason why Emacs should also be uninstalled. Emacs can run one
@@ -626,7 +628,7 @@ update-desktop-database &> /dev/null || :
 - Cleaned spec file header
 - Removed gcc-4.5.0 specific CFLAGS
 
-* Thu Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
+* Fri Jan  7 2011 Karel Klic <kklic@redhat.com> - 1:23.2-15
 - The emacs-terminal package now requires emacs package
 
 * Thu Jan  6 2011 Karel Klic <kklic@redhat.com> - 1:23.2-14
@@ -926,7 +928,7 @@ update-desktop-database &> /dev/null || :
 - fix pkgconfig path (from pkg-config to pkgconfig (Jonathan Underwood)
 - use macro instead of variable style for buildroot.
 
-* Mon Aug 28 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-3
+* Tue Aug 28 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-3
 - change group from Development to Utility
 
 * Mon Aug 13 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-2
@@ -934,7 +936,7 @@ update-desktop-database &> /dev/null || :
 - glibc-open-macro.patch to deal with glibc turning "open" into a macro.
 - leave emacs info pages in default section (Resolves: bz199008)
 
-* Fri Jun  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-1
+* Wed Jun  6 2007 Chip Coldwell <coldwell@redhat.com> - 22.1-1
 - move alternatives install to posttrans scriptlet (Resolves: bz239745)
 - new release tarball from FSF (Resolves: bz245303)
 - new php-mode 1.2.0
@@ -1266,7 +1268,7 @@ update-desktop-database &> /dev/null || :
   and remove redundant next-line-add-newlines setting
 - update info_file list (Reuben Thomas,114729)
 
-* Wed Mar 16 2004 Mike A. Harris <mharris@redhat.com> 21.3-11
+* Tue Mar 16 2004 Mike A. Harris <mharris@redhat.com> 21.3-11
 - Removed bogus Requires: XFree86-libs that was added in 21.3-8, as rpm
   find-requires will automatically pick up the dependancies on any runtime
   libraries, and such hard coded requires is not X11 implementation
@@ -1587,7 +1589,7 @@ update-desktop-database &> /dev/null || :
 * Sat Jan 27 2001 Jakub Jelinek <jakub@redhat.com>
 - Preprocess Makefiles as if they were assembly, not C source.
 
-* Thu Jan 24 2001 Yukihiro Nakai <ynakai@redhat.com>
+* Wed Jan 24 2001 Yukihiro Nakai <ynakai@redhat.com>
 - Fix the fontset problem when creating a new frame.
 
 * Thu Jan 18 2001 Trond Eivind Glomsrød <teg@redhat.com>

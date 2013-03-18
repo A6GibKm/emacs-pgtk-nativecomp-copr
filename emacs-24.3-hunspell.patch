@@ -1,7 +1,8 @@
-diff -up emacs-24.2/lisp/textmodes/ispell.el.hunspell emacs-24.2/lisp/textmodes/ispell.el
---- emacs-24.2/lisp/textmodes/ispell.el.hunspell	2013-01-21 18:45:01.743335126 +0100
-+++ emacs-24.2/lisp/textmodes/ispell.el	2013-01-21 18:51:02.082010837 +0100
-@@ -572,6 +572,40 @@ re-start Emacs."
+diff --git a/lisp/textmodes/ispell.el b/lisp/textmodes/ispell.el
+index 1daec44..7167dc9 100644
+--- a/lisp/textmodes/ispell.el
++++ b/lisp/textmodes/ispell.el
+@@ -574,6 +574,40 @@ re-start Emacs."
  		       (coding-system :tag "Coding System")))
    :group 'ispell)
  
@@ -41,8 +42,8 @@ diff -up emacs-24.2/lisp/textmodes/ispell.el.hunspell emacs-24.2/lisp/textmodes/
 +  `ispell-dictionary-base-alist'.")
  
  (defvar ispell-dictionary-base-alist
-   '((nil
-@@ -1106,9 +1140,57 @@ aspell is used along with Emacs).")
+   '((nil                                ; default
+@@ -1112,9 +1146,57 @@ aspell is used along with Emacs).")
  		    ispell-encoding8-command)
  	       ispell-aspell-dictionary-alist
  	     nil))

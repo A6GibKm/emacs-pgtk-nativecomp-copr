@@ -1,15 +1,16 @@
-qdiff -up emacs-23.3/lisp/textmodes/ispell.el.spellcheck emacs-23.3/lisp/textmodes/ispell.el
---- emacs-23.3/lisp/textmodes/ispell.el.spellcheck	2011-11-16 10:54:57.363513864 +0100
-+++ emacs-23.3/lisp/textmodes/ispell.el	2011-11-16 10:55:17.209577635 +0100
-@@ -348,9 +348,9 @@ Must be greater than 1."
+diff --git a/lisp/textmodes/ispell.el b/lisp/textmodes/ispell.el
+index 1d28de7..1daec44 100644
+--- a/lisp/textmodes/ispell.el
++++ b/lisp/textmodes/ispell.el
+@@ -351,9 +351,9 @@ Must be greater than 1."
    :group 'ispell)
  
  (defcustom ispell-program-name
--  (or (locate-file "aspell"   exec-path exec-suffixes 'file-executable-p)
-+  (or (locate-file "hunspell" exec-path exec-suffixes 'file-executable-p)
-+      (locate-file "aspell"   exec-path exec-suffixes 'file-executable-p)
-       (locate-file "ispell"   exec-path exec-suffixes 'file-executable-p)
--      (locate-file "hunspell" exec-path exec-suffixes 'file-executable-p)
+-  (or (executable-find "aspell")
++  (or (executable-find "hunspell")
++      (executable-find "aspell")
+       (executable-find "ispell")
+-      (executable-find "hunspell")
        "ispell")
    "Program invoked by \\[ispell-word] and \\[ispell-region] commands."
    :type 'string
