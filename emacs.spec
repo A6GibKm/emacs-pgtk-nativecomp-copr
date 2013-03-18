@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.2
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -432,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Mar 18 2013 Rex Dieter <rdieter@fedoraproject.org> 1:24.2-12
+- rebuild (ImageMagick)
+
 * Fri Mar 08 2013 Ralf Corsépius <corsepiu@fedoraproject.org> - 1:24.2-11
 - Remove %%config from %%{_sysconfdir}/rpm/macros.*
   (https://fedorahosted.org/fpc/ticket/259).
