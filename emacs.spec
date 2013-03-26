@@ -207,8 +207,7 @@ ln -s ../configure .
 %endif
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=%{toolkit} --with-gpm=no \
-	   --with-wide-int
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=%{toolkit} --with-gpm=no
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
