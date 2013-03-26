@@ -387,7 +387,7 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/icons/hicolor/*/apps/emacs.png
-%{_datadir}/icons/hicolor/*/apps/emacs22.png
+#%{_datadir}/icons/hicolor/*/apps/emacs22.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
@@ -404,7 +404,7 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/etags.emacs
 %{_bindir}/gctags
 %{_bindir}/grep-changelog
-%{_bindir}/rcs-checkin
+#%{_bindir}/rcs-checkin
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs/%{version}
