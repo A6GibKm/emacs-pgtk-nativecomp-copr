@@ -432,6 +432,8 @@ update-desktop-database &> /dev/null || :
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-1
 - Updated to the newest upstream release
 - solved problem with distribution flag in case of rhel
+- rcs-checking not availble anymore
+- emacs22.png are not installed anymore
 
 * Mon Mar 18 2013 Rex Dieter <rdieter@fedoraproject.org> 1:24.2-12
 - rebuild (ImageMagick)
