@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -49,7 +49,7 @@ Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
 Provides: emacs(bin) = %{epoch}:%{version}-%{release}
 
-%if 0%{!?el6:1}
+%if 0%{!?rhel:1}
 # Turn off the brp-python-bytecompile script since this script doesn't
 # properly dtect the correct python runtime for the files emacs2.py and
 # emacs3.py
@@ -171,12 +171,15 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-#%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-gnutls emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
+%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc flymake forms gnus htmlfontify idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode tramp url vip viper widget wisent woman
 
-#if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
-#  echo Please update info_files >&2
-#  exit 1
-#fi
+cd info
+files=`echo $(ls *.info) | sed 's/\.info//'g | sort | tr -d '\n'`
+if test "$files" != "%info_files"; then
+  echo Please update info_files >&2
+  exit 1
+fi
+cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -200,7 +203,7 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
-%if 0%{?el6}
+%if 0%{?rhel} == 6
 %define toolkit gtk
 %else
 %define toolkit gtk3
@@ -307,7 +310,9 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE6
 
 # Byte compile emacs*.py with correct python interpreters
-%if 0%{!?el6:1}
+%if 0%{?rhel:1}
+rm -f %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
+%else
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs.py
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs2.py
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
@@ -429,6 +434,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-2
+- fix #927996 correcting bug. Info pages were not delivered
+
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-1
 - Updated to the newest upstream release
 - solved problem with distribution flag in case of rhel
