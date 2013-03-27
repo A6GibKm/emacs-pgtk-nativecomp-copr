@@ -1,7 +1,7 @@
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 Summary: GNU Emacs text editor
 Name: emacs
-Epoch: 1
+Epoch: 2
 Version: 24.3
 Release: 1%{?dist}
 License: GPLv3+
@@ -171,12 +171,15 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-#%define info_files ada-mode auth autotype calc ccmode cl dbus dired-x ebrowse ede ediff edt eieio efaq eintr elisp emacs emacs-gnutls emacs-mime epa erc ert eshell eudc flymake forms gnus idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar tramp url vip viper widget woman
+%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc flymake forms gnus htmlfontify idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode tramp url vip viper widget wisent woman 
 
-#if test "$(perl -e 'while (<>) { if (/^INFO_FILES/) { s/.*=//; while (s/\\$//) { s/\\//; $_ .= <>; }; s/\s+/ /g; s/^ //; s/ $//; print; exit; } }' Makefile.in)" != "%info_files"; then
-#  echo Please update info_files >&2
-#  exit 1
-#fi
+cd info
+files=`echo $(ls *.info) | sed 's/\.info//'g | sort | tr -d '\n'`
+if test "$files" != "%info_files"; then
+  echo Please update info_files >&2
+  exit 1
+fi
+cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -429,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Mar 27 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-2
+- fix #927996 Correcting info pages
+
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-1
 - Updated to the newest upstream release
 - solved problem with distribution flag in case of rhel
