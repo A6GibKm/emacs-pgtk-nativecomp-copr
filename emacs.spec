@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -18,6 +18,9 @@ Source6: emacs-terminal.desktop
 Source7: emacs-terminal.sh
 # rhbz#713600
 Patch7: emacs-spellchecker.patch
+
+# Fix for emacs bug #922519
+Patch10: emacs-style-change-cb.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
 
@@ -153,6 +156,8 @@ packages that add functionality to Emacs.
 %setup -q
 
 %patch7 -p1 -b .spellchecker
+
+%patch10 -p1 -b .style-change-cb.patch
 
 %patch100 -p1 -b .hunspell
 
@@ -434,6 +439,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Mar 28 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-3
+- Fix for emacs bug 112144, style_changed_cb (#922519) 
+
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-2
 - fix #927996 correcting bug. Info pages were not delivered
 
