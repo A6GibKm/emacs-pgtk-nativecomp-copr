@@ -21,6 +21,8 @@ Patch7: emacs-spellchecker.patch
 
 # Fix for emacs bug #922519
 Patch10: emacs-style-change-cb.patch
+# Fix for emacs bug #562719
+Patch11: emacs-bell-dont-work.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
 
@@ -158,6 +160,7 @@ packages that add functionality to Emacs.
 %patch7 -p1 -b .spellchecker
 
 %patch10 -p1 -b .style-change-cb.patch
+%patch11 -p1 -b .bell-dont-work.patch
 
 %patch100 -p1 -b .hunspell
 
@@ -441,6 +444,7 @@ update-desktop-database &> /dev/null || :
 %changelog
 * Thu Mar 28 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-3
 - Fix for emacs bug 112144, style_changed_cb (#922519) 
+- Fix for emacs bug 112131, bell does not work (#562719) 
 
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-2
 - fix #927996 correcting bug. Info pages were not delivered
