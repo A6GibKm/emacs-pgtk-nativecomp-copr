@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -285,6 +285,8 @@ mv %{buildroot}%{_bindir}/{etags,etags.emacs}
 mv %{buildroot}%{_mandir}/man1/{ctags.1.gz,gctags.1.gz}
 mv %{buildroot}%{_mandir}/man1/{etags.1.gz,etags.emacs.1.gz}
 mv %{buildroot}%{_bindir}/{ctags,gctags}
+# BZ 927996
+mv %{buildroot}%{_infodir}/{info.info.gz,info.gz}
 
 mkdir -p %{buildroot}%{site_lisp}/site-start.d
 
@@ -442,6 +444,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Apr 03 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-4
+- Fix for info page. info.info.gz page was renamed to info.gz (#927996) 
+
 * Thu Mar 28 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-3
 - Fix for emacs bug 112144, style_changed_cb (#922519) 
 - Fix for emacs bug 112131, bell does not work (#562719) 
