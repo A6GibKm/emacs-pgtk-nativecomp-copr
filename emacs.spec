@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -447,6 +447,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Apr 04 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-6
+- Rebuild with new ImageMagick
+
 * Thu Apr 04 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-5
 - Fix for Gtk-Warning (#929353) 
 
