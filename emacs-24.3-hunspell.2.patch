@@ -1,0 +1,13 @@
+diff --git a/lisp/textmodes/ispell.el b/lisp/textmodes/ispell.el
+index 7167dc9..c8f2cd7 100644
+--- a/lisp/textmodes/ispell.el
++++ b/lisp/textmodes/ispell.el
+@@ -1177,7 +1177,7 @@ aspell is used along with Emacs).")
+ 		;; Unless default dict, re-add "-d" option with the mapped value
+ 		(if dict-name
+ 		    (if dict-equiv
+-			(nconc ispell-args (list "-d" dict-equiv))
++			(setq ispell-args (nconc ispell-args (list "-d" dict-equiv)))
+ 		      (message
+ 		       "ispell-set-spellchecker-params: Missing hunspell equiv for \"%s\". Skipping."
+ 		       dict-name)

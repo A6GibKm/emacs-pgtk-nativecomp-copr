@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -27,6 +27,8 @@ Patch11: emacs-bell-dont-work.patch
 Patch12: emacs-gtk-warning.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
+# Fix for emacs bug #827033
+Patch101: emacs-24.3-hunspell.2.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -34,6 +36,7 @@ BuildRequires: libXpm-devel ncurses-devel xorg-x11-proto-devel zlib-devel gnutls
 BuildRequires: librsvg2-devel m17n-lib-devel libotf-devel ImageMagick-devel libselinux-devel
 BuildRequires: GConf2-devel alsa-lib-devel gpm-devel liblockfile-devel libxml2-devel
 BuildRequires: bzip2 cairo texinfo gzip desktop-file-utils
+
 %if 0%{?rhel} == 6
 BuildRequires: gtk2-devel
 %else
@@ -45,6 +48,7 @@ BuildRequires: gtk3-devel python2-devel
 BuildRequires: gtk3-devel python2-devel python3-devel
 %endif
 %endif
+
 %ifarch %{ix86}
 BuildRequires: util-linux
 %endif
@@ -166,6 +170,7 @@ packages that add functionality to Emacs.
 %patch12 -p1 -b .gtk-warning.patch
 
 %patch100 -p1 -b .hunspell
+%patch101 -p1 -b .hunspell.2
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -206,6 +211,7 @@ ln -s ../../%{name}/%{version}/etc/NEWS doc
 # Remove unpatched files as all files in the lisp directory are
 # installed.
 rm lisp/textmodes/ispell.el.hunspell
+rm lisp/textmodes/ispell.el.hunspell.2
 rm lisp/textmodes/ispell.el.spellchecker
 
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
@@ -447,6 +453,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Apr 08 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-7
+- Spell checking broken by non-default dictionary (#827033)
+
 * Thu Apr 04 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-6
 - Rebuild with new ImageMagick
 
