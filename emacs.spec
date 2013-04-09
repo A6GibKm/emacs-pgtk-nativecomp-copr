@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -453,6 +453,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Apr 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-8
+- Rebuild with new file package
+
 * Mon Apr 08 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-7
 - Spell checking broken by non-default dictionary (#827033)
 
