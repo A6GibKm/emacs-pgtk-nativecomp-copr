@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -25,6 +25,8 @@ Patch10: emacs-style-change-cb.patch
 Patch11: emacs-bell-dont-work.patch
 # Fix for emacs bug #929353
 Patch12: emacs-gtk-warning.patch
+# Fix for emacs bug #948838
+Patch13: emacs-help-update.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
 # Fix for emacs bug #827033
@@ -168,6 +170,7 @@ packages that add functionality to Emacs.
 %patch10 -p1 -b .style-change-cb.patch
 %patch11 -p1 -b .bell-dont-work.patch
 %patch12 -p1 -b .gtk-warning.patch
+%patch13 -p1 -b .help-update.patch
 
 %patch100 -p1 -b .hunspell
 %patch101 -p1 -b .hunspell.2
@@ -453,6 +456,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Apr 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-9
+- Help and man page corrections (#948838)
+
 * Tue Apr 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-8
 - Rebuild with new file package
 
