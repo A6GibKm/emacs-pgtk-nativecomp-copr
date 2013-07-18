@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -456,6 +456,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Jul 18 2013 Petr Pisar <ppisar@redhat.com> - 1:24.3-10
+- Perl 5.18 rebuild
+
 * Tue Apr 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-9
 - Help and man page corrections (#948838)
 
