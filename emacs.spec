@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 11%{?dist}
+Release: 12%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -27,6 +27,8 @@ Patch11: emacs-bell-dont-work.patch
 Patch12: emacs-gtk-warning.patch
 # Fix for emacs bug #948838
 Patch13: emacs-help-update.patch
+# Fix for emacs bug #948838
+Patch14: emacs-maximized.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
 # Fix for emacs bug #827033
@@ -171,6 +173,7 @@ packages that add functionality to Emacs.
 %patch11 -p1 -b .bell-dont-work.patch
 %patch12 -p1 -b .gtk-warning.patch
 %patch13 -p1 -b .help-update.patch
+%patch14 -p1 -b .maximized.patch
 
 %patch100 -p1 -b .hunspell
 %patch101 -p1 -b .hunspell.2
@@ -456,6 +459,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Aug 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-12
+- emacs -mm (maximized) does not work (#985729)
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.3-11
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
