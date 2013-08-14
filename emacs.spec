@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -29,6 +29,8 @@ Patch12: emacs-gtk-warning.patch
 Patch13: emacs-help-update.patch
 # Fix for emacs bug #948838
 Patch14: emacs-maximized.patch
+# Fix for default PDF viewer bug #971162
+Patch15: emacs-pdf-default.patch
 # Fix for emacs bug #13460.
 Patch100: emacs-24.3-hunspell.patch
 # Fix for emacs bug #827033
@@ -174,6 +176,7 @@ packages that add functionality to Emacs.
 %patch12 -p1 -b .gtk-warning.patch
 %patch13 -p1 -b .help-update.patch
 %patch14 -p1 -b .maximized.patch
+%patch15 -p1 -b .pdf-default.patch
 
 %patch100 -p1 -b .hunspell
 %patch101 -p1 -b .hunspell.2
@@ -459,6 +462,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Aug 14 2013 Jaromir Koncicky <jkoncick@redhat.com> - 1:24.3-13
+- Fix default PDF viewer (#971162)
+
 * Fri Aug 09 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-12
 - emacs -mm (maximized) does not work (#985729)
 

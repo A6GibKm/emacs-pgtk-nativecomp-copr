@@ -1,0 +1,13 @@
+diff --git a/lisp/org/org.el b/lisp/org/org.el
+index cc4c93f..285b71c 100644
+--- a/lisp/org/org.el
++++ b/lisp/org/org.el
+@@ -1750,7 +1750,7 @@ See `org-file-apps'.")
+     (auto-mode . emacs)
+     ("\\.mm\\'" . default)
+     ("\\.x?html?\\'" . default)
+-    ("\\.pdf\\'" . default)
++    ("\\.pdf\\'" . xdg-open)
+     )
+   "External applications for opening `file:path' items in a document.
+ Org-mode uses system defaults for different file types, but
