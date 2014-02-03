@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -320,8 +320,8 @@ install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 install -p -m 0644 %SOURCE2 %{buildroot}/%{_datadir}/applications/emacsclient.desktop
 
 # Install rpm macro definition file
-mkdir -p %{buildroot}%{_sysconfdir}/rpm
-install -p -m 0644 macros.emacs %{buildroot}%{_sysconfdir}/rpm/
+mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
+install -p -m 0644 macros.emacs %{buildroot}%{_rpmconfigdir}/macros.d/
 
 # Installing emacs-terminal binary
 install -p -m 755 %SOURCE7 %{buildroot}%{_bindir}/emacs-terminal
@@ -430,7 +430,7 @@ update-desktop-database &> /dev/null || :
 
 %files -f common-filelist common
 %config(noreplace) %{_sysconfdir}/skel/.emacs
-%{_sysconfdir}/rpm/macros.emacs
+%{_rpmconfigdir}/macros.d/macros.emacs
 %doc doc/NEWS BUGS README doc/COPYING
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
@@ -462,6 +462,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb 03 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-14
+- replace sysconfdir/rpm with rpmconfigdir/macros.d
+
 * Wed Aug 14 2013 Jaromir Koncicky <jkoncick@redhat.com> - 1:24.3-13
 - Fix default PDF viewer (#971162)
 
