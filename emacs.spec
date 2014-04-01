@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -462,6 +462,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Apr 01 2014 Richard W.M. Jones <rjones@redhat.com> - 1:24.3-15
+- Rebuild because of unannounced ImageMagick soname bump in Rawhide.
+
 * Mon Feb 03 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-14
 - replace sysconfdir/rpm with rpmconfigdir/macros.d
 
