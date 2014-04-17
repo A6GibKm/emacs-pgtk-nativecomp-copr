@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -393,14 +393,14 @@ fi
 
 %post common
 for f in %{info_files}; do
-  /sbin/install-info %{_infodir}/$f %{_infodir}/dir 2> /dev/null || :
+  /sbin/install-info %{_infodir}/$f.info.gz %{_infodir}/dir 2> /dev/null || :
 done
 
 %preun common
 %{_sbindir}/alternatives --remove emacs.etags %{_bindir}/etags.emacs
 if [ "$1" = 0 ]; then
   for f in %{info_files}; do
-    /sbin/install-info --delete %{_infodir}/$f %{_infodir}/dir 2> /dev/null || :
+    /sbin/install-info --delete %{_infodir}/$f.info.gz %{_infodir}/dir 2> /dev/null || :
   done
 fi
 
@@ -462,6 +462,12 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Apr 17 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-16
+- Info files are not installed (#1062792)
+
+* Fri Apr 11 2014 Richard W.M. Jones <rjones@redhat.com> - 1:24.3-16
+- Rebuild because of unannounced ImageMagick soname bump in Rawhide.
+
 * Tue Apr 01 2014 Richard W.M. Jones <rjones@redhat.com> - 1:24.3-15
 - Rebuild because of unannounced ImageMagick soname bump in Rawhide.
 
