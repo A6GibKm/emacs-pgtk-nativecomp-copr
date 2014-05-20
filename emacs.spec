@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -32,9 +32,14 @@ Patch14: emacs-maximized.patch
 # Fix for default PDF viewer bug #971162
 Patch15: emacs-pdf-default.patch
 # Fix for emacs bug #13460.
-Patch100: emacs-24.3-hunspell.patch
+Patch16: emacs-24.3-hunspell.patch
 # Fix for emacs bug #827033
-Patch101: emacs-24.3-hunspell.2.patch
+Patch17: emacs-24.3-hunspell.2.patch
+# Several CVE fixes
+Patch18: emacs-CVE-2014-3421.patch
+Patch19: emacs-CVE-2014-3422.patch
+Patch20: emacs-CVE-2014-3423.patch
+Patch21: emacs-CVE-2014-3424.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -177,9 +182,12 @@ packages that add functionality to Emacs.
 %patch13 -p1 -b .help-update.patch
 %patch14 -p1 -b .maximized.patch
 %patch15 -p1 -b .pdf-default.patch
-
-%patch100 -p1 -b .hunspell
-%patch101 -p1 -b .hunspell.2
+%patch16 -p1 -b .hunspell
+%patch17 -p1 -b .hunspell.2
+%patch18 -p1 -b .CVE-2014-3421.patch
+%patch19 -p1 -b .CVE-2014-3422.patch
+%patch20 -p1 -b .CVE-2014-3423.patch
+%patch21 -p1 -b .CVE-2014-3424.patch
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -462,6 +470,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue May 20 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-17
+- CVE-2014-3421 CVE-2014-3422 CVE-2014-3423 CVE-2014-3424 (#1095587)
+
 * Thu Apr 17 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-16
 - Info files are not installed (#1062792)
 
