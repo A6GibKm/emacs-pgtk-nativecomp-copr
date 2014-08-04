@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 21%{?dist}
+Release: 22%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -289,8 +289,6 @@ cd ..
 # Let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
-rm %{buildroot}%{_bindir}/emacs-nox
-touch %{buildroot}%{_bindir}/emacs-nox
 
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
@@ -474,6 +472,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Aug 04 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-22
+- remove /usr/bin/emacs-nox from install section
+
 * Mon Aug 04 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-21
 - /usr/bin/emacs-nox link marked as %ghost file (#1123573)
 
