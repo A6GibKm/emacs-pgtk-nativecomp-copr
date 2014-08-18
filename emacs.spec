@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 25%{?dist}
+Release: 26%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -404,10 +404,12 @@ fi
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
 %preun nox
+%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
 %{_sbindir}/alternatives --remove emacs-nox %{_bindir}/emacs-%{version}-nox
 
 %posttrans nox
-%{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 70
+%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
+%{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 60
 
 %post common
 for f in %{info_files}; do
@@ -444,6 +446,7 @@ update-desktop-database &> /dev/null || :
 
 %files nox
 %{_bindir}/emacs-%{version}-nox
+%attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
 
 %files -f common-filelist common
@@ -481,6 +484,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Aug 18 2014 jchaloup <jchaloup@redhat.com> - 1:24.3-26
+- resolves: #1130587
+  unremove emacs from emacs-nox package, emacs and emacs-nox co-exist
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.3-25
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
