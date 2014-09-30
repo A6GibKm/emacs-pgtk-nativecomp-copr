@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 26%{?dist}
+Release: 27%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -484,6 +484,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Sep 30 2014 jchaloup <jchaloup@redhat.com> - 1:24.3-27
+- resolves: #1147912
+  Service dont start. Must be replace: "Type=Forking" > "Type=forking".
+
 * Mon Aug 18 2014 jchaloup <jchaloup@redhat.com> - 1:24.3-26
 - resolves: #1130587
   unremove emacs from emacs-nox package, emacs and emacs-nox co-exist
