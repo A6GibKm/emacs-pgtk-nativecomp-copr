@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 27%{?dist}
+Release: 28%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -484,6 +484,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Oct 23 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-28
+- resolves: #1151652
+  emacs-el is required by emacs-common
+
 * Tue Sep 30 2014 jchaloup <jchaloup@redhat.com> - 1:24.3-27
 - resolves: #1147912
   Service dont start. Must be replace: "Type=Forking" > "Type=forking".
