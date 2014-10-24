@@ -131,8 +131,8 @@ Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info
 Requires: %{name}-filesystem = %{epoch}:%{version}-%{release}
-Provides %{name}-el = %{epoch}:%{version}-%{release}
-Obsoletes %{name}-el < 1:24.3-28
+Provides: %{name}-el = %{epoch}:%{version}-%{release}
+Obsoletes: %{name}-el <= 1:24.3-28
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
