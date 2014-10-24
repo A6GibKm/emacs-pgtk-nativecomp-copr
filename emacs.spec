@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.3
-Release: 28%{?dist}
+Release: 29%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -131,7 +131,8 @@ Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info
 Requires: %{name}-filesystem = %{epoch}:%{version}-%{release}
-Requires: %{name}-el = %{epoch}:%{version}-%{release}
+Provides %{name}-el = %{epoch}:%{version}-%{release}
+Obsoletes %{name}-el < 1:24.3-28
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -140,19 +141,6 @@ language (elisp), and the capability to read mail, news, and more
 without leaving the editor.
 
 This package contains all the common files needed by emacs or emacs-nox.
-
-%package el
-Summary: Lisp source files included with GNU Emacs
-Group: Applications/Editors
-Requires: %{name}-filesystem
-BuildArch: noarch
-
-%description el
-Emacs-el contains the emacs-elisp sources for many of the elisp
-programs included with the main Emacs text editor package.
-
-You need to install emacs-el only if you intend to modify any of the
-Emacs packages or see some elisp examples.
 
 %package terminal
 Summary: A desktop menu item for GNU Emacs terminal.
@@ -450,10 +438,10 @@ update-desktop-database &> /dev/null || :
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
 
-%files -f common-filelist common
+%files common -f common-filelist -f el-filelist
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %{_rpmconfigdir}/macros.d/macros.emacs
-%doc doc/NEWS BUGS README doc/COPYING
+%doc doc/NEWS BUGS README doc/COPYING etc/COPYING
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
 %{_bindir}/etags.emacs
@@ -469,11 +457,7 @@ update-desktop-database &> /dev/null || :
 %{_userunitdir}/emacs.service
 %attr(0644,root,root) %config(noreplace) %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
-
-%files -f el-filelist el
 %{pkgconfig}/emacs.pc
-%doc etc/COPYING
-%dir %{_datadir}/emacs/%{version}
 
 %files terminal
 %{_bindir}/emacs-terminal
@@ -485,6 +469,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Oct 23 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-29
+- resolves: #1151652
+  emacs-el files are part of emacs-common
+
 * Thu Oct 23 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-28
 - resolves: #1151652
   emacs-el is required by emacs-common
