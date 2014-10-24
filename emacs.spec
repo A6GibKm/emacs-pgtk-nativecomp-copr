@@ -2,8 +2,8 @@
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
-Version: 24.3
-Release: 29%{?dist}
+Version: 24.4
+Release: 1%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -18,32 +18,10 @@ Source6: emacs-terminal.desktop
 Source7: emacs-terminal.sh
 Source8: emacs.service
 # rhbz#713600
-Patch7: emacs-spellchecker.patch
+Patch1: emacs-spellchecker.patch
 
-# Fix for emacs bug #922519
-Patch10: emacs-style-change-cb.patch
-# Fix for emacs bug #562719
-Patch11: emacs-bell-dont-work.patch
-# Fix for emacs bug #929353
-Patch12: emacs-gtk-warning.patch
-# Fix for emacs bug #948838
-Patch13: emacs-help-update.patch
-# Fix for emacs bug #948838
-Patch14: emacs-maximized.patch
 # Fix for default PDF viewer bug #971162
-Patch15: emacs-pdf-default.patch
-# Fix for emacs bug #13460.
-Patch16: emacs-24.3-hunspell.patch
-# Fix for emacs bug #827033
-Patch17: emacs-24.3-hunspell.2.patch
-# Several CVE fixes
-Patch18: emacs-CVE-2014-3421.patch
-Patch19: emacs-CVE-2014-3422.patch
-Patch20: emacs-CVE-2014-3423.patch
-Patch21: emacs-CVE-2014-3424.patch
-Patch22: emacs-compiled-timestamps.patch
-# BZ1104012, initialize kbd_macro_ptr and kbd_macro_end
-Patch23: emacs-24.3-macro.patch
+Patch2: emacs-pdf-default.patch
 
 BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
 BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
@@ -167,22 +145,8 @@ packages that add functionality to Emacs.
 %prep
 %setup -q
 
-%patch7 -p1 -b .spellchecker
-
-%patch10 -p1 -b .style-change-cb.patch
-%patch11 -p1 -b .bell-dont-work.patch
-%patch12 -p1 -b .gtk-warning.patch
-%patch13 -p1 -b .help-update.patch
-%patch14 -p1 -b .maximized.patch
-%patch15 -p1 -b .pdf-default.patch
-%patch16 -p1 -b .hunspell
-%patch17 -p1 -b .hunspell.2
-%patch18 -p1 -b .CVE-2014-3421.patch
-%patch19 -p1 -b .CVE-2014-3422.patch
-%patch20 -p1 -b .CVE-2014-3423.patch
-%patch21 -p1 -b .CVE-2014-3424.patch
-%patch22 -p1 -b .compiled-timestamps
-%patch23 -p1
+%patch1 -p1 -b .spellchecker
+%patch2 -p1 -b .pdf-default.patch
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -199,7 +163,7 @@ rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
 %endif
 
-%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc flymake forms gnus htmlfontify idlwave info mairix-el message mh-e newsticker nxml-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode tramp url vip viper widget wisent woman
+%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vip viper widget wisent woman
 
 cd info
 files=`echo $(ls *.info) | sed 's/\.info//'g | sort | tr -d '\n'`
@@ -220,12 +184,6 @@ ln -s ../../%{name}/%{version}/etc/COPYING doc
 ln -s ../../%{name}/%{version}/etc/NEWS doc
 
 %build
-# Remove unpatched files as all files in the lisp directory are
-# installed.
-rm lisp/textmodes/ispell.el.hunspell
-rm lisp/textmodes/ispell.el.hunspell.2
-rm lisp/textmodes/ispell.el.spellchecker
-
 export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 
 # Build GTK+ binary
@@ -362,7 +320,7 @@ rm -f *-filelist {common,el}-*-files
   cd %{buildroot}
 
   find .%{_datadir}/emacs/%{version}/lisp \
-    .%{_datadir}/emacs/%{version}/leim \
+    .%{_datadir}/emacs/%{version}/lisp/leim \
     .%{_datadir}/emacs/site-lisp \( -type f -name '*.elc' -fprint $TOPDIR/common-lisp-none-elc-files \) -o \( -type d -fprintf $TOPDIR/common-lisp-dir-files "%%%%dir %%p\n" \) -o \( -name '*.el.gz' -fprint $TOPDIR/el-bytecomped-files -o -fprint $TOPDIR/common-not-comped-files \)
 
 )
@@ -469,6 +427,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Oct 27 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-1
+- resolves: #1155101
+  Update to the newest upstream version (24.4)
+
 * Thu Oct 23 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-29
 - resolves: #1151652
   emacs-el files are part of emacs-common
