@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv3+
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -110,7 +110,7 @@ Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info
 Requires: %{name}-filesystem = %{epoch}:%{version}-%{release}
 Provides: %{name}-el = %{epoch}:%{version}-%{release}
-Obsoletes: %{name}-el <= 1:24.3-28
+Obsoletes: emacs-el < 1:24.3-29
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -427,6 +427,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Oct 29 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-2
+- Bump version. Correct obsolete version
+
 * Mon Oct 27 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-1
 - resolves: #1155101
   Update to the newest upstream version (24.4)
