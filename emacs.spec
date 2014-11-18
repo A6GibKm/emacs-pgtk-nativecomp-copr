@@ -3,8 +3,8 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.4
-Release: 2%{?dist}
-License: GPLv3+
+Release: 3%{?dist}
+License: GPLv3+ and CC0-1.0
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
 Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
@@ -17,6 +17,7 @@ Source5: default.el
 Source6: emacs-terminal.desktop
 Source7: emacs-terminal.sh
 Source8: emacs.service
+Source9: %{name}.appdata.xml
 # rhbz#713600
 Patch1: emacs-spellchecker.patch
 
@@ -279,6 +280,8 @@ install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
 # Install emacsclient desktop file
 install -p -m 0644 %SOURCE2 %{buildroot}/%{_datadir}/applications/emacsclient.desktop
+mkdir -p %{buildroot}/%{_datadir}/appdata
+cp -a %SOURCE9 %{buildroot}/%{_datadir}/appdata
 
 # Install rpm macro definition file
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
@@ -386,6 +389,7 @@ update-desktop-database &> /dev/null || :
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
+%{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 #%{_datadir}/icons/hicolor/*/apps/emacs22.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
@@ -427,6 +431,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Nov 18 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-3
+- Resolves #1124892 Add appdata file
+
 * Wed Oct 29 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-2
 - Bump version. Correct obsolete version
 

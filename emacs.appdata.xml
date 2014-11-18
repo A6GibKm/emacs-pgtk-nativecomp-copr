@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> -->
+<application>
+<id type="desktop">emacs.desktop</id>
+<metadata_license>CC0-1.0</metadata_license>
+<project_license>GPL-3.0+</project_license>
+<name>Powerful editor</name>
+<summary>Edit text files, view pictures and binary files</summary>
+<description>
+<p>
+Emacs is a powerful, customizable, self-documenting, modeless
+editor. It is used primarely to edit text, including text
+documents, source code of programs, web pages and XML documents,
+but can also be used to display and edit binary files.
+</p>
+
+<p>
+Emacs allows efficient editing of text with shortcuts which
+allow operating on letters, words, sentences, and paragraphs as
+single units. This includes both moving around and operations
+like copying, deleting, transposing, and pasting. Macros can be
+conveniently defined to repeat sequences of commands. In
+addition, Emacs is (partially) built in a scripting language
+(elisp) which can also be used to define further functions
+extending existing capabilities.
+</p>
+
+<p>
+Emacs has extensive support for editing source code, including
+programmable syntax highlighting, automatic indentation, source
+code indexing, overview modes, and navigation based on language
+specific units like functions and blocks. It is also possible to
+invoke the compiler from within Emacs and easily move between
+compiler output and corresponding positions in the source.
+</p>
+
+<p>
+Emacs has multiple modules which provide further functionality.
+This provides the capability to read mail, news, browse
+pictures, read man and info pages, browse the web, execute
+arbitrary programs, and more, without leaving the editor.
+</p>
+</description>
+<screenshots>
+<screenshot type="default" width="1595" height="888">http://in.waw.pl/~zbyszek/fedora/emacs-two-buffers.png</screenshot>
+<screenshot width="1199" height="667">http://in.waw.pl/~zbyszek/fedora/emacs-editing-xml.png</screenshot>
+<screenshot width="1019" height="572">http://in.waw.pl/~zbyszek/fedora/emacs-hexl-mode.png</screenshot>
+<screenshot width="1199" height="667">http://in.waw.pl/~zbyszek/fedora/emacs-showing-svg.png</screenshot>
+<screenshot width="794" height="439">http://in.waw.pl/~zbyszek/fedora/emacs-with-python-source.png</screenshot>
+</screenshots>
+<url type="homepage">http://www.gnu.org/software/emacs/</url>
+<updatecontact>zbyszek@in.waw.pl</updatecontact>
+</application>
