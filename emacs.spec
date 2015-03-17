@@ -1,9 +1,11 @@
+%global _hardened_build 1
+
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+ and CC0-1.0
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -23,23 +25,58 @@ Patch1: emacs-spellchecker.patch
 
 # Fix for default PDF viewer bug #971162
 Patch2: emacs-pdf-default.patch
+Patch3: emacs-no-bitmap-icon.patch
+Patch4: emacs-configure.patch
 
-BuildRequires: atk-devel cairo-devel freetype-devel fontconfig-devel dbus-devel giflib-devel glibc-devel libpng-devel
-BuildRequires: libjpeg-devel libtiff-devel libX11-devel libXau-devel libXdmcp-devel libXrender-devel libXt-devel
-BuildRequires: libXpm-devel ncurses-devel xorg-x11-proto-devel zlib-devel gnutls-devel
-BuildRequires: librsvg2-devel m17n-lib-devel libotf-devel ImageMagick-devel libselinux-devel
-BuildRequires: GConf2-devel alsa-lib-devel gpm-devel liblockfile-devel libxml2-devel
-BuildRequires: bzip2 cairo texinfo gzip desktop-file-utils
+BuildRequires: atk-devel
+BuildRequires: cairo-devel
+BuildRequires: freetype-devel
+BuildRequires: fontconfig-devel
+BuildRequires: dbus-devel
+BuildRequires: giflib-devel
+BuildRequires: glibc-devel
+BuildRequires: libpng-devel
+BuildRequires: libjpeg-turbo-devel
+BuildRequires: libjpeg-turbo
+BuildRequires: libtiff-devel
+BuildRequires: libX11-devel
+BuildRequires: libXau-devel
+BuildRequires: libXdmcp-devel
+BuildRequires: libXrender-devel
+BuildRequires: libXt-devel
+BuildRequires: libXpm-devel
+BuildRequires: ncurses-devel
+BuildRequires: xorg-x11-proto-devel
+BuildRequires: zlib-devel
+BuildRequires: gnutls-devel
+BuildRequires: librsvg2-devel
+BuildRequires: m17n-lib-devel
+BuildRequires: libotf-devel
+BuildRequires: ImageMagick-devel
+BuildRequires: libselinux-devel
+BuildRequires: GConf2-devel
+BuildRequires: alsa-lib-devel
+BuildRequires: gpm-devel
+BuildRequires: liblockfile-devel
+BuildRequires: libxml2-devel
+BuildRequires: bzip2
+BuildRequires: cairo
+BuildRequires: texinfo
+BuildRequires: gzip
+BuildRequires: desktop-file-utils
 
 %if 0%{?rhel} == 6
 BuildRequires: gtk2-devel
 %else
 %if 0%{?rhel} == 7
-BuildRequires: gtk3-devel python2-devel 
+BuildRequires: gtk3-devel
+BuildRequires: python2-devel 
 # Buildrequire both python2 and python3 on systems containing both,
 # since below we turn off the brp-python-bytecompile script
 %else
-BuildRequires: gtk3-devel python2-devel python3-devel
+BuildRequires: gtk3-devel
+BuildRequires: python2-devel
+BuildRequires: python3-devel
 %endif
 %endif
 
@@ -48,7 +85,8 @@ BuildRequires: util-linux
 %endif
 
 # Emacs doesn't run without dejavu-sans-mono-fonts, rhbz#732422
-Requires: desktop-file-utils dejavu-sans-mono-fonts
+Requires: desktop-file-utils
+Requires: dejavu-sans-mono-fonts
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires: emacs-common = %{epoch}:%{version}-%{release}
@@ -148,6 +186,9 @@ packages that add functionality to Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
+%patch3 -p1 -b .bitmap
+%patch4 -p1 -b .config
+autoconf
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -196,6 +237,8 @@ ln -s ../configure .
 %else
 %define toolkit gtk3
 %endif
+
+LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=%{toolkit} --with-gpm=no
@@ -446,8 +489,11 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
-* Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 1:24.4-4
+* Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 1:24.4-5
 - Add an AppData file for the software center
+
+* Tue Mar 17 2015 Petr Hracek <phracek@redhat.com> - 1:24.4-4
+- emacs option --no-bitmap-icon does not work (#1199160)
 
 * Tue Nov 18 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-3
 - Resolves #1124892 Add appdata file
