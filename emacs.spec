@@ -3,7 +3,7 @@ Summary: GNU Emacs text editor
 Name: emacs
 Epoch: 1
 Version: 24.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+ and CC0-1.0
 URL: http://www.gnu.org/software/emacs/
 Group: Applications/Editors
@@ -305,6 +305,20 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE6
 
+# Merge applications into one software center item
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/appdata
+cat > $RPM_BUILD_ROOT%{_datadir}/appdata/emacsclient.appdata.xml <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
+<component type="desktop">
+  <metadata_license>CC0-1.0</metadata_license>
+  <id>emacsclient.desktop</id>
+  <metadata>
+    <value key="X-Merge-With-Parent">emacs.desktop</value>
+  </metadata>
+</component>
+EOF
+
 # Byte compile emacs*.py with correct python interpreters
 %if 0%{?rhel:1}
 rm -f %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
@@ -388,6 +402,7 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
+%{_datadir}/appdata/emacsclient.appdata.xml
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
@@ -431,6 +446,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 1:24.4-4
+- Add an AppData file for the software center
+
 * Tue Nov 18 2014 Petr Hracek <phracek@redhat.com> - 1:24.4-3
 - Resolves #1124892 Add appdata file
 
