@@ -1,32 +1,33 @@
 %global _hardened_build 1
 
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
-Summary: GNU Emacs text editor
-Name: emacs
-Epoch: 1
-Version: 24.4
-Release: 5%{?dist}
-License: GPLv3+ and CC0-1.0
-URL: http://www.gnu.org/software/emacs/
-Group: Applications/Editors
-Source0: ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source1: emacs.desktop
-Source2: emacsclient.desktop
-Source3: dotemacs.el
-Source4: site-start.el
-Source5: default.el
+Summary:       GNU Emacs text editor
+Name:          emacs
+Epoch:         1
+Version:       24.4
+Release:       6%{?dist}
+License:       GPLv3+ and CC0-1.0
+URL:           http://www.gnu.org/software/emacs/
+Group:         Applications/Editors
+Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+Source1:       emacs.desktop
+Source2:       emacsclient.desktop
+Source3:       dotemacs.el
+Source4:       site-start.el
+Source5:       default.el
 # Emacs Terminal Mode, #551949, #617355
-Source6: emacs-terminal.desktop
-Source7: emacs-terminal.sh
-Source8: emacs.service
-Source9: %{name}.appdata.xml
+Source6:       emacs-terminal.desktop
+Source7:       emacs-terminal.sh
+Source8:       emacs.service
+Source9:       %{name}.appdata.xml
 # rhbz#713600
-Patch1: emacs-spellchecker.patch
+Patch1:        emacs-spellchecker.patch
 
 # Fix for default PDF viewer bug #971162
-Patch2: emacs-pdf-default.patch
-Patch3: emacs-no-bitmap-icon.patch
-Patch4: emacs-configure.patch
+Patch2:        emacs-pdf-default.patch
+Patch3:        emacs-no-bitmap-icon.patch
+Patch4:        emacs-configure.patch
+Patch5:        emacs-grep-deprecated.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -85,12 +86,12 @@ BuildRequires: util-linux
 %endif
 
 # Emacs doesn't run without dejavu-sans-mono-fonts, rhbz#732422
-Requires: desktop-file-utils
-Requires: dejavu-sans-mono-fonts
+Requires:      desktop-file-utils
+Requires:      dejavu-sans-mono-fonts
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
-Requires: emacs-common = %{epoch}:%{version}-%{release}
-Provides: emacs(bin) = %{epoch}:%{version}-%{release}
+Requires:      emacs-common = %{epoch}:%{version}-%{release}
+Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
 %if 0%{!?rhel:1}
 # Turn off the brp-python-bytecompile script since this script doesn't
@@ -121,12 +122,12 @@ without leaving the editor.
 This package provides an emacs binary with support for X windows.
 
 %package nox
-Summary: GNU Emacs text editor without X support
-Group: Applications/Editors
+Summary:       GNU Emacs text editor without X support
+Group:         Applications/Editors
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
-Requires: emacs-common = %{epoch}:%{version}-%{release}
-Provides: emacs(bin) = %{epoch}:%{version}-%{release}
+Requires:      emacs-common = %{epoch}:%{version}-%{release}
+Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
 %description nox
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -138,18 +139,18 @@ This package provides an emacs binary with no X windows support for running
 on a terminal.
 
 %package common
-Summary: Emacs common files
+Summary:       Emacs common files
 # The entire source code is GPLv3+ except lib-src/etags.c which is
 # also BSD.  Manual (info) is GFDL.
-License: GPLv3+ and GFDL and BSD
-Group: Applications/Editors
+License:       GPLv3+ and GFDL and BSD
+Group:         Applications/Editors
 Requires(preun): /sbin/install-info
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires(post): /sbin/install-info
-Requires: %{name}-filesystem = %{epoch}:%{version}-%{release}
-Provides: %{name}-el = %{epoch}:%{version}-%{release}
-Obsoletes: emacs-el < 1:24.3-29
+Requires:      %{name}-filesystem = %{epoch}:%{version}-%{release}
+Provides:      %{name}-el = %{epoch}:%{version}-%{release}
+Obsoletes:     emacs-el < 1:24.3-29
 
 %description common
 Emacs is a powerful, customizable, self-documenting, modeless text
@@ -160,10 +161,10 @@ without leaving the editor.
 This package contains all the common files needed by emacs or emacs-nox.
 
 %package terminal
-Summary: A desktop menu item for GNU Emacs terminal.
-Group: Applications/Editors
-Requires: emacs = %{epoch}:%{version}-%{release}
-BuildArch: noarch
+Summary:       A desktop menu item for GNU Emacs terminal.
+Group:         Applications/Editors
+Requires:      emacs = %{epoch}:%{version}-%{release}
+BuildArch:     noarch
 
 %description terminal
 Contains a desktop menu item running GNU Emacs terminal. Install
@@ -173,9 +174,9 @@ Please note that emacs-terminal is a temporary package and it will be
 removed when another terminal becomes capable of handling Malayalam.
 
 %package filesystem
-Summary: Emacs filesystem layout
-Group: Applications/Editors
-BuildArch: noarch
+Summary:       Emacs filesystem layout
+Group:         Applications/Editors
+BuildArch:     noarch
 
 %description filesystem
 This package provides some directories which are required by other
@@ -188,6 +189,7 @@ packages that add functionality to Emacs.
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .bitmap
 %patch4 -p1 -b .config
+%patch5 -p1 -b .grep-deprecated
 autoconf
 
 # We prefer our emacs.desktop file
@@ -489,6 +491,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Apr  7 2015 Petr Hracek <phracek@redhat.com> - 1:24.4-6
+- emacs grep warns 'GREP_OPTIONS is deprecated' (#1176547)
+
 * Thu Mar 26 2015 Richard Hughes <rhughes@redhat.com> - 1:24.4-5
 - Add an AppData file for the software center
 
