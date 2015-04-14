@@ -26,9 +26,7 @@ Patch1:        emacs-spellchecker.patch
 
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
-#Patch3:        emacs-no-bitmap-icon.patch
-#Patch4:        emacs-configure.patch
-Patch5:        emacs-grep-deprecated.patch
+Patch3:        emacs-grep-deprecated.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -188,9 +186,7 @@ packages that add functionality to Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
-#%patch3 -p1 -b .bitmap
-#%patch4 -p1 -b .config
-%patch5 -p1 -b .grep-deprecated
+%patch3 -p1 -b .grep-deprecated
 autoconf
 
 # We prefer our emacs.desktop file
