@@ -4,8 +4,8 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       24.4
-Release:       6%{?dist}
+Version:       24.5
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -20,13 +20,14 @@ Source6:       emacs-terminal.desktop
 Source7:       emacs-terminal.sh
 Source8:       emacs.service
 Source9:       %{name}.appdata.xml
+Source10:      %{name}client.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
-Patch3:        emacs-no-bitmap-icon.patch
-Patch4:        emacs-configure.patch
+#Patch3:        emacs-no-bitmap-icon.patch
+#Patch4:        emacs-configure.patch
 Patch5:        emacs-grep-deprecated.patch
 
 BuildRequires: atk-devel
@@ -187,8 +188,8 @@ packages that add functionality to Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
-%patch3 -p1 -b .bitmap
-%patch4 -p1 -b .config
+#%patch3 -p1 -b .bitmap
+#%patch4 -p1 -b .config
 %patch5 -p1 -b .grep-deprecated
 autoconf
 
@@ -352,17 +353,7 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 
 # Merge applications into one software center item
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/appdata
-cat > $RPM_BUILD_ROOT%{_datadir}/appdata/emacsclient.appdata.xml <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
-<component type="desktop">
-  <metadata_license>CC0-1.0</metadata_license>
-  <id>emacsclient.desktop</id>
-  <metadata>
-    <value key="X-Merge-With-Parent">emacs.desktop</value>
-  </metadata>
-</component>
-EOF
+cp -a %SOURCE10 $RPM_BUILD_ROOT%{_datadir}/appdata/emacsclient.appdata.xml
 
 # Byte compile emacs*.py with correct python interpreters
 %if 0%{?rhel:1}
@@ -491,6 +482,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Apr 14 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-1
+- New upstream version 24.5 (#1210919)
+
 * Tue Apr  7 2015 Petr Hracek <phracek@redhat.com> - 1:24.4-6
 - emacs grep warns 'GREP_OPTIONS is deprecated' (#1176547)
 
