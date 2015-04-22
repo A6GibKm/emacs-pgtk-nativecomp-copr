@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -64,6 +64,7 @@ BuildRequires: cairo
 BuildRequires: texinfo
 BuildRequires: gzip
 BuildRequires: desktop-file-utils
+BuildRequires: libacl-devel
 
 %if 0%{?rhel} == 6
 BuildRequires: gtk2-devel
@@ -478,6 +479,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Apr 22 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-2
+- Build with ACL support (#1208945)
+
 * Tue Apr 14 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-1
 - New upstream version 24.5 (#1210919)
 
