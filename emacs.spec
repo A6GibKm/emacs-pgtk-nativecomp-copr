@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -27,6 +27,7 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-grep-deprecated.patch
+Patch4:        emacs-system-crypto-policies.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -188,6 +189,7 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .grep-deprecated
+%patch4 -p1 -b .system-crypto-policies
 autoconf
 
 # We prefer our emacs.desktop file
@@ -479,6 +481,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon May 11 2015 Petr Hracek <phracek@kiasportyw-brq-redhat-com> - 1:24.5-3
+- Utilize system-wide crypto-policies (#1179285)
+
 * Wed Apr 22 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-2
 - Build with ACL support (#1208945)
 
