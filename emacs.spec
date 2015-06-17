@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       4%{?dist}
+Release:       5%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -197,10 +197,13 @@ cp %SOURCE1 etc/emacs.desktop
 
 grep -v "tetris.elc" lisp/Makefile.in > lisp/Makefile.in.new \
    && mv lisp/Makefile.in.new lisp/Makefile.in
+grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
+   && mv lisp/Makefile.in.new lisp/Makefile.in
 
 # Avoid trademark issues
 %if %{paranoid}
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
+rm -f lisp/play/pong.el lisp/play/pong.el
 %endif
 
 %if %{expurgate}
@@ -481,6 +484,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Jun 17 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-5
+- game and Trademark problem (#1231676)
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.5-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
