@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       5%{?dist}
+Release:       6%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -28,6 +28,7 @@ Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-grep-deprecated.patch
 Patch4:        emacs-system-crypto-policies.patch
+Patch5:        emacs-bbdb.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -190,6 +191,7 @@ packages that add functionality to Emacs.
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .grep-deprecated
 %patch4 -p1 -b .system-crypto-policies
+%patch5 -p1 -b .bbdb
 autoconf
 
 # We prefer our emacs.desktop file
@@ -484,6 +486,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Sep 11 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-6
+- Support BBDB >= 3 (EUDC) (#1261668)
+
 * Wed Jun 17 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-5
 - game and Trademark problem (#1231676)
 
