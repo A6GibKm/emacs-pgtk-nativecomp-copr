@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -20,7 +20,6 @@ Source6:       emacs-terminal.desktop
 Source7:       emacs-terminal.sh
 Source8:       emacs.service
 Source9:       %{name}.appdata.xml
-Source10:      %{name}client.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 
@@ -355,10 +354,6 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE6
 
-# Merge applications into one software center item
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/appdata
-cp -a %SOURCE10 $RPM_BUILD_ROOT%{_datadir}/appdata/emacsclient.appdata.xml
-
 # Byte compile emacs*.py with correct python interpreters
 %if 0%{?rhel:1}
 rm -f %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
@@ -442,7 +437,6 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/appdata/emacsclient.appdata.xml
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
@@ -486,6 +480,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Sep 18 2015 Richard Hughes <rhughes@redhat.com> - 1:24.5-7
+- Remove no longer required AppData file
+
 * Fri Sep 11 2015 Petr Hracek <phracek@redhat.com> - 1:24.5-6
 - Support BBDB >= 3 (EUDC) (#1261668)
 
