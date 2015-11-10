@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       7%{?dist}
+Release:       8%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -480,6 +480,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Nov 10 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.5-8
+- Rebuilt for https://fedoraproject.org/wiki/Changes/python3.5
+
 * Fri Sep 18 2015 Richard Hughes <rhughes@redhat.com> - 1:24.5-7
 - Remove no longer required AppData file
 
