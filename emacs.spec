@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       8%{?dist}
+Release:       9%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -480,6 +480,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Jan  5 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-9
+- set default value for smime-CA-directory (#1131558)
+
 * Tue Nov 10 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.5-8
 - Rebuilt for https://fedoraproject.org/wiki/Changes/python3.5
 
