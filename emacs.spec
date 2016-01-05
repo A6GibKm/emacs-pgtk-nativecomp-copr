@@ -66,20 +66,9 @@ BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 
-%if 0%{?rhel} == 6
-BuildRequires: gtk2-devel
-%else
-%if 0%{?rhel} == 7
-BuildRequires: gtk3-devel
-BuildRequires: python2-devel 
-# Buildrequire both python2 and python3 on systems containing both,
-# since below we turn off the brp-python-bytecompile script
-%else
 BuildRequires: gtk3-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
-%endif
-%endif
 
 %ifarch %{ix86}
 BuildRequires: util-linux
@@ -93,19 +82,10 @@ Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
 Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
-%if 0%{!?rhel:1}
 # Turn off the brp-python-bytecompile script since this script doesn't
 # properly dtect the correct python runtime for the files emacs2.py and
 # emacs3.py
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-%endif
-
-%define paranoid 1
-%if 0%{?fedora}
-%define expurgate 0
-%else
-%define expurgate 1
-%endif
 
 %define site_lisp %{_datadir}/emacs/site-lisp
 %define site_start_d %{site_lisp}/site-start.d
@@ -201,14 +181,8 @@ grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
    && mv lisp/Makefile.in.new lisp/Makefile.in
 
 # Avoid trademark issues
-%if %{paranoid}
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f lisp/play/pong.el lisp/play/pong.el
-%endif
-
-%if %{expurgate}
-rm -f etc/sex.6 etc/condom.1 etc/celibacy.1 etc/COOKIES etc/future-bug etc/JOKES
-%endif
 
 %define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vip viper widget wisent woman
 
@@ -237,11 +211,7 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
-%if 0%{?rhel} == 6
-%define toolkit gtk
-%else
 %define toolkit gtk3
-%endif
 
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
@@ -353,13 +323,9 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE6
 
 # Byte compile emacs*.py with correct python interpreters
-%if 0%{?rhel:1}
-rm -f %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
-%else
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs.py
 %py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs2.py
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
-%endif
 
 #
 # Create file lists
@@ -437,7 +403,6 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
-#%{_datadir}/icons/hicolor/*/apps/emacs22.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
@@ -455,7 +420,6 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/etags.emacs
 %{_bindir}/gctags
 %{_bindir}/grep-changelog
-#%{_bindir}/rcs-checkin
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs/%{version}
@@ -605,14 +569,14 @@ update-desktop-database &> /dev/null || :
 - Rebuild with new ImageMagick
 
 * Thu Apr 04 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-5
-- Fix for Gtk-Warning (#929353) 
+- Fix for Gtk-Warning (#929353)
 
 * Wed Apr 03 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-4
-- Fix for info page. info.info.gz page was renamed to info.gz (#927996) 
+- Fix for info page. info.info.gz page was renamed to info.gz (#927996)
 
 * Thu Mar 28 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-3
-- Fix for emacs bug 112144, style_changed_cb (#922519) 
-- Fix for emacs bug 112131, bell does not work (#562719) 
+- Fix for emacs bug 112144, style_changed_cb (#922519)
+- Fix for emacs bug 112131, bell does not work (#562719)
 
 * Mon Mar 18 2013 Petr Hracek <phracek@redhat.com> - 1:24.3-2
 - fix #927996 correcting bug. Info pages were not delivered
@@ -1336,7 +1300,7 @@ update-desktop-database &> /dev/null || :
 - add 100 to elisp patches
 
 * Wed Apr  6 2005 Jens Petersen <petersen@redhat.com> - 22.0.50-0.20050406
-- update to snapshot of current cvs 
+- update to snapshot of current cvs
   - configure xim support off by default
   - bootstrap snapshot
 
