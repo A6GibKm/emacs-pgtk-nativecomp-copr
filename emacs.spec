@@ -11,7 +11,6 @@ URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
 Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
 Source1:       emacs.desktop
-Source2:       emacsclient.desktop
 Source3:       dotemacs.el
 Source4:       site-start.el
 Source5:       default.el
@@ -327,8 +326,7 @@ install -p -m 0644 %SOURCE3 %{buildroot}%{_sysconfdir}/skel/.emacs
 mkdir -p %{buildroot}/%{pkgconfig}
 install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
-# Install emacsclient desktop file
-install -p -m 0644 %SOURCE2 %{buildroot}/%{_datadir}/applications/emacsclient.desktop
+# Install app data
 mkdir -p %{buildroot}/%{_datadir}/appdata
 cp -a %SOURCE9 %{buildroot}/%{_datadir}/appdata
 
@@ -437,7 +435,6 @@ update-desktop-database &> /dev/null || :
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
-%{_datadir}/applications/emacsclient.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 #%{_datadir}/icons/hicolor/*/apps/emacs22.png
@@ -482,6 +479,7 @@ update-desktop-database &> /dev/null || :
 %changelog
 * Tue Jan  5 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-9
 - set default value for smime-CA-directory (#1131558)
+- remove emacsclient.desktop (#1175969)
 
 * Tue Nov 10 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:24.5-8
 - Rebuilt for https://fedoraproject.org/wiki/Changes/python3.5
