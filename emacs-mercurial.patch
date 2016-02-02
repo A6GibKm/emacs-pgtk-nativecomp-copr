@@ -1,0 +1,22 @@
+--- a/lisp/vc/vc-hg.el	2015-04-02 09:23:06.000000000 +0200
++++ b/lisp/vc/vc-hg.el	2016-02-02 10:53:23.248829159 +0100
+@@ -627,10 +627,16 @@ REV is the revision to check out into WO
+   (vc-run-delayed
+    (vc-hg-after-dir-status update-function)))
+ 
+-(defun vc-hg-dir-status-files (dir files _default-state update-function)
+-  (apply 'vc-hg-command (current-buffer) 'async dir "status" "-mardui" "-C" files)
++(defun vc-hg-dir-status-files (_dir files _default-state update-function)
++  ;; XXX: We can't pass DIR directly to 'hg status' because that
++  ;; returns all ignored files if FILES is non-nil (bug#22481).
++  ;; If honoring DIR ever becomes important, try using '-I DIR/'.
++  (vc-hg-command (current-buffer) 'async files
++                 "status"
++                 (concat "-mardu" (if files "i"))
++                 "-C")
+   (vc-run-delayed
+-   (vc-hg-after-dir-status update-function)))
++    (vc-hg-after-dir-status update-function)))
+ 
+ (defun vc-hg-dir-extra-header (name &rest commands)
+   (concat (propertize name 'face 'font-lock-type-face)
