@@ -6,4 +6,4 @@
 
 ;; default to better frame titles
 (setq-default frame-title-format (concat "%b - emacs@" (system-name)))
-(setq-default smime-CA-directory "/etc/ssl/certs/ca-bundle.crt")
+(setq-default smime-CA-directory "/etc/ssl/certs")

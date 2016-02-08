@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       24.5
-Release:       9%{?dist}
+Release:       10%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -448,6 +448,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb  8 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-10
+- refix: set default value for smime-CA-directory (#1131558)
+
 * Tue Feb  2 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-9
 - emacs "deadlocked" after using mercurial with huge amounts of ignored files in the repository (#1232422)
 - GDB interface gets confused by non-ASCII (#1283412)
