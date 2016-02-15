@@ -1,0 +1,70 @@
+From af11708e83ab826202593ab1b9c22601c46a5056 Mon Sep 17 00:00:00 2001
+From: Alan Modra <amodra@gmail.com>
+Date: Sun, 8 Nov 2015 09:29:00 -0800
+Subject: ELF unexec: _OBJC_ symbols in bss sections
+
+Emacs should build on ppc64el.  A problem with the bss has been fixed.
+
+This upstream patch has been added [5/10]:
+
+  ELF unexec: _OBJC_ symbols in bss sections
+
+  This code assumed that there was only one bss section.  Rather than
+  checking for a particular index, check the section type.  Also, handle
+  the possibility that the section was SHT_NOBITS originally and is
+  unchanged, in which case no clearing is needed (and sh_offset isn't
+  necessarily valid, which can lead to a wild memset).
+
+  * unexelf.c (unexec): Properly handle _OBJC_ symbols in bss sections.
+
+Origin: upstream, commit: 3ff9fc0e8d738be5004c65c3be314af9aca68148
+Bug: http://debbugs.gnu.org/20614
+Bug-Debian: http://bugs.debian.org/808347
+Added-by: Rob Browning <rlb@defaultvalue.org>
+---
+ src/unexelf.c |   31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
+
+Index: emacs-24.5/src/unexelf.c
+===================================================================
+--- emacs-24.5.orig/src/unexelf.c
++++ emacs-24.5/src/unexelf.c
+@@ -1177,20 +1177,25 @@ temacs:
+ 		       "_OBJC_", sizeof ("_OBJC_") - 1) == 0)
+ 	    {
+ 	      ElfW (Shdr) *new_shdr = &NEW_SECTION_H (symp->st_shndx);
+-	      ptrdiff_t reladdr = symp->st_value - new_shdr->sh_addr;
+-	      ptrdiff_t newoff = reladdr + new_shdr->sh_offset;
+-
+-	      /* "Unpatch" index.  */
+-	      nn = symp->st_shndx;
+-	      if (nn > old_bss_index)
+-		nn--;
+-	      if (nn == old_bss_index)
+-		memset (new_base + newoff, 0, symp->st_size);
+-	      else
++	      if (new_shdr->sh_type != SHT_NOBITS)
+ 		{
+-		  ElfW (Shdr) *old_shdr = &OLD_SECTION_H (nn);
+-		  ptrdiff_t oldoff = reladdr + old_shdr->sh_offset;
+-		  memcpy (new_base + newoff, old_base + oldoff, symp->st_size);
++		  ElfW (Shdr) *old_shdr;
++		  ptrdiff_t reladdr = symp->st_value - new_shdr->sh_addr;
++		  ptrdiff_t newoff = reladdr + new_shdr->sh_offset;
++
++		  /* "Unpatch" index.  */
++		  nn = symp->st_shndx;
++		  if (nn > old_bss_index)
++		    nn--;
++		  old_shdr = &OLD_SECTION_H (nn);
++		  if (old_shdr->sh_type == SHT_NOBITS)
++		    memset (new_base + newoff, 0, symp->st_size);
++		  else
++		    {
++		      ptrdiff_t oldoff = reladdr + old_shdr->sh_offset;
++		      memcpy (new_base + newoff, old_base + oldoff,
++			      symp->st_size);
++		    }
+ 		}
+ 	    }
+ #endif

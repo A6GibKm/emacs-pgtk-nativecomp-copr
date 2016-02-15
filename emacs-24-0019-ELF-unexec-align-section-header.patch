@@ -1,0 +1,64 @@
+From 0de7316751e94c29aeb4b75731ac6e8c9eba77e6 Mon Sep 17 00:00:00 2001
+From: Paul Eggert <eggert@cs.ucla.edu>
+Date: Mon, 16 Nov 2015 17:48:08 -0800
+Subject: ELF unexec: align section header
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Emacs should build on ppc64el.  A problem with the bss has been fixed.
+
+This upstream patch has been added [10/10]:
+
+  ELF unexec: align section header
+
+  This ports the recent unexelf.c changes to Fedora x86-64
+  when configured with GCC’s -fsanitize=undefined option.
+  * src/unexelf.c (unexec): Align new_data2_size to a multiple
+  of ElfW (Shdr)’s alignment, so that NEW_SECTION_H returns a
+  pointer aligned appropriately for its type.
+
+Origin: upstream, commit: c9fd597a4cffcae873b25381ee8cc755f0debe95
+Bug: http://debbugs.gnu.org/20614
+Bug-Debian: http://bugs.debian.org/808347
+Added-by: Rob Browning <rlb@defaultvalue.org>
+---
+ src/unexelf.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+Index: emacs-24.5/src/unexelf.c
+===================================================================
+--- emacs-24.5.orig/src/unexelf.c
++++ emacs-24.5/src/unexelf.c
+@@ -247,7 +247,7 @@ unexec (const char *new_name, const char
+ 
+   ElfW (Phdr) *old_bss_seg, *new_bss_seg;
+   ElfW (Addr) old_bss_addr, new_bss_addr;
+-  ElfW (Word) old_bss_size, new_data2_size;
++  ElfW (Word) old_bss_size, bss_size_growth, new_data2_size;
+   ElfW (Off) old_bss_offset, new_data2_offset;
+ 
+   ptrdiff_t n;
+@@ -332,7 +332,11 @@ unexec (const char *new_name, const char
+ 
+   new_break = sbrk (0);
+   new_bss_addr = (ElfW (Addr)) new_break;
+-  new_data2_size = new_bss_addr - old_bss_addr;
++  bss_size_growth = new_bss_addr - old_bss_addr;
++  new_data2_size = bss_size_growth;
++  new_data2_size += alignof (ElfW (Shdr)) - 1;
++  new_data2_size -= new_data2_size % alignof (ElfW (Shdr));
++
+   new_data2_offset = old_bss_offset;
+ 
+ #ifdef UNEXELF_DEBUG
+@@ -400,7 +404,8 @@ unexec (const char *new_name, const char
+   new_bss_seg->p_memsz = new_bss_seg->p_filesz;
+ 
+   /* Copy over what we have in memory now for the bss area. */
+-  memcpy (new_base + new_data2_offset, (caddr_t) old_bss_addr, new_data2_size);
++  memcpy (new_base + new_data2_offset, (caddr_t) old_bss_addr,
++	  bss_size_growth);
+ 
+   /* Walk through all section headers, copying data and updating.  */
+   for (n = 1; n < old_file_h->e_shnum; n++)

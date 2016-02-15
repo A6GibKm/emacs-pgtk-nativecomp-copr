@@ -32,6 +32,17 @@ Patch6:        emacs-mercurial.patch
 # http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=439f483be35a000e7a3bec6acf395ce4d54d6323
 # http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=9c86325b69d75e9b17ff468f5a2220597979635f
 Patch7:        emacs-gdb-ascii.patch
+# All upstreamed, see the patches for more info
+Patch8:        emacs-24-0010-ELF-unexec-Correct-section-header-index.patch
+Patch9:        emacs-24-0011-ELF-unexec-Tidy-code.patch
+Patch10:       emacs-24-0012-ELF-unexec-Merge-Alpha-and-MIPS-COFF-debug-handling.patch
+Patch11:       emacs-24-0013-ELF-unexec-Symbol-table-patching.patch
+Patch12:       emacs-24-0014-ELF-unexec-_OBJC_-symbols-in-bss-sections.patch
+Patch13:       emacs-24-0015-ELF-unexec-R_-_NONE-relocs.patch
+Patch14:       emacs-24-0016-ELF-unexec-Drive-from-PT_LOAD-header-rather-than-sec.patch
+Patch15:       emacs-24-0017-ELF-unexec-Don-t-insert-a-new-section.patch
+Patch16:       emacs-24-0018-src-unexelf.c-NEW_PROGRAM_H-Remove-unused-macro-Bug-.patch
+Patch17:       emacs-24-0019-ELF-unexec-align-section-header.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -177,6 +188,16 @@ packages that add functionality to Emacs.
 %patch5 -p1 -b .bbdb
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
 autoconf
 
 # We prefer our emacs.desktop file
@@ -448,6 +469,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb 15 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-10
+- fix build failure on ppc64le (#1306793)
+
 * Mon Feb  8 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-10
 - refix: set default value for smime-CA-directory (#1131558)
 

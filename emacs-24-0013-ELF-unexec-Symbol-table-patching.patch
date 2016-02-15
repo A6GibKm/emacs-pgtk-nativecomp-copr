@@ -1,0 +1,50 @@
+From 2776e4ffe1f4cf965a6b99201097ca7d4ee2f95c Mon Sep 17 00:00:00 2001
+From: Alan Modra <amodra@gmail.com>
+Date: Sun, 8 Nov 2015 09:29:00 -0800
+Subject: ELF unexec: Symbol table patching
+
+Emacs should build on ppc64el.  A problem with the bss has been fixed.
+
+This upstream patch has been added [4/10]:
+
+  ELF unexec: Symbol table patching
+
+  No st_shndx value larger than SHN_LORESERVE should be changed.
+  * unexelf.c (unexec): Don't adjust any st_shndx larger than
+  SHN_LORESERVE.  Error on SHN_XINDEX.
+
+Origin: upstream, commit: 190b968f189cb7d06223bb39045ec9055df67f68
+Bug: http://debbugs.gnu.org/20614
+Bug-Debian: http://bugs.debian.org/808347
+Added-by: Rob Browning <rlb@defaultvalue.org>
+---
+ src/unexelf.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+Index: emacs-24.5/src/unexelf.c
+===================================================================
+--- emacs-24.5.orig/src/unexelf.c
++++ emacs-24.5/src/unexelf.c
+@@ -1119,7 +1119,7 @@ temacs:
+ 	}
+ #endif /* __sgi */
+ 
+-      /* If it is the symbol table, its st_shndx field needs to be patched.  */
++      /* Patch st_shndx field of symbol table.  */
+       if (new_shdr->sh_type == SHT_SYMTAB
+ 	  || new_shdr->sh_type == SHT_DYNSYM)
+ 	{
+@@ -1127,9 +1127,10 @@ temacs:
+ 	  ElfW (Sym) *sym = (ElfW (Sym) *) (new_shdr->sh_offset + new_base);
+ 	  for (; num--; sym++)
+ 	    {
+-	      if ((sym->st_shndx == SHN_UNDEF)
+-		  || (sym->st_shndx == SHN_ABS)
+-		  || (sym->st_shndx == SHN_COMMON))
++	      if (sym->st_shndx == SHN_XINDEX)
++		fatal ("SHT_SYMTAB_SHNDX unsupported");
++	      if (sym->st_shndx == SHN_UNDEF
++		  || sym->st_shndx >= SHN_LORESERVE)
+ 		continue;
+ 
+ 	      PATCH_INDEX (sym->st_shndx);
