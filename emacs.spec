@@ -4,8 +4,8 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       24.5
-Release:       10%{?dist}
+Version:       25.0.92
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -24,25 +24,7 @@ Patch1:        emacs-spellchecker.patch
 
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
-Patch3:        emacs-grep-deprecated.patch
-Patch4:        emacs-system-crypto-policies.patch
-Patch5:        emacs-bbdb.patch
-# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=06083cf41c473404d246de9b91a0116f38c5485f
-Patch6:        emacs-mercurial.patch
-# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=439f483be35a000e7a3bec6acf395ce4d54d6323
-# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=9c86325b69d75e9b17ff468f5a2220597979635f
-Patch7:        emacs-gdb-ascii.patch
-# All upstreamed, see the patches for more info
-Patch8:        emacs-24-0010-ELF-unexec-Correct-section-header-index.patch
-Patch9:        emacs-24-0011-ELF-unexec-Tidy-code.patch
-Patch10:       emacs-24-0012-ELF-unexec-Merge-Alpha-and-MIPS-COFF-debug-handling.patch
-Patch11:       emacs-24-0013-ELF-unexec-Symbol-table-patching.patch
-Patch12:       emacs-24-0014-ELF-unexec-_OBJC_-symbols-in-bss-sections.patch
-Patch13:       emacs-24-0015-ELF-unexec-R_-_NONE-relocs.patch
-Patch14:       emacs-24-0016-ELF-unexec-Drive-from-PT_LOAD-header-rather-than-sec.patch
-Patch15:       emacs-24-0017-ELF-unexec-Don-t-insert-a-new-section.patch
-Patch16:       emacs-24-0018-src-unexelf.c-NEW_PROGRAM_H-Remove-unused-macro-Bug-.patch
-Patch17:       emacs-24-0019-ELF-unexec-align-section-header.patch
+Patch3:        emacs-system-crypto-policies.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -183,21 +165,7 @@ packages that add functionality to Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
-%patch3 -p1 -b .grep-deprecated
-%patch4 -p1 -b .system-crypto-policies
-%patch5 -p1 -b .bbdb
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
+%patch3 -p1 -b .system-crypto-policies
 autoconf
 
 # We prefer our emacs.desktop file
@@ -211,16 +179,6 @@ grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
 # Avoid trademark issues
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f lisp/play/pong.el lisp/play/pong.el
-
-%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vip viper widget wisent woman
-
-cd info
-files=`echo $(ls *.info) | sed 's/\.info//'g | sort | tr -d '\n'`
-if test "$files" != "%info_files"; then
-  echo Please update info_files >&2
-  exit 1
-fi
-cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -239,12 +197,10 @@ export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
 mkdir build-gtk && cd build-gtk
 ln -s ../configure .
 
-%define toolkit gtk3
-
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=%{toolkit} --with-gpm=no
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -374,6 +330,9 @@ sed -i -e "s|\.%{_prefix}|%{_prefix}|" *-files
 cat common-*-files > common-filelist
 cat el-*-files common-lisp-dir-files > el-filelist
 
+# Remove old icon
+rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
+
 %post
 update-desktop-database &> /dev/null || :
 touch --no-create %{_datadir}/icons/hicolor
@@ -442,12 +401,11 @@ update-desktop-database &> /dev/null || :
 %files common -f common-filelist -f el-filelist
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %{_rpmconfigdir}/macros.d/macros.emacs
-%doc doc/NEWS BUGS README doc/COPYING etc/COPYING
+%doc doc/NEWS BUGS README etc/COPYING
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
 %{_bindir}/etags.emacs
 %{_bindir}/gctags
-%{_bindir}/grep-changelog
 %{_mandir}/*/*
 %{_infodir}/*
 %dir %{_datadir}/emacs/%{version}
@@ -469,6 +427,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Mar  4 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.92
+- update to 25.0.92
+
 * Mon Feb 15 2016 Jan Synáček <jsynacek@redhat.com> - 1:24.5-10
 - fix build failure on ppc64le (#1306793)
 
