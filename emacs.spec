@@ -4,7 +4,7 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       25.0.92
+Version:       25.0.93
 Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
@@ -65,6 +65,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 
 BuildRequires: gtk3-devel
+BuildRequires: webkitgtk3-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
@@ -200,7 +201,8 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
+           --with-xwidgets
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -427,6 +429,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Apr 25 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.93
+- update to 25.0.93 and enable webkit support
+
 * Fri Mar  4 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.92
 - update to 25.0.92
 
