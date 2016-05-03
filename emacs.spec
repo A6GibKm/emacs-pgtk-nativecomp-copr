@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.0.93
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -25,6 +25,8 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
+# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=afc9e6542aa6f2d0d7986db3d8c2cb654e107443
+Patch4:        emacs-small-window.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -167,6 +169,7 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
+%patch4 -p1 -b .small-window
 autoconf
 
 # We prefer our emacs.desktop file
@@ -429,6 +432,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue May  3 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.93-2
+- emacs starts in a very small window (#1332451)
+
 * Mon Apr 25 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.93
 - update to 25.0.93 and enable webkit support
 
