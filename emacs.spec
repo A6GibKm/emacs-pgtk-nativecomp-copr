@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.0.95
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -180,6 +180,23 @@ grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
 # Avoid trademark issues
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f lisp/play/pong.el lisp/play/pong.el
+
+# Sorted list of info files
+%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
+
+# Since the list of info files has to be maintained, check if all info files
+# from the upstream tarball are actually present in %%info_files.
+cd info
+fs=( $(ls *.info) )
+is=( %info_files  )
+files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
+for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
+  if test "${fs[$i]}" != "${is[$i]}.info"; then
+    echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
+    break
+  fi
+done
+cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -429,6 +446,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Jul 14 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-2
+- fix: info file entries are not installed (#1350128)
+
 * Mon Jun 13 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-1
 - update to 25.0.95
 
