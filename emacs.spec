@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.0.95
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -69,7 +69,7 @@ BuildRequires: webkitgtk3-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
-%ifarch %{ix86}
+%ifarch %{ix86} %{power64}
 BuildRequires: util-linux
 %endif
 
@@ -220,7 +220,12 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
            --with-xwidgets
-make bootstrap
+%ifarch %{power64}
+  # Temporary workaround for #1356919. Remove when Emacs has been fixed properly.
+  setarch %{_arch} -R make bootstrap
+%else
+  make bootstrap
+%endif
 %{setarch} make %{?_smp_mflags}
 cd ..
 
@@ -446,6 +451,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Jul 18 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-3
+- workaround: emacs build failure due to high memory consumption on ppc64 (#1356919)
+  (patch provided by Sinny Kumari)
+
 * Thu Jul 14 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-2
 - fix: info file entries are not installed (#1350128)
 
