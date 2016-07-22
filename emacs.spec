@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.0.95
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -25,6 +25,7 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
+Patch4:        emacs-ppc64.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -69,7 +70,7 @@ BuildRequires: webkitgtk3-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
-%ifarch %{ix86} %{power64}
+%ifarch %{ix86}
 BuildRequires: util-linux
 %endif
 
@@ -167,6 +168,7 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
+%patch4 -p1 -b .ppc64
 autoconf
 
 # We prefer our emacs.desktop file
@@ -220,12 +222,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
            --with-xwidgets
-%ifarch %{power64}
-  # Temporary workaround for #1356919. Remove when Emacs has been fixed properly.
-  setarch %{_arch} -R make bootstrap
-%else
-  make bootstrap
-%endif
+make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
 
@@ -451,6 +448,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jul 22 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-4
+- fix: emacs build failure due to high memory consumption on ppc64 (#1356919)
+
 * Mon Jul 18 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-3
 - workaround: emacs build failure due to high memory consumption on ppc64 (#1356919)
   (patch provided by Sinny Kumari)
