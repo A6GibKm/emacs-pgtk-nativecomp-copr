@@ -4,12 +4,13 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       25.0.95
-Release:       4%{?dist}
+Version:       25.1
+Release:       0.1.rc1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
-Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+#Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+Source0:       ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}-rc1.tar.xz
 Source1:       emacs.desktop
 Source3:       dotemacs.el
 Source4:       site-start.el
@@ -25,7 +26,6 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
-Patch4:        emacs-ppc64.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -168,7 +168,6 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
-%patch4 -p1 -b .ppc64
 autoconf
 
 # We prefer our emacs.desktop file
@@ -448,6 +447,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Jul 25 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-0.1.rc1
+- update to 25.1 rc1
+
 * Fri Jul 22 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.0.95-4
 - fix: emacs build failure due to high memory consumption on ppc64 (#1356919)
 
