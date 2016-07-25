@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       0.1.rc1%{?dist}
+Release:       0.2.rc1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -447,6 +447,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Jul 25 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-0.2.rc1
+- do not set frame-title-format in default.el (#1359732)
+
 * Mon Jul 25 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-0.1.rc1
 - update to 25.1 rc1
 
