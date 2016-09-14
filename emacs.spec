@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       0.3.rc2%{?dist}
+Release:       0.4.rc2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -447,6 +447,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Sep 14 2016 Richard Hughes <rhughes@redhat.com> - 1:25.1-0.4.rc2
+- Upgrade AppData file to specification 0.6+
+
 * Tue Aug 30 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-0.3.rc2
 - update to 25.1 rc2
 
