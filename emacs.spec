@@ -5,12 +5,11 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       0.4.rc2%{?dist}
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
-#Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source0:       ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}-rc2.tar.xz
+Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
 Source1:       emacs.desktop
 Source3:       dotemacs.el
 Source4:       site-start.el
@@ -447,6 +446,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Sep 19 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-1
+- update to 25.1 (#1377031)
+
 * Wed Sep 14 2016 Richard Hughes <rhughes@redhat.com> - 1:25.1-0.4.rc2
 - Upgrade AppData file to specification 0.6+
 
