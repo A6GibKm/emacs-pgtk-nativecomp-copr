@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -25,6 +25,8 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
+# rhbz#1271407 (upstreamed)
+Patch4:        emacs-samba.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -167,6 +169,7 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
+%patch4 -p1 -b .samba
 autoconf
 
 # We prefer our emacs.desktop file
@@ -446,6 +449,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Oct 12 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-2
+- emacs leaves behind corrupted symlinks on CIFS share (#1271407)
+
 * Mon Sep 19 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-1
 - update to 25.1 (#1377031)
 
