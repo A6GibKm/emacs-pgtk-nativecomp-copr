@@ -1,0 +1,274 @@
+Backport the following upstream patches:
+
+http://git.savannah.gnu.org/cgit/emacs.git/patch/?id=9afea93ed536fb9110ac62b413604cf4c4302199
+http://git.savannah.gnu.org/cgit/emacs.git/patch/?id=71ca4f6a43bad06192cbc4bb8c7a2d69c179b7b0
+http://git.savannah.gnu.org/cgit/emacs.git/patch/?id=1047496722a58ef5b736dae64d32adeb58c5055c
+http://git.savannah.gnu.org/cgit/emacs.git/patch/?id=96ac0c3ebce825e60595794f99e703ec8302e240
+http://git.savannah.gnu.org/cgit/emacs.git/patch/?id=43986d16fb6ad78a627250e14570ea70bdb1f23a
+
+Resolves: #1398718
+
+commit 9afea93ed536fb9110ac62b413604cf4c4302199
+Author: Eli Zaretskii <eliz@gnu.org>
+Date:   Sun Oct 23 16:54:00 2016 +0300
+
+    Attempt to catch reads from a buffer that is relocated
+    
+    * src/xml.c (parse_region): Add assertion to ensure buffer text is
+    not relocated while libxml2 is reading it.  (Bug#24764)
+
+diff --git a/src/xml.c b/src/xml.c
+index b1175d1..1ef84bd 100644
+--- a/src/xml.c
++++ b/src/xml.c
+@@ -181,6 +181,7 @@ parse_region (Lisp_Object start, Lisp_Object end, Lisp_Object base_url,
+   Lisp_Object result = Qnil;
+   const char *burl = "";
+   ptrdiff_t istart, iend, istart_byte, iend_byte;
++  unsigned char *buftext;
+ 
+   xmlCheckVersion (LIBXML_VERSION);
+ 
+@@ -200,18 +201,24 @@ parse_region (Lisp_Object start, Lisp_Object end, Lisp_Object base_url,
+       burl = SSDATA (base_url);
+     }
+ 
++  buftext = BYTE_POS_ADDR (istart_byte);
+   if (htmlp)
+-    doc = htmlReadMemory ((char *) BYTE_POS_ADDR (istart_byte),
++    doc = htmlReadMemory ((char *)buftext,
+ 			  iend_byte - istart_byte, burl, "utf-8",
+ 			  HTML_PARSE_RECOVER|HTML_PARSE_NONET|
+ 			  HTML_PARSE_NOWARNING|HTML_PARSE_NOERROR|
+ 			  HTML_PARSE_NOBLANKS);
+   else
+-    doc = xmlReadMemory ((char *) BYTE_POS_ADDR (istart_byte),
++    doc = xmlReadMemory ((char *)buftext,
+ 			 iend_byte - istart_byte, burl, "utf-8",
+ 			 XML_PARSE_NONET|XML_PARSE_NOWARNING|
+ 			 XML_PARSE_NOBLANKS |XML_PARSE_NOERROR);
+ 
++  /* If the assertion below fails, malloc was called inside the above
++     libxml2 functions, and ralloc.c caused relocation of buffer text,
++     so we could have read from unrelated memory.  */
++  eassert (buftext == BYTE_POS_ADDR (istart_byte));
++
+   if (doc != NULL)
+     {
+       Lisp_Object r = Qnil;
+
+commit 71ca4f6a43bad06192cbc4bb8c7a2d69c179b7b0
+Author: Eli Zaretskii <eliz@gnu.org>
+Date:   Sun Oct 23 19:52:56 2016 +0300
+
+    Avoid relocating buffers while libxml2 reads its text
+    
+    * src/xml.c (parse_region) [REL_ALLOC]: Freeze the ralloc arena
+    while libxml2 reads the current buffer's text.  (Bug#24764)
+
+diff --git a/src/xml.c b/src/xml.c
+index 1ef84bd..612b16c 100644
+--- a/src/xml.c
++++ b/src/xml.c
+@@ -202,6 +202,11 @@ parse_region (Lisp_Object start, Lisp_Object end, Lisp_Object base_url,
+     }
+ 
+   buftext = BYTE_POS_ADDR (istart_byte);
++#ifdef REL_ALLOC
++  /* Prevent ralloc.c from relocating the current buffer while libxml2
++     functions below read its text.  */
++  r_alloc_inhibit_buffer_relocation (1);
++#endif
+   if (htmlp)
+     doc = htmlReadMemory ((char *)buftext,
+ 			  iend_byte - istart_byte, burl, "utf-8",
+@@ -214,6 +219,9 @@ parse_region (Lisp_Object start, Lisp_Object end, Lisp_Object base_url,
+ 			 XML_PARSE_NONET|XML_PARSE_NOWARNING|
+ 			 XML_PARSE_NOBLANKS |XML_PARSE_NOERROR);
+ 
++#ifdef REL_ALLOC
++  r_alloc_inhibit_buffer_relocation (0);
++#endif
+   /* If the assertion below fails, malloc was called inside the above
+      libxml2 functions, and ralloc.c caused relocation of buffer text,
+      so we could have read from unrelated memory.  */
+
+commit 1047496722a58ef5b736dae64d32adeb58c5055c
+Author: Eli Zaretskii <eliz@gnu.org>
+Date:   Mon Oct 24 16:59:34 2016 +0300
+
+    Another fix for using pointer to buffer text
+    
+    * src/search.c (Freplace_match): Move the call to BYTE_POS_ADDR
+    after the call to xpalloc, to avoid the danger of buffer text
+    relocation after its address was taken.  (Bug#24358)
+
+diff --git a/src/search.c b/src/search.c
+index 5c04916..f8acd40 100644
+--- a/src/search.c
++++ b/src/search.c
+@@ -2640,6 +2640,7 @@ since only regular expressions have distinguished subexpressions.  */)
+ 	  const unsigned char *add_stuff = NULL;
+ 	  ptrdiff_t add_len = 0;
+ 	  ptrdiff_t idx = -1;
++	  ptrdiff_t begbyte;
+ 
+ 	  if (str_multibyte)
+ 	    {
+@@ -2702,11 +2703,10 @@ since only regular expressions have distinguished subexpressions.  */)
+ 	     set up ADD_STUFF and ADD_LEN to point to it.  */
+ 	  if (idx >= 0)
+ 	    {
+-	      ptrdiff_t begbyte = CHAR_TO_BYTE (search_regs.start[idx]);
++	      begbyte = CHAR_TO_BYTE (search_regs.start[idx]);
+ 	      add_len = CHAR_TO_BYTE (search_regs.end[idx]) - begbyte;
+ 	      if (search_regs.start[idx] < GPT && GPT < search_regs.end[idx])
+ 		move_gap_both (search_regs.start[idx], begbyte);
+-	      add_stuff = BYTE_POS_ADDR (begbyte);
+ 	    }
+ 
+ 	  /* Now the stuff we want to add to SUBSTED
+@@ -2719,6 +2719,11 @@ since only regular expressions have distinguished subexpressions.  */)
+ 		       add_len - (substed_alloc_size - substed_len),
+ 		       STRING_BYTES_BOUND, 1);
+ 
++	  /* We compute this after the call to xpalloc, because that
++	     could cause buffer text be relocated when ralloc.c is used.  */
++	  if (idx >= 0)
++	    add_stuff = BYTE_POS_ADDR (begbyte);
++
+ 	  /* Now add to the end of SUBSTED.  */
+ 	  if (add_stuff)
+ 	    {
+
+commit 96ac0c3ebce825e60595794f99e703ec8302e240
+Author: Eli Zaretskii <eliz@gnu.org>
+Date:   Mon Oct 24 21:37:20 2016 +0300
+
+    Yet another fix for using pointers into buffer text
+    
+    * src/search.c (boyer_moore): Update pointers to buffer text
+    after call to set_search_regs.  (Bug#24358)
+
+diff --git a/src/search.c b/src/search.c
+index f8acd40..b50e7f0 100644
+--- a/src/search.c
++++ b/src/search.c
+@@ -2014,13 +2014,20 @@ boyer_moore (EMACS_INT n, unsigned char *base_pat,
+ 	      cursor += dirlen - i - direction;	/* fix cursor */
+ 	      if (i + direction == 0)
+ 		{
+-		  ptrdiff_t position, start, end;
++		  ptrdiff_t position, start, end, cursor_off;
+ 
+ 		  cursor -= direction;
+ 
+ 		  position = pos_byte + cursor - p2 + ((direction > 0)
+ 						       ? 1 - len_byte : 0);
++		  /* set_search_regs might call malloc, which could
++		     cause ralloc.c relocate buffer text.  We need to
++		     update pointers into buffer text due to that.  */
++		  cursor_off = cursor - p2;
+ 		  set_search_regs (position, len_byte);
++		  p_limit = BYTE_POS_ADDR (limit);
++		  p2 = BYTE_POS_ADDR (pos_byte);
++		  cursor = p2 + cursor_off;
+ 
+ 		  if (NILP (Vinhibit_changing_match_data))
+ 		    {
+
+commit 43986d16fb6ad78a627250e14570ea70bdb1f23a
+Author: Noam Postavsky <npostavs@gmail.com>
+Date:   Mon Oct 24 21:22:07 2016 -0400
+
+    Inhibit buffer relocation during regex searches
+    
+    * src/search.c (looking_at_1, fast_looking_at, search_buffer): Prevent
+    relocation of buffer contents during calls to re_search_2.  This ensures
+    the pointers into buffer text won't be invalidated by
+    r_alloc_sbrk (called from malloc with configurations where
+    REL_ALLOC=yes).
+
+diff --git a/src/search.c b/src/search.c
+index fa5ac44..15504be 100644
+--- a/src/search.c
++++ b/src/search.c
+@@ -308,12 +308,20 @@ looking_at_1 (Lisp_Object string, bool posix)
+ 
+   re_match_object = Qnil;
+ 
++#ifdef REL_ALLOC
++  /* Prevent ralloc.c from relocating the current buffer while
++     searching it.  */
++  r_alloc_inhibit_buffer_relocation (1);
++#endif
+   i = re_match_2 (bufp, (char *) p1, s1, (char *) p2, s2,
+ 		  PT_BYTE - BEGV_BYTE,
+ 		  (NILP (Vinhibit_changing_match_data)
+ 		   ? &search_regs : NULL),
+ 		  ZV_BYTE - BEGV_BYTE);
+   immediate_quit = 0;
++#ifdef REL_ALLOC
++  r_alloc_inhibit_buffer_relocation (0);
++#endif
+ 
+   if (i == -2)
+     matcher_overflow ();
+@@ -561,8 +569,16 @@ fast_looking_at (Lisp_Object regexp, ptrdiff_t pos, ptrdiff_t pos_byte,
+ 
+   buf = compile_pattern (regexp, 0, Qnil, 0, multibyte);
+   immediate_quit = 1;
++#ifdef REL_ALLOC
++  /* Prevent ralloc.c from relocating the current buffer while
++     searching it.  */
++  r_alloc_inhibit_buffer_relocation (1);
++#endif
+   len = re_match_2 (buf, (char *) p1, s1, (char *) p2, s2,
+ 		    pos_byte, NULL, limit_byte);
++#ifdef REL_ALLOC
++  r_alloc_inhibit_buffer_relocation (0);
++#endif
+   immediate_quit = 0;
+ 
+   return len;
+@@ -1213,6 +1229,12 @@ search_buffer (Lisp_Object string, ptrdiff_t pos, ptrdiff_t pos_byte,
+ 	}
+       re_match_object = Qnil;
+ 
++#ifdef REL_ALLOC
++  /* Prevent ralloc.c from relocating the current buffer while
++     searching it.  */
++  r_alloc_inhibit_buffer_relocation (1);
++#endif
++
+       while (n < 0)
+ 	{
+ 	  ptrdiff_t val;
+@@ -1254,6 +1276,9 @@ search_buffer (Lisp_Object string, ptrdiff_t pos, ptrdiff_t pos_byte,
+ 	  else
+ 	    {
+ 	      immediate_quit = 0;
++#ifdef REL_ALLOC
++              r_alloc_inhibit_buffer_relocation (0);
++#endif
+ 	      return (n);
+ 	    }
+ 	  n++;
+@@ -1296,11 +1321,17 @@ search_buffer (Lisp_Object string, ptrdiff_t pos, ptrdiff_t pos_byte,
+ 	  else
+ 	    {
+ 	      immediate_quit = 0;
++#ifdef REL_ALLOC
++              r_alloc_inhibit_buffer_relocation (0);
++#endif
+ 	      return (0 - n);
+ 	    }
+ 	  n--;
+ 	}
+       immediate_quit = 0;
++#ifdef REL_ALLOC
++      r_alloc_inhibit_buffer_relocation (0);
++#endif
+       return (pos);
+     }
+   else				/* non-RE case */

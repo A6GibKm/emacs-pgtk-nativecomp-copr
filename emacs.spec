@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -27,6 +27,8 @@ Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
 # rhbz#1271407 (upstreamed)
 Patch4:        emacs-samba.patch
+# rhbz#1398718 (upstreamed)
+Patch5:        emacs-auctex-compilation.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -170,6 +172,7 @@ packages that add functionality to Emacs.
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
 %patch4 -p1 -b .samba
+%patch5 -p1 -b .auctex-compilation
 autoconf
 
 # We prefer our emacs.desktop file
@@ -449,6 +452,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Dec 12 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-3
+- Emacs 25.1 fc25 often crashes with emacs-auctex (#1398718)
+
 * Wed Oct 12 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-2
 - emacs leaves behind corrupted symlinks on CIFS share (#1271407)
 
