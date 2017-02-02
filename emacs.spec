@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.1
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -426,7 +426,8 @@ update-desktop-database &> /dev/null || :
 %files common -f common-filelist -f el-filelist
 %config(noreplace) %{_sysconfdir}/skel/.emacs
 %{_rpmconfigdir}/macros.d/macros.emacs
-%doc doc/NEWS BUGS README etc/COPYING
+%license etc/COPYING
+%doc doc/NEWS BUGS README
 %{_bindir}/ebrowse
 %{_bindir}/emacsclient
 %{_bindir}/etags.emacs
@@ -452,6 +453,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Feb 01 2017 Stephen Gallagher <sgallagh@redhat.com> - 25.1-4
+- Add missing %%license macro
+
 * Mon Dec 12 2016 Jan Synáček <jsynacek@redhat.com> - 1:25.1-3
 - Emacs 25.1 fc25 often crashes with emacs-auctex (#1398718)
 
