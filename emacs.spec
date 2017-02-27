@@ -4,12 +4,13 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       25.1
-Release:       4%{?dist}
+Version:       25.2
+Release:       0.1.rc2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
-Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+#Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+Source0:       ftp://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}-rc2.tar.xz
 Source1:       emacs.desktop
 Source3:       dotemacs.el
 Source4:       site-start.el
@@ -25,10 +26,8 @@ Patch1:        emacs-spellchecker.patch
 # Fix for default PDF viewer bug #971162
 Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
-# rhbz#1271407 (upstreamed)
-Patch4:        emacs-samba.patch
-# rhbz#1398718 (upstreamed)
-Patch5:        emacs-auctex-compilation.patch
+# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=d781662873f228b110a128f7a2b6583a4d5e0a3a
+Patch4:        emacs-xwidget.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -69,7 +68,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 
 BuildRequires: gtk3-devel
-BuildRequires: webkitgtk3-devel
+BuildRequires: webkitgtk4-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
@@ -171,8 +170,7 @@ packages that add functionality to Emacs.
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
-%patch4 -p1 -b .samba
-%patch5 -p1 -b .auctex-compilation
+%patch4 -p1
 autoconf
 
 # We prefer our emacs.desktop file
@@ -453,6 +451,10 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Feb 27 2017 Jan Synáček <jsynacek@redhat.com> - 25.2-0.1-rc2
+- update to 25.2 rc2
+- depend on the latest webkit (#1375834)
+
 * Wed Feb 01 2017 Stephen Gallagher <sgallagh@redhat.com> - 25.1-4
 - Add missing %%license macro
 
