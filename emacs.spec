@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.2
-Release:       1%{?dist}
+Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -222,7 +222,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets
+           --with-xwidgets --with-modules
 make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
@@ -230,7 +230,7 @@ cd ..
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-%configure --with-x=no
+%configure --with-x=no --with-modules
 %{setarch} make %{?_smp_mflags}
 cd ..
 
@@ -450,6 +450,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Apr 28 2017 Jan Synáček <jsynacek@redhat.com> - 25.2-2
+- compile with support for dynamic modules (#1421087)
+
 * Mon Apr 24 2017 Jan Synáček <jsynacek@redhat.com> - 25.2-1
 - update to 25.2 (#1444818)
 
