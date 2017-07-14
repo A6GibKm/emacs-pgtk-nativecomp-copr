@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.2
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -71,6 +71,9 @@ BuildRequires: webkitgtk4-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
+# For lucid
+BuildRequires: Xaw3d-devel
+
 %ifarch %{ix86}
 BuildRequires: util-linux
 %endif
@@ -101,6 +104,23 @@ language (elisp), and the capability to read mail, news, and more
 without leaving the editor.
 
 This package provides an emacs binary with support for X windows.
+
+%package lucid
+Summary:       GNU Emacs text editor with LUCID toolkit X support
+Group:         Applications/Editors
+Requires(preun): %{_sbindir}/alternatives
+Requires(posttrans): %{_sbindir}/alternatives
+Requires:      emacs-common = %{epoch}:%{version}-%{release}
+Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
+
+%description lucid
+Emacs is a powerful, customizable, self-documenting, modeless text
+editor. Emacs contains special code editing features, a scripting
+language (elisp), and the capability to read mail, news, and more
+without leaving the editor.
+
+This package provides an emacs binary with support for X windows
+using LUCID toolkit.
 
 %package nox
 Summary:       GNU Emacs text editor without X support
@@ -139,7 +159,8 @@ editor. Emacs contains special code editing features, a scripting
 language (elisp), and the capability to read mail, news, and more
 without leaving the editor.
 
-This package contains all the common files needed by emacs or emacs-nox.
+This package contains all the common files needed by emacs, emacs-lucid
+or emacs-nox.
 
 %package terminal
 Summary:       A desktop menu item for GNU Emacs terminal.
@@ -227,6 +248,19 @@ make bootstrap
 %{setarch} make %{?_smp_mflags}
 cd ..
 
+# Build Lucid binary
+mkdir build-lucid && cd build-lucid
+ln -s ../configure .
+
+LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
+
+%configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
+           --with-modules
+make bootstrap
+%{setarch} make %{?_smp_mflags}
+cd ..
+
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
@@ -235,7 +269,7 @@ ln -s ../configure .
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
-rm build-{gtk,nox}/src/emacs-%{version}.*
+rm build-{gtk,lucid,nox}/src/emacs-%{version}.*
 
 # Create pkgconfig file
 cat > emacs.pc << EOF
@@ -269,6 +303,9 @@ touch %{buildroot}%{_bindir}/emacs
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
+
+# Install the emacs with LUCID toolkit
+install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
 
 # Install the emacs without X
 install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
@@ -375,6 +412,14 @@ fi
 %posttrans
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
+%preun lucid
+%{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-lucid
+%{_sbindir}/alternatives --remove emacs-lucid %{_bindir}/emacs-%{version}-lucid
+
+%posttrans lucid
+%{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-lucid 70
+%{_sbindir}/alternatives --install %{_bindir}/emacs-lucid emacs-lucid %{_bindir}/emacs-%{version}-lucid 60
+
 %preun nox
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
 %{_sbindir}/alternatives --remove emacs-nox %{_bindir}/emacs-%{version}-nox
@@ -415,6 +460,11 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
+%files lucid
+%{_bindir}/emacs-%{version}-lucid
+%attr(0755,-,-) %ghost %{_bindir}/emacs
+%attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
+
 %files nox
 %{_bindir}/emacs-%{version}-nox
 %attr(0755,-,-) %ghost %{_bindir}/emacs
@@ -450,6 +500,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jul 14 2017 Gregory Shimansky <gshimansky@gmail.com> - 25.2-3
+- Added package with LUCID X toolkit support (#1471258)
+
 * Fri Apr 28 2017 Jan Synáček <jsynacek@redhat.com> - 25.2-2
 - compile with support for dynamic modules (#1421087)
 
