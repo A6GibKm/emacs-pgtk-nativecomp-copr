@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.2
-Release:       5%{?dist}
+Release:       6%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -500,6 +500,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Sun Jul 30 2017 Florian Weimer <fweimer@redhat.com> - 1:25.2-6
+- Rebuild with binutils fix for ppc64le (#1475636)
+
 * Fri Jul 28 2017 Björn Esser <besser82@fedoraproject.org> - 1:25.2-5
 - Rebuilt for new ImageMagick so-name
 
