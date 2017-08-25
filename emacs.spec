@@ -54,7 +54,10 @@ BuildRequires: gnutls-devel
 BuildRequires: librsvg2-devel
 BuildRequires: m17n-lib-devel
 BuildRequires: libotf-devel
-BuildRequires: ImageMagick-devel
+# NOTE: emacs is not compatible with ImageMagick 7:
+# https://debbugs.gnu.org/cgi/bugreport.cgi?bug=25967
+# As long as ImageMagick 7 is in F27+, emacs cannot use it
+#BuildRequires: ImageMagick-devel
 BuildRequires: libselinux-devel
 BuildRequires: GConf2-devel
 BuildRequires: alsa-lib-devel
