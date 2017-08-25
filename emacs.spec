@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.2
-Release:       7%{?dist}
+Release:       8%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -500,6 +500,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Aug 25 2017 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:25.2-8
+- Rebuilt for ImageMagick soname bump
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1:25.2-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
