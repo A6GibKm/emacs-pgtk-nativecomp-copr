@@ -1,0 +1,58 @@
+--- a/configure.ac	2017-02-03 08:34:30.000000000 -0600
++++ b/configure.ac	2017-08-25 17:09:15.861172295 -0500
+@@ -2407,7 +2407,7 @@
+   if test "${with_imagemagick}" != "no"; then
+     ## 6.3.5 is the earliest version known to work; see Bug#17339.
+     ## 6.8.2 makes Emacs crash; see Bug#13867.
+-    IMAGEMAGICK_MODULE="Wand >= 6.3.5 Wand != 6.8.2"
++    IMAGEMAGICK_MODULE="MagickWand >= 7.0"
+     EMACS_CHECK_MODULES([IMAGEMAGICK], [$IMAGEMAGICK_MODULE])
+     AC_SUBST(IMAGEMAGICK_CFLAGS)
+     AC_SUBST(IMAGEMAGICK_LIBS)
+--- emacs-24.3/src/image.c~	2016-12-25 12:47:48.000000000 +0100
++++ emacs-24.3/src/image.c	2016-12-25 12:52:35.931084598 +0100
+@@ -7618,14 +7618,14 @@
+ /* The GIF library also defines DrawRectangle, but its never used in Emacs.
+    Therefore rename the function so it doesn't collide with ImageMagick.  */
+ #define DrawRectangle DrawRectangleGif
+-#include <wand/MagickWand.h>
++#include <MagickWand/MagickWand.h>
+ 
+ /* ImageMagick 6.5.3 through 6.6.5 hid PixelGetMagickColor for some reason.
+    Emacs seems to work fine with the hidden version, so unhide it.  */
+-#include <magick/version.h>
++#include <MagickCore/version.h>
+ #if 0x653 <= MagickLibVersion && MagickLibVersion <= 0x665
+ extern WandExport void PixelGetMagickColor (const PixelWand *,
+-					    MagickPixelPacket *);
++					    PixelInfo *);
+ #endif
+ 
+ /* Log ImageMagick error message.
+@@ -8402,7 +8402,7 @@
+       PixelWand **source, **dest;
+       size_t source_width, source_height;
+       ssize_t source_left, source_top;
+-      MagickPixelPacket pixel;
++      PixelInfo pixel;
+       DisposeType dispose;
+       ptrdiff_t lines = 0;
+ 
+@@ -8467,7 +8467,7 @@
+ 	      if (dispose == BackgroundDispose || PixelGetAlpha (source[x]))
+ 		{
+ 		  PixelGetMagickColor (source[x], &pixel);
+-		  PixelSetMagickColor (dest[x + source_left], &pixel);
++		  PixelSetPixelColor (dest[x + source_left], &pixel);
+ 		}
+ 	    }
+ 	  PixelSyncIterator (dest_iterator);
+@@ -8512,7 +8512,7 @@
+   MagickWand *image_wand;
+   PixelIterator *iterator;
+   PixelWand **pixels, *bg_wand = NULL;
+-  MagickPixelPacket  pixel;
++  PixelInfo  pixel;
+   Lisp_Object image;
+   Lisp_Object value;
+   Lisp_Object crop;
