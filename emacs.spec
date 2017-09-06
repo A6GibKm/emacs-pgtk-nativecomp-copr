@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.2
-Release:       9%{?dist}
+Release:       10%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -27,8 +27,6 @@ Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
 # http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=d781662873f228b110a128f7a2b6583a4d5e0a3a
 Patch4:        emacs-xwidget.patch
-# http://git.pld-linux.org/gitweb.cgi?p=packages/emacs.git;a=blob;f=imagemagick7.patch;h=199219b4d15ff2dbe325114192420a1241dd5522;hb=HEAD
-Patch5:        emacs-imagemagick-7.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -67,8 +65,6 @@ BuildRequires: texinfo
 BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
-BuildRequires: autoconf
-BuildRequires: automake
 
 BuildRequires: gtk3-devel
 BuildRequires: webkitgtk4-devel
@@ -195,8 +191,7 @@ packages that add functionality to Emacs.
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
 %patch4 -p1
-%patch5 -p1
-autoreconf -f -i
+autoconf
 
 # We prefer our emacs.desktop file
 cp %SOURCE1 etc/emacs.desktop
@@ -506,6 +501,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Sep 06 2017 Michael Cronenworth <mike@cchtml.com> - 1:25.2-10
+- Rebuild for ImageMagick 6
+
 * Fri Aug 25 2017 Michael Cronenworth <mike@cchtml.com> - 1:25.2-9
 - Add patch for ImageMagick 7 detection
 
