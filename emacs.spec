@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -501,6 +501,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Sep 14 2017 Pete Walter <pwalter@fedoraproject.org> - 1:25.3-3
+- Rebuilt for ImageMagick 6.9.9 soname bump
+
 * Wed Sep 13 2017 Richard W.M. Jones <rjones@redhat.com> - 1:25.3-2
 - Rebuild to try to fix: libwebkit2gtk-4.0.so.37: undefined symbol:
   soup_auth_manager_clear_cached_credentials
