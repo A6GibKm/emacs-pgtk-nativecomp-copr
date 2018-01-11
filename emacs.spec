@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -393,22 +393,8 @@ cat el-*-files common-lisp-dir-files > el-filelist
 # Remove old icon
 rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
-%post
-update-desktop-database &> /dev/null || :
-touch --no-create %{_datadir}/icons/hicolor
-if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
-  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
-fi
-
 %preun
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}
-
-%postun
-update-desktop-database &> /dev/null || :
-touch --no-create %{_datadir}/icons/hicolor
-if [ -x %{_bindir}/gtk-update-icon-cache ] ; then
-  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
-fi
 
 %posttrans
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
@@ -445,12 +431,6 @@ fi
 %posttrans common
 %{_sbindir}/alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
        --slave %{_mandir}/man1/etags.1.gz emacs.etags.man %{_mandir}/man1/etags.emacs.1.gz
-
-%post terminal
-update-desktop-database &> /dev/null || :
-
-%postun terminal
-update-desktop-database &> /dev/null || :
 
 %files
 %{_bindir}/emacs-%{version}
@@ -501,6 +481,9 @@ update-desktop-database &> /dev/null || :
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Thu Jan 11 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:25.3-4
+- Remove obsolete scriptlets
+
 * Thu Sep 14 2017 Pete Walter <pwalter@fedoraproject.org> - 1:25.3-3
 - Rebuilt for ImageMagick 6.9.9 soname bump
 
