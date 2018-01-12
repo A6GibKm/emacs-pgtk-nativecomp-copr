@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       4%{?dist}
+Release:       5%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -67,7 +67,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 
 BuildRequires: gtk3-devel
-BuildRequires: webkitgtk4-devel
+BuildRequires: webkit2gtk3-devel
 BuildRequires: python2-devel
 BuildRequires: python3-devel
 
@@ -481,6 +481,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Jan 12 2018 Tomas Popela <tpopela@redhat.com> - 1:25.3-5
+- Adapt to the webkitgtk4 rename
+
 * Thu Jan 11 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:25.3-4
 - Remove obsolete scriptlets
 
