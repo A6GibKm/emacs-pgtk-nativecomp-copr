@@ -9,7 +9,7 @@ Release:       5%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
-Source0:       ftp://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
+Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
 Source1:       emacs.desktop
 Source3:       dotemacs.el
 Source4:       site-start.el
