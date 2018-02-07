@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       5%{?dist}
+Release:       6%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -481,6 +481,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:25.3-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
 * Fri Jan 12 2018 Tomas Popela <tpopela@redhat.com> - 1:25.3-5
 - Adapt to the webkitgtk4 rename
 
