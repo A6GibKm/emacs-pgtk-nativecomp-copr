@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -481,6 +481,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 1:25.3-7
+- Escape macros in %%changelog
+
 * Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:25.3-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
@@ -670,7 +673,7 @@ fi
 - remove /usr/bin/emacs-nox from install section
 
 * Mon Aug 04 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-21
-- /usr/bin/emacs-nox link marked as %ghost file (#1123573)
+- /usr/bin/emacs-nox link marked as %%ghost file (#1123573)
 
 * Fri Aug 01 2014 Petr Hracek <phracek@redhat.com> - 1:24.3-20
 - Provide /usr/bin/emacs-nox (#1123573)
