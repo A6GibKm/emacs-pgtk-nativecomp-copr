@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       25.3
-Release:       8%{?dist}
+Release:       9%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -27,6 +27,8 @@ Patch2:        emacs-pdf-default.patch
 Patch3:        emacs-system-crypto-policies.patch
 # http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=d781662873f228b110a128f7a2b6583a4d5e0a3a
 Patch4:        emacs-xwidget.patch
+# https://git.savannah.gnu.org/cgit/emacs.git/commit/?id=408bf21a8c8b5bf5a78785608255463ad1038871
+Patch5:        emacs-xft-color-font-crash.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -191,6 +193,7 @@ packages that add functionality to Emacs.
 %patch2 -p1 -b .pdf-default.patch
 %patch3 -p1 -b .system-crypto-policies
 %patch4 -p1
+%patch5 -p1
 autoconf
 
 # We prefer our emacs.desktop file
@@ -481,6 +484,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed Apr  4 2018 Jan Synáček <jsynacek@redhat.com> - 1:25.3-9
+- Emacs crashes when loading color fonts (#1519038)
+
 * Sun Feb 11 2018 Sandro Mani <manisandro@gmail.com> - 1:25.3-8
 - Rebuild (giflib)
 

@@ -1,0 +1,48 @@
+commit 408bf21a8c8b5bf5a78785608255463ad1038871
+Author: Robert Pluim <rpluim@gmail.com>
+Date:   Tue Apr 3 11:06:01 2018 +0200
+
+    Ignore color fonts when using Xft
+    
+    * src/font.c (syms_of_font): New configuration variable
+    xft-ignore-color-fonts, default t.
+    * src/ftfont.c (ftfont_spec_pattern): Tell fontconfig to ignore
+    color fonts if xft-ignore-color-fonts is t.  (Bug#30874, Bug#30045)
+    * etc/NEWS: Document xft-ignore-color-fonts.
+
+diff --git a/src/font.c b/src/font.c
+index a6d3f5d479..ef3f92b594 100644
+--- a/src/font.c
++++ b/src/font.c
+@@ -5473,6 +5473,13 @@ Disabling compaction of font caches might enlarge the Emacs memory
+ footprint in sessions that use lots of different fonts.  */);
+   inhibit_compacting_font_caches = 0;
+ 
++  DEFVAR_BOOL ("xft-ignore-color-fonts",
++	       Vxft_ignore_color_fonts,
++	       doc: /*
++Non-nil means don't query fontconfig for color fonts, since they often
++cause Xft crashes.  Only has an effect in Xft builds.  */);
++  Vxft_ignore_color_fonts = 1;
++
+ #ifdef HAVE_WINDOW_SYSTEM
+ #ifdef HAVE_FREETYPE
+   syms_of_ftfont ();
+diff --git a/src/ftfont.c b/src/ftfont.c
+index c2e093e633..24a92dd52e 100644
+--- a/src/ftfont.c
++++ b/src/ftfont.c
+@@ -764,6 +764,13 @@ ftfont_spec_pattern (Lisp_Object spec, char *otlayout, struct OpenTypeSpec **ots
+   if (scalable >= 0
+       && ! FcPatternAddBool (pattern, FC_SCALABLE, scalable ? FcTrue : FcFalse))
+     goto err;
++#ifdef HAVE_XFT
++  /* We really don't like color fonts, they cause Xft crashes.  See
++     Bug#30874.  */
++  if (Vxft_ignore_color_fonts
++      && ! FcPatternAddBool(pattern, FC_COLOR, FcFalse))
++    goto err;
++#endif
+ 
+   goto finish;
+ 
