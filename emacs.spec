@@ -4,8 +4,8 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       25.3
-Release:       9%{?dist}
+Version:       26.1
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -21,14 +21,7 @@ Source8:       emacs.service
 Source9:       %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
-
-# Fix for default PDF viewer bug #971162
-Patch2:        emacs-pdf-default.patch
-Patch3:        emacs-system-crypto-policies.patch
-# http://git.savannah.gnu.org/cgit/emacs.git/commit/?id=d781662873f228b110a128f7a2b6583a4d5e0a3a
-Patch4:        emacs-xwidget.patch
-# https://git.savannah.gnu.org/cgit/emacs.git/commit/?id=408bf21a8c8b5bf5a78785608255463ad1038871
-Patch5:        emacs-xft-color-font-crash.patch
+Patch2:        emacs-system-crypto-policies.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -190,10 +183,7 @@ packages that add functionality to Emacs.
 %setup -q
 
 %patch1 -p1 -b .spellchecker
-%patch2 -p1 -b .pdf-default.patch
-%patch3 -p1 -b .system-crypto-policies
-%patch4 -p1
-%patch5 -p1
+%patch2 -p1 -b .system-crypto-policies
 autoconf
 
 # We prefer our emacs.desktop file
@@ -356,11 +346,12 @@ install -p -m 755 %SOURCE7 %{buildroot}%{_bindir}/emacs-terminal
 
 # After everything is installed, remove info dir
 rm -f %{buildroot}%{_infodir}/dir
-rm %{buildroot}%{_localstatedir}/games/emacs/*
 
 # Installing service file
 mkdir -p %{buildroot}%{_userunitdir}
 install -p -m 0644 %SOURCE8 %{buildroot}%{_userunitdir}/emacs.service
+# Emacs 26.1 installs the upstream unit file to /usr/lib64 on 64bit archs, we don't want that
+rm -f %{buildroot}/usr/lib64/systemd/user/emacs.service
 
 # Install desktop files
 mkdir -p %{buildroot}%{_datadir}/applications
@@ -484,6 +475,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Wed May 30 2018 Jan Synáček <jsynacek@redhat.com> - 1:26.1-1
+- emacs-26.1 is available (#1583433)
+
 * Wed Apr  4 2018 Jan Synáček <jsynacek@redhat.com> - 1:25.3-9
 - Emacs crashes when loading color fonts (#1519038)
 
