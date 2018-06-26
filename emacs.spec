@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       26.1
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -22,6 +22,8 @@ Source9:       %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
+# https://git.savannah.gnu.org/cgit/emacs.git/commit/?id=408bf21a8c8b5bf5a78785608255463ad1038871
+Patch3:        emacs-xft-color-font-crash.patch
 
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
@@ -184,6 +186,7 @@ packages that add functionality to Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
+%patch3 -p1
 autoconf
 
 # We prefer our emacs.desktop file
@@ -475,6 +478,10 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Jun 26 2018 Jan Synáček <jsynacek@redhat.com> - 1:26.1-3
+- Refix: Emacs crashes when loading color fonts (#1519038)
+  + emacs SIGABRT after XProtocolError on displaying an email in Gnus (#1591223)
+
 * Tue Jun 19 2018 Miro Hrončok <mhroncok@redhat.com> - 1:26.1-2
 - Rebuilt for Python 3.7
 
