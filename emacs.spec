@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       26.1
-Release:       3%{?dist}
+Release:       4%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -478,6 +478,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Jul 02 2018 Miro Hrončok <mhroncok@redhat.com> - 1:26.1-4
+- Rebuilt for Python 3.7
+
 * Tue Jun 26 2018 Jan Synáček <jsynacek@redhat.com> - 1:26.1-3
 - Refix: Emacs crashes when loading color fonts (#1519038)
   + emacs SIGABRT after XProtocolError on displaying an email in Gnus (#1591223)
