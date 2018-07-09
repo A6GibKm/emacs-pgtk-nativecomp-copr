@@ -25,6 +25,7 @@ Patch2:        emacs-system-crypto-policies.patch
 # https://git.savannah.gnu.org/cgit/emacs.git/commit/?id=408bf21a8c8b5bf5a78785608255463ad1038871
 Patch3:        emacs-xft-color-font-crash.patch
 
+BuildRequires:  gcc
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
 BuildRequires: freetype-devel
