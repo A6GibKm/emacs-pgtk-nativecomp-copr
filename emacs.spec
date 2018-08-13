@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       26.1
-Release:       5%{?dist}
+Release:       6%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -66,8 +66,6 @@ BuildRequires: libacl-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
-BuildRequires: python2-devel
-BuildRequires: python3-devel
 
 # For lucid
 BuildRequires: Xaw3d-devel
@@ -83,11 +81,6 @@ Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
 Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
-
-# Turn off the brp-python-bytecompile script since this script doesn't
-# properly dtect the correct python runtime for the files emacs2.py and
-# emacs3.py
-%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 
 %define site_lisp %{_datadir}/emacs/site-lisp
 %define site_start_d %{site_lisp}/site-start.d
@@ -364,11 +357,6 @@ desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
                      %SOURCE6
 
-# Byte compile emacs*.py with correct python interpreters
-%py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs.py
-%py_byte_compile %{__python} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs2.py
-%py_byte_compile %{__python3} %{buildroot}%{_datadir}/%{name}/%{version}/etc/emacs3.py
-
 #
 # Create file lists
 #
@@ -479,6 +467,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Mon Aug 13 2018 Jan Synáček <jsynacek@redhat.com> - 1:26.1-6
+- remove python dependencies, emacs*.py have not been there for a while
+
 * Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:26.1-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
