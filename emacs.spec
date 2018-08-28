@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       26.1
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Group:         Applications/Editors
@@ -467,6 +467,9 @@ fi
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
 %changelog
+* Tue Aug 28 2018 Michael Cronenworth <mike@cchtml.com> - 1:26.1-7
+- Rebuild for new ImageMagick 6.9.10
+
 * Mon Aug 13 2018 Jan Synáček <jsynacek@redhat.com> - 1:26.1-6
 - remove python dependencies, emacs*.py have not been there for a while
 
