@@ -136,10 +136,8 @@ Summary:       Emacs common files
 # also BSD.  Manual (info) is GFDL.
 License:       GPLv3+ and GFDL and BSD
 Group:         Applications/Editors
-Requires(preun): /sbin/install-info
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
-Requires(post): /sbin/install-info
 Requires:      %{name}-filesystem = %{epoch}:%{version}-%{release}
 Provides:      %{name}-el = %{epoch}:%{version}-%{release}
 Obsoletes:     emacs-el < 1:24.3-29
@@ -401,18 +399,8 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 %{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 60
 
-%post common
-for f in %{info_files}; do
-  /sbin/install-info %{_infodir}/$f.info.gz %{_infodir}/dir 2> /dev/null || :
-done
-
 %preun common
 %{_sbindir}/alternatives --remove emacs.etags %{_bindir}/etags.emacs
-if [ "$1" = 0 ]; then
-  for f in %{info_files}; do
-    /sbin/install-info --delete %{_infodir}/$f.info.gz %{_infodir}/dir 2> /dev/null || :
-  done
-fi
 
 %posttrans common
 %{_sbindir}/alternatives --install %{_bindir}/etags emacs.etags %{_bindir}/etags.emacs 80 \
