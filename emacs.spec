@@ -8,7 +8,6 @@ Version:       26.1
 Release:       7%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Group:         Applications/Editors
 Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
 Source1:       emacs.desktop
 Source3:       dotemacs.el
@@ -98,7 +97,6 @@ This package provides an emacs binary with support for X windows.
 
 %package lucid
 Summary:       GNU Emacs text editor with LUCID toolkit X support
-Group:         Applications/Editors
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
@@ -115,7 +113,6 @@ using LUCID toolkit.
 
 %package nox
 Summary:       GNU Emacs text editor without X support
-Group:         Applications/Editors
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      emacs-common = %{epoch}:%{version}-%{release}
@@ -135,7 +132,6 @@ Summary:       Emacs common files
 # The entire source code is GPLv3+ except lib-src/etags.c which is
 # also BSD.  Manual (info) is GFDL.
 License:       GPLv3+ and GFDL and BSD
-Group:         Applications/Editors
 Requires(preun): %{_sbindir}/alternatives
 Requires(posttrans): %{_sbindir}/alternatives
 Requires:      %{name}-filesystem = %{epoch}:%{version}-%{release}
@@ -153,7 +149,6 @@ or emacs-nox.
 
 %package terminal
 Summary:       A desktop menu item for GNU Emacs terminal.
-Group:         Applications/Editors
 Requires:      emacs = %{epoch}:%{version}-%{release}
 BuildArch:     noarch
 
@@ -166,7 +161,6 @@ removed when another terminal becomes capable of handling Malayalam.
 
 %package filesystem
 Summary:       Emacs filesystem layout
-Group:         Applications/Editors
 BuildArch:     noarch
 
 %description filesystem
