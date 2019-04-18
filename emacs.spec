@@ -4,8 +4,8 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       26.1
-Release:       8%{?dist}
+Version:       26.2
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
@@ -21,8 +21,6 @@ Source9:       %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
-# https://git.savannah.gnu.org/cgit/emacs.git/commit/?id=408bf21a8c8b5bf5a78785608255463ad1038871
-Patch3:        emacs-xft-color-font-crash.patch
 
 BuildRequires:  gcc
 BuildRequires: atk-devel
@@ -72,6 +70,7 @@ BuildRequires: Xaw3d-devel
 %ifarch %{ix86}
 BuildRequires: util-linux
 %endif
+
 
 # Emacs doesn't run without dejavu-sans-mono-fonts, rhbz#732422
 Requires:      desktop-file-utils
@@ -167,12 +166,17 @@ BuildArch:     noarch
 This package provides some directories which are required by other
 packages that add functionality to Emacs.
 
+%package devel
+Summary: Development header files for Emacs
+
+%description devel
+Development header files for Emacs.
+
 %prep
 %setup -q
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
-%patch3 -p1
 autoconf
 
 # We prefer our emacs.desktop file
@@ -325,6 +329,8 @@ install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 # Install app data
 mkdir -p %{buildroot}/%{_datadir}/appdata
 cp -a %SOURCE9 %{buildroot}/%{_datadir}/appdata
+# Upstream ships its own appdata file, but it's quite terse.
+rm %{buildroot}/%{_datadir}/metainfo/emacs.appdata.xml
 
 # Install rpm macro definition file
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
@@ -448,7 +454,13 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %dir %{_datadir}/emacs/site-lisp
 %dir %{_datadir}/emacs/site-lisp/site-start.d
 
+%files devel
+%{_includedir}/emacs-module.h
+
 %changelog
+* Wed Apr 17 2019 Jan Synáček <jsynacek@redhat.com> - 1:26.2-1
+- emacs-26.2 is available (#1699434)
+
 * Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:26.1-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
