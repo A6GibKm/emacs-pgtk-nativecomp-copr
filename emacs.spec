@@ -4,8 +4,8 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       26.2
-Release:       2%{?dist}
+Version:       26.3
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
@@ -458,6 +458,9 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
+* Wed Sep  8 2019 Maximiliano Sandoval <msandoval@protonmail.com> - 1:26.3-1
+- emacs-26.3 is available (#1747101)
+
 * Wed Jul 24 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:26.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
