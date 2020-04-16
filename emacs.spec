@@ -5,7 +5,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       26.3
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
@@ -55,11 +55,11 @@ BuildRequires: m17n-lib-devel
 BuildRequires: libotf-devel
 BuildRequires: ImageMagick-devel
 BuildRequires: libselinux-devel
-BuildRequires: GConf2-devel
 BuildRequires: alsa-lib-devel
 BuildRequires: gpm-devel
 BuildRequires: liblockfile-devel
 BuildRequires: libxml2-devel
+BuildRequires: autoconf
 BuildRequires: bzip2
 BuildRequires: cairo
 BuildRequires: texinfo
@@ -468,6 +468,9 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
+* Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
+- Drop dependency on GConf2
+
 * Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:26.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
