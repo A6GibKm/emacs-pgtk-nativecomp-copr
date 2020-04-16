@@ -28,7 +28,7 @@ Source10:      %{name}.appdata.xml
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
 
-BuildRequires:  gcc
+BuildRequires: gcc
 BuildRequires: atk-devel
 BuildRequires: cairo-devel
 BuildRequires: freetype-devel
@@ -229,7 +229,8 @@ ln -s ../../%{name}/%{version}/etc/NEWS doc
 
 
 %build
-export CFLAGS="-DMAIL_USE_LOCKF $RPM_OPT_FLAGS"
+export CFLAGS="-DMAIL_USE_LOCKF %{build_cflags}"
+%set_build_flags
 
 # Build GTK+ binary
 mkdir build-gtk && cd build-gtk
@@ -241,7 +242,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
            --with-xwidgets --with-modules
 make bootstrap
-%{setarch} make %{?_smp_mflags}
+%{setarch} %make_build
 cd ..
 
 # Build Lucid binary
@@ -254,14 +255,14 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
            --with-modules
 make bootstrap
-%{setarch} make %{?_smp_mflags}
+%{setarch} %make_build
 cd ..
 
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
 %configure --with-x=no --with-modules
-%{setarch} make %{?_smp_mflags}
+%{setarch} %make_build
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
