@@ -9,15 +9,21 @@ Release:       2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source1:       emacs.desktop
-Source3:       dotemacs.el
-Source4:       site-start.el
-Source5:       default.el
+Source1:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz.sig
+# generate the keyring via:
+# wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
+# gpg2 --import gnu-keyring.gpg
+# gpg2 --armor --export D405AA2C862C54F17EEE6BE0E8BCD7866AFCF978 > gpgkey-D405AA2C862C54F17EEE6BE0E8BCD7866AFCF978.gpg
+Source2:       gpgkey-D405AA2C862C54F17EEE6BE0E8BCD7866AFCF978.gpg
+Source3:       emacs.desktop
+Source4:       dotemacs.el
+Source5:       site-start.el
+Source6:       default.el
 # Emacs Terminal Mode, #551949, #617355
-Source6:       emacs-terminal.desktop
-Source7:       emacs-terminal.sh
-Source8:       emacs.service
-Source9:       %{name}.appdata.xml
+Source7:       emacs-terminal.desktop
+Source8:       emacs-terminal.sh
+Source9:       emacs.service
+Source10:      %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
@@ -63,6 +69,8 @@ BuildRequires: libacl-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
+
+BuildRequires: gnupg2
 
 # For lucid
 BuildRequires: Xaw3d-devel
@@ -173,6 +181,7 @@ Summary: Development header files for Emacs
 Development header files for Emacs.
 
 %prep
+%{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
 %setup -q
 
 %patch1 -p1 -b .spellchecker
@@ -180,7 +189,7 @@ Development header files for Emacs.
 autoconf
 
 # We prefer our emacs.desktop file
-cp %SOURCE1 etc/emacs.desktop
+cp %SOURCE3 etc/emacs.desktop
 
 grep -v "tetris.elc" lisp/Makefile.in > lisp/Makefile.in.new \
    && mv lisp/Makefile.in.new lisp/Makefile.in
@@ -301,8 +310,8 @@ install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-n
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
 
 mkdir -p %{buildroot}%{site_lisp}
-install -p -m 0644 %SOURCE4 %{buildroot}%{site_lisp}/site-start.el
-install -p -m 0644 %SOURCE5 %{buildroot}%{site_lisp}
+install -p -m 0644 %SOURCE5 %{buildroot}%{site_lisp}/site-start.el
+install -p -m 0644 %SOURCE6 %{buildroot}%{site_lisp}
 
 # This solves bz#474958, "update-directory-autoloads" now finally
 # works the path is different each version, so we'll generate it here
@@ -320,7 +329,7 @@ mkdir -p %{buildroot}%{site_lisp}/site-start.d
 
 # Default initialization file
 mkdir -p %{buildroot}%{_sysconfdir}/skel
-install -p -m 0644 %SOURCE3 %{buildroot}%{_sysconfdir}/skel/.emacs
+install -p -m 0644 %SOURCE4 %{buildroot}%{_sysconfdir}/skel/.emacs
 
 # Install pkgconfig file
 mkdir -p %{buildroot}/%{pkgconfig}
@@ -328,7 +337,7 @@ install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
 # Install app data
 mkdir -p %{buildroot}/%{_datadir}/appdata
-cp -a %SOURCE9 %{buildroot}/%{_datadir}/appdata
+cp -a %SOURCE10 %{buildroot}/%{_datadir}/appdata
 # Upstream ships its own appdata file, but it's quite terse.
 rm %{buildroot}/%{_datadir}/metainfo/emacs.appdata.xml
 
@@ -337,23 +346,23 @@ mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 install -p -m 0644 macros.emacs %{buildroot}%{_rpmconfigdir}/macros.d/
 
 # Installing emacs-terminal binary
-install -p -m 755 %SOURCE7 %{buildroot}%{_bindir}/emacs-terminal
+install -p -m 755 %SOURCE8 %{buildroot}%{_bindir}/emacs-terminal
 
 # After everything is installed, remove info dir
 rm -f %{buildroot}%{_infodir}/dir
 
 # Installing service file
 mkdir -p %{buildroot}%{_userunitdir}
-install -p -m 0644 %SOURCE8 %{buildroot}%{_userunitdir}/emacs.service
+install -p -m 0644 %SOURCE9 %{buildroot}%{_userunitdir}/emacs.service
 # Emacs 26.1 installs the upstream unit file to /usr/lib64 on 64bit archs, we don't want that
 rm -f %{buildroot}/usr/lib64/systemd/user/emacs.service
 
 # Install desktop files
 mkdir -p %{buildroot}%{_datadir}/applications
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
-                     %SOURCE1
+                     %SOURCE3
 desktop-file-install --dir=%{buildroot}%{_datadir}/applications \
-                     %SOURCE6
+                     %SOURCE7
 
 #
 # Create file lists
