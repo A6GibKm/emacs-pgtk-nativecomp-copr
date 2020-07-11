@@ -4,12 +4,12 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       26.3
-Release:       3%{?dist}
+Version:       27.0.91
+Release:       1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz
-Source1:       https://ftp.gnu.org/gnu/emacs/emacs-%{version}.tar.xz.sig
+Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
+Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
 # generate the keyring via:
 # wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
 # gpg2 --import gnu-keyring.gpg
@@ -53,7 +53,6 @@ BuildRequires: gnutls-devel
 BuildRequires: librsvg2-devel
 BuildRequires: m17n-lib-devel
 BuildRequires: libotf-devel
-BuildRequires: ImageMagick-devel
 BuildRequires: libselinux-devel
 BuildRequires: alsa-lib-devel
 BuildRequires: gpm-devel
@@ -66,6 +65,7 @@ BuildRequires: texinfo
 BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
+BuildRequires: jansson-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -240,7 +240,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets --with-modules
+           --with-xwidgets --with-modules --with-cairo
 make bootstrap
 %{setarch} %make_build
 cd ..
@@ -253,7 +253,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
-           --with-modules
+           --with-modules --with-cairo
 make bootstrap
 %{setarch} %make_build
 cd ..
@@ -297,15 +297,23 @@ cd ..
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
+# Remove emacs.pdmp from common
+rm %{buildroot}%{emacs_libexecdir}/emacs.pdmp
+
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
+# Install emacs.pdmp of the emacs with GTK+
+install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}.pdmp
+
 # Install the emacs with LUCID toolkit
 install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
+install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-lucid.pdmp
 
 # Install the emacs without X
 install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
+install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-nox.pdmp
 
 # Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -418,20 +426,24 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
 %files
 %{_bindir}/emacs-%{version}
+%{_bindir}/emacs-%{version}.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
+%{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
 %files lucid
 %{_bindir}/emacs-%{version}-lucid
+%{_bindir}/emacs-%{version}-lucid.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
 
 %files nox
 %{_bindir}/emacs-%{version}-nox
+%{_bindir}/emacs-%{version}-nox.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
 
@@ -468,6 +480,11 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
+* Sat Jul 11 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.0.91-1
+- Update to pretest 27.0.91
+- Build with Cairo and Jansson support
+- Remove ImageMagick as it's no longer used
+
 * Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
 - Drop dependency on GConf2
 
