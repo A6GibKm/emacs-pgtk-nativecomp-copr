@@ -5,12 +5,12 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       27.1
+Version:       28.0.50
 Release:       0.1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{pretest_version}.tar.xz
-Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{pretest_version}.tar.xz.sig
+Source0:       https://github.com/fejfighter/emacs/archive/pgtk-nativecomp.tar.gz
+
 # generate the keyring via:
 # wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
 # gpg2 --import gnu-keyring.gpg
@@ -68,6 +68,7 @@ BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 BuildRequires: jansson-devel
 BuildRequires: systemd-devel
+BuildRequires: libgccjit-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -92,7 +93,7 @@ Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
 %define site_lisp %{_datadir}/emacs/site-lisp
 %define site_start_d %{site_lisp}/site-start.d
-%define bytecompargs -batch --no-init-file --no-site-file -f batch-byte-compile
+%define bytecompargs -batch --no-init-file --no-site-file -f batch-native-compile
 %define pkgconfig %{_datadir}/pkgconfig
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
@@ -183,11 +184,11 @@ Summary: Development header files for Emacs
 Development header files for Emacs.
 
 %prep
-%{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
-%setup -q -n emacs-27.1
+%setup -q -n emacs-pgtk-nativecomp
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
+autoreconf -fi -I m4
 autoconf
 
 # We prefer our emacs.desktop file
@@ -204,20 +205,6 @@ rm -f lisp/play/pong.el lisp/play/pong.el
 
 # Sorted list of info files
 %define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
-
-# Since the list of info files has to be maintained, check if all info files
-# from the upstream tarball are actually present in %%info_files.
-cd info
-fs=( $(ls *.info) )
-is=( %info_files  )
-files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
-for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
-  if test "${fs[$i]}" != "${is[$i]}.info"; then
-    echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
-    break
-  fi
-done
-cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -241,8 +228,8 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets --with-modules --with-cairo
+           --with-tiff --with-xft --with-xpm --with-gpm=no \
+           --with-xwidgets --with-modules --with-cairo --with-native-comp --with-pgtk
 make bootstrap
 %{setarch} %make_build
 cd ..
@@ -255,7 +242,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
-           --with-modules --with-cairo
+           --with-modules --with-cairo --with-native-comp
 make bootstrap
 %{setarch} %make_build
 cd ..
@@ -263,8 +250,22 @@ cd ..
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-%configure --with-x=no --with-modules
+%configure --with-x=no --with-modules --with-native-comp
 %{setarch} %make_build
+cd ..
+
+# Since the list of info files has to be maintained, check if all info files
+# from the upstream tarball are actually present in %%info_files.
+cd info
+fs=( $(ls *.info) )
+is=( %info_files  )
+files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
+for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
+  if test "${fs[$i]}" != "${is[$i]}.info"; then
+    echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
+    break
+  fi
+done
 cd ..
 
 # Remove versioned file so that we end up with .1 suffix and only one DOC file
@@ -287,7 +288,7 @@ cat > macros.emacs << EOF
 %%_emacs_evr %{?epoch:%{epoch}:}%{version}-%{release}
 %%_emacs_sitelispdir %{site_lisp}
 %%_emacs_sitestartdir %{site_start_d}
-%%_emacs_bytecompile /usr/bin/emacs -batch --no-init-file --no-site-file --eval '(progn (setq load-path (cons "." load-path)))' -f batch-byte-compile
+%%_emacs_bytecompile /usr/bin/emacs -batch --no-init-file --no-site-file --eval '(progn (setq load-path (cons "." load-path)))' -f batch-native-compile
 EOF
 
 %install

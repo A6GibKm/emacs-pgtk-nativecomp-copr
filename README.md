@@ -1,22 +1,22 @@
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/package/emacs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/package/emacs/)
 
-## Pretest version builds of GNU Emacs
-- [EmacsWiki: Emacs Pretest](https://www.emacswiki.org/emacs/EmacsPretest)
-- [https://alpha.gnu.org/gnu/emacs/pretest/](https://alpha.gnu.org/gnu/emacs/pretest/)
+## Pure Gtk + native compilation builds of GNU Emacs
+
+- [masm11/emacs](https://github.com/masm11/emacs)
+- [fejfighter/emacs](https://github.com/fejfighter/emacs)
 
 This package is mostly aligned with the GNU Emacs package from
 official Fedora repositories.
 - [https://src.fedoraproject.org/rpms/emacs](https://src.fedoraproject.org/rpms/emacs)
 - [https://src.fedoraproject.org/rpms/emacs/pull-request/4](https://src.fedoraproject.org/rpms/emacs/pull-request/4)
 
-## Changes in Emacs 27.1
-- [`NEWS` file from `emacs-27`
-  branch](https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS?h=emacs-27)
+## Changes in Emacs 28
+- [`NEWS` file from `master`
+  branch](https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/NEWS?h=master)
 
 ## Credits & Licensing
 The repository
-[https://gitlab.com/bhavin192/emacs-pretest-rpm](https://gitlab.com/bhavin192/emacs-pretest-rpm
-"Repository containing build recipes for the emacs-pretest package")
+[A6GibKm/emacs-pgtk-nativecomp-copr](https://github.com:A6GibKm/emacs-pgtk-nativecomp-copr)
 containing build recipes for [Copr project
 emacs-pretest](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/)
 is a fork of
@@ -25,7 +25,7 @@ is a fork of
 This fork as well as the original repository ([according to
 FPCA](https://fedoraproject.org/wiki/Legal:Fedora_Project_Contributor_Agreement#Other_FAQs))
 are licensed under MIT License. See
-[LICENSE](https://gitlab.com/bhavin192/emacs-pretest-rpm/-/blob/master/LICENSE)
+[LICENSE](https://github.com/A6GibKm/emacs-pgtk-nativecomp-copr/blob/master/LICENSE)
 for the full license text.
 
 ## How to install/update
