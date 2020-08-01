@@ -1,4 +1,4 @@
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/package/emacs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/package/emacs/)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/)
 
 ## Pure Gtk + native compilation builds of GNU Emacs
 
@@ -18,7 +18,7 @@ official Fedora repositories.
 The repository
 [A6GibKm/emacs-pgtk-nativecomp-copr](https://github.com:A6GibKm/emacs-pgtk-nativecomp-copr)
 containing build recipes for [Copr project
-emacs-pretest](https://copr.fedorainfracloud.org/coprs/bhavin192/emacs-pretest/)
+emacs-gtk-native-comp](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/)
 is a fork of
 [https://src.fedoraproject.org/rpms/emacs](https://src.fedoraproject.org/rpms/emacs).
 
@@ -31,7 +31,7 @@ for the full license text.
 ## How to install/update
 - Enable this copr repository,
   ```sh
-  $ dnf copr enable bhavin192/emacs-pretest
+  $ dnf copr enable deathwish/emacs-pgtk-nativecomp
   ```
 - Install latest pretest,
   ```sh
@@ -50,5 +50,5 @@ for the full license text.
 
 ## Reporting issues
 If you face any issues while installing or updating, please create an
-issue on [GitLab repository
-here](https://gitlab.com/bhavin192/emacs-pretest-rpm).
+issue on [GitHub repository
+here](https://github.com/A6GibKm/emacs-pgtk-nativecomp-copr).

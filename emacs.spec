@@ -69,6 +69,7 @@ BuildRequires: libacl-devel
 BuildRequires: jansson-devel
 BuildRequires: systemd-devel
 BuildRequires: libgccjit-devel
+BuildRequires: libtool
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
