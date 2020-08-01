@@ -1,15 +1,16 @@
 %global _hardened_build 1
+%global pretest_version 27.1-rc1
 
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       27.0.91
-Release:       1%{?dist}
+Version:       27.1
+Release:       0.1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz
-Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{version}.tar.xz.sig
+Source0:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{pretest_version}.tar.xz
+Source1:       https://alpha.gnu.org/gnu/emacs/pretest/emacs-%{pretest_version}.tar.xz.sig
 # generate the keyring via:
 # wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
 # gpg2 --import gnu-keyring.gpg
@@ -66,6 +67,7 @@ BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 BuildRequires: jansson-devel
+BuildRequires: systemd-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -182,7 +184,7 @@ Development header files for Emacs.
 
 %prep
 %{gpgverify} --keyring='%{SOURCE2}' --signature='%{SOURCE1}' --data='%{SOURCE0}'
-%setup -q
+%setup -q -n emacs-27.1
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
@@ -480,6 +482,10 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
+* Sat Aug 01 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.1-0.1
+- Update to pretest 27.1-rc1
+- Add systemd-devel to support Type=notify in unit file
+
 * Sat Jul 11 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.0.91-1
 - Update to pretest 27.0.91
 - Build with Cairo and Jansson support
