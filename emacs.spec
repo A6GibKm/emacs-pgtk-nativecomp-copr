@@ -1,16 +1,21 @@
 %global _hardened_build 1
-%global pretest_version 27.1-rc1
+
+%global commit a42cd16013cb7ac1a8b060f06cd2a299db64eb7a
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
+# disable these for now until .pdmp is fixed
+%global enable_lucid 0
+%global enable_nox 0
 
 # This file is encoded in UTF-8.  -*- coding: utf-8 -*-
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.50
-Release:       0.1%{?dist}
+Release:       20200731.%{shortcommit}.1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://github.com/fejfighter/emacs/archive/pgtk-nativecomp.tar.gz
-
+Source0:       https://github.com/fejfighter/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 # generate the keyring via:
 # wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
 # gpg2 --import gnu-keyring.gpg
@@ -37,6 +42,7 @@ BuildRequires: fontconfig-devel
 BuildRequires: dbus-devel
 BuildRequires: giflib-devel
 BuildRequires: glibc-devel
+BuildRequires: libgccjit-devel
 BuildRequires: libpng-devel
 BuildRequires: libjpeg-turbo-devel
 BuildRequires: libjpeg-turbo
@@ -54,6 +60,7 @@ BuildRequires: gnutls-devel
 BuildRequires: librsvg2-devel
 BuildRequires: m17n-lib-devel
 BuildRequires: libotf-devel
+BuildRequires: ImageMagick-devel
 BuildRequires: libselinux-devel
 BuildRequires: alsa-lib-devel
 BuildRequires: gpm-devel
@@ -66,18 +73,19 @@ BuildRequires: texinfo
 BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
+BuildRequires: harfbuzz-devel
+BuildRequires: lcms2-devel
 BuildRequires: jansson-devel
-BuildRequires: systemd-devel
-BuildRequires: libgccjit-devel
-BuildRequires: libtool
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
 
 BuildRequires: gnupg2
 
+%if %{enable_lucid}
 # For lucid
 BuildRequires: Xaw3d-devel
+%endif
 
 %ifarch %{ix86}
 BuildRequires: util-linux
@@ -94,7 +102,7 @@ Provides:      emacs(bin) = %{epoch}:%{version}-%{release}
 
 %define site_lisp %{_datadir}/emacs/site-lisp
 %define site_start_d %{site_lisp}/site-start.d
-%define bytecompargs -batch --no-init-file --no-site-file -f batch-native-compile
+%define bytecompargs -batch --no-init-file --no-site-file -f batch-byte-compile
 %define pkgconfig %{_datadir}/pkgconfig
 %define emacs_libexecdir %{_libexecdir}/emacs/%{version}/%{_host}
 
@@ -106,6 +114,7 @@ without leaving the editor.
 
 This package provides an emacs binary with support for X windows.
 
+%if %{enable_lucid}
 %package lucid
 Summary:       GNU Emacs text editor with LUCID toolkit X support
 Requires(preun): %{_sbindir}/alternatives
@@ -121,7 +130,9 @@ without leaving the editor.
 
 This package provides an emacs binary with support for X windows
 using LUCID toolkit.
+%endif
 
+%if %{enable_nox}
 %package nox
 Summary:       GNU Emacs text editor without X support
 Requires(preun): %{_sbindir}/alternatives
@@ -137,6 +148,7 @@ without leaving the editor.
 
 This package provides an emacs binary with no X windows support for running
 on a terminal.
+%endif
 
 %package common
 Summary:       Emacs common files
@@ -185,12 +197,11 @@ Summary: Development header files for Emacs
 Development header files for Emacs.
 
 %prep
-%setup -q -n emacs-pgtk-nativecomp
+%setup -q -n emacs-%{commit}
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
-autoreconf -fi -I m4
-autoconf
+./autogen.sh
 
 # We prefer our emacs.desktop file
 cp %SOURCE3 etc/emacs.desktop
@@ -204,8 +215,22 @@ grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f lisp/play/pong.el lisp/play/pong.el
 
-# Sorted list of info files
-%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
+# # Sorted list of info files
+# %define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
+
+# # Since the list of info files has to be maintained, check if all info files
+# # from the upstream tarball are actually present in %%info_files.
+# cd info
+# fs=( $(ls *.info) )
+# is=( %info_files  )
+# files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
+# for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
+#   if test "${fs[$i]}" != "${is[$i]}.info"; then
+#     echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
+#     break
+#   fi
+# done
+# cd ..
 
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
@@ -229,12 +254,14 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-gpm=no \
-           --with-xwidgets --with-modules --with-cairo --with-native-comp --with-pgtk
-make bootstrap
+           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
+           --with-xwidgets --with-modules \
+           --with-nativecomp --with-pgtk
+%make_build bootstrap
 %{setarch} %make_build
 cd ..
 
+%if %{enable_lucid}
 # Build Lucid binary
 mkdir build-lucid && cd build-lucid
 ln -s ../configure .
@@ -243,34 +270,20 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
            --with-tiff --with-xft --with-xpm --with-x-toolkit=lucid --with-gpm=no \
-           --with-modules --with-cairo --with-native-comp
-make bootstrap
+           --with-modules --enable-link-time-optimization
+%make_build bootstrap
 %{setarch} %make_build
 cd ..
+%endif
 
+%if %{enable_nox}
 # Build binary without X support
 mkdir build-nox && cd build-nox
 ln -s ../configure .
-%configure --with-x=no --with-modules --with-native-comp
+%configure --with-x=no --with-modules --enable-link-time-optimization
 %{setarch} %make_build
 cd ..
-
-# Since the list of info files has to be maintained, check if all info files
-# from the upstream tarball are actually present in %%info_files.
-cd info
-fs=( $(ls *.info) )
-is=( %info_files  )
-files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
-for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
-  if test "${fs[$i]}" != "${is[$i]}.info"; then
-    echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
-    break
-  fi
-done
-cd ..
-
-# Remove versioned file so that we end up with .1 suffix and only one DOC file
-rm build-{gtk,lucid,nox}/src/emacs-%{version}.*
+%endif
 
 # Create pkgconfig file
 cat > emacs.pc << EOF
@@ -289,7 +302,7 @@ cat > macros.emacs << EOF
 %%_emacs_evr %{?epoch:%{epoch}:}%{version}-%{release}
 %%_emacs_sitelispdir %{site_lisp}
 %%_emacs_sitestartdir %{site_start_d}
-%%_emacs_bytecompile /usr/bin/emacs -batch --no-init-file --no-site-file --eval '(progn (setq load-path (cons "." load-path)))' -f batch-native-compile
+%%_emacs_bytecompile /usr/bin/emacs -batch --no-init-file --no-site-file --eval '(progn (setq load-path (cons "." load-path)))' -f batch-byte-compile
 EOF
 
 %install
@@ -301,23 +314,19 @@ cd ..
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
-# Remove emacs.pdmp from common
-rm %{buildroot}%{emacs_libexecdir}/emacs.pdmp
-
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
 
-# Install emacs.pdmp of the emacs with GTK+
-install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}.pdmp
-
+%if %{enable_lucid}
 # Install the emacs with LUCID toolkit
 install -p -m 0755 build-lucid/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-lucid
-install -p -m 0644 build-lucid/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-lucid.pdmp
+%endif
 
+%if %{enable_nox}
 # Install the emacs without X
 install -p -m 0755 build-nox/src/emacs %{buildroot}%{_bindir}/emacs-%{version}-nox
-install -p -m 0644 build-nox/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}-nox.pdmp
+%endif
 
 # Make sure movemail isn't setgid
 chmod 755 %{buildroot}%{emacs_libexecdir}/movemail
@@ -366,9 +375,8 @@ rm -f %{buildroot}%{_infodir}/dir
 
 # Installing service file
 mkdir -p %{buildroot}%{_userunitdir}
-install -p -m 0644 %SOURCE9 %{buildroot}%{_userunitdir}/emacs.service
 # Emacs 26.1 installs the upstream unit file to /usr/lib64 on 64bit archs, we don't want that
-rm -f %{buildroot}/usr/lib64/systemd/user/emacs.service
+mv %{buildroot}/usr/lib64/systemd/user/emacs.service %{buildroot}%{_userunitdir}/emacs.service
 
 # Install desktop files
 mkdir -p %{buildroot}%{_datadir}/applications
@@ -405,6 +413,7 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %posttrans
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version} 80
 
+%if %{enable_lucid}
 %preun lucid
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-lucid
 %{_sbindir}/alternatives --remove emacs-lucid %{_bindir}/emacs-%{version}-lucid
@@ -412,7 +421,9 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %posttrans lucid
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-lucid 70
 %{_sbindir}/alternatives --install %{_bindir}/emacs-lucid emacs-lucid %{_bindir}/emacs-%{version}-lucid 60
+%endif
 
+%if %{enable_nox}
 %preun nox
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}-nox
 %{_sbindir}/alternatives --remove emacs-nox %{_bindir}/emacs-%{version}-nox
@@ -420,6 +431,7 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %posttrans nox
 %{_sbindir}/alternatives --install %{_bindir}/emacs emacs %{_bindir}/emacs-%{version}-nox 70
 %{_sbindir}/alternatives --install %{_bindir}/emacs-nox emacs-nox %{_bindir}/emacs-%{version}-nox 60
+%endif
 
 %preun common
 %{_sbindir}/alternatives --remove emacs.etags %{_bindir}/etags.emacs
@@ -430,26 +442,27 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
 %files
 %{_bindir}/emacs-%{version}
-%{_bindir}/emacs-%{version}.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
-%{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
+%{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 
+%if %{enable_lucid}
 %files lucid
 %{_bindir}/emacs-%{version}-lucid
-%{_bindir}/emacs-%{version}-lucid.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-lucid
+%endif
 
+%if %{enable_nox}
 %files nox
 %{_bindir}/emacs-%{version}-nox
-%{_bindir}/emacs-%{version}-nox.pdmp
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %attr(0755,-,-) %ghost %{_bindir}/emacs-nox
+%endif
 
 %files common -f common-filelist -f el-filelist
 %config(noreplace) %{_sysconfdir}/skel/.emacs
@@ -484,14 +497,11 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
-* Sat Aug 01 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.1-0.1
-- Update to pretest 27.1-rc1
-- Add systemd-devel to support Type=notify in unit file
+* Mon Jul 20 2020 Evan Klitzke <evan@eklitzke.org> - 1:27.0.91-1
+- Build for emacs 27
 
-* Sat Jul 11 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.0.91-1
-- Update to pretest 27.0.91
-- Build with Cairo and Jansson support
-- Remove ImageMagick as it's no longer used
+* Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
+- Drop dependency on GConf2
 
 * Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
 - Drop dependency on GConf2
