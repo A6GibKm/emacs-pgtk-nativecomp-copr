@@ -1,6 +1,6 @@
 %global _hardened_build 1
 
-%global commit a42cd16013cb7ac1a8b060f06cd2a299db64eb7a
+%global commit      36b586dd62871c2f0a17b2172e035fc23c4dc7f2
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 # disable these for now until .pdmp is fixed
@@ -12,7 +12,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.50
-Release:       20200731.%{shortcommit}.1%{?dist}
+Release:       20200818.%{shortcommit}.1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://github.com/fejfighter/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -76,6 +76,7 @@ BuildRequires: libacl-devel
 BuildRequires: harfbuzz-devel
 BuildRequires: lcms2-devel
 BuildRequires: jansson-devel
+BuildRequires: systemd-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -215,23 +216,6 @@ grep -v "pong.elc" lisp/Makefile.in > lisp/Makefile.in.new \
 rm -f lisp/play/tetris.el lisp/play/tetris.elc
 rm -f lisp/play/pong.el lisp/play/pong.el
 
-# # Sorted list of info files
-# %define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
-
-# # Since the list of info files has to be maintained, check if all info files
-# # from the upstream tarball are actually present in %%info_files.
-# cd info
-# fs=( $(ls *.info) )
-# is=( %info_files  )
-# files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
-# for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
-#   if test "${fs[$i]}" != "${is[$i]}.info"; then
-#     echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
-#     break
-#   fi
-# done
-# cd ..
-
 %ifarch %{ix86}
 %define setarch setarch %{_arch} -R
 %else
@@ -254,11 +238,29 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-x-toolkit=gtk3 --with-gpm=no \
-           --with-xwidgets --with-modules --with-cairo \
-           --with-nativecomp --with-pgtk
+           --with-tiff --with-xft --with-xpm --with-gpm=no \
+           --with-xwidgets --with-modules --with-json \
+           --with-pgtk --with-gnutls --with-harfbuzz \
+           --with-cairo --with-nativecomp --enable-link-time-optimization
 %make_build bootstrap
 %{setarch} %make_build
+cd ..
+
+# # Sorted list of info files
+%define info_files auth autotype bovine calc ccmode cl dbus dir dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
+
+# Since the list of info files has to be maintained, check if all info files
+# from the upstream tarball are actually present in %%info_files.
+cd info
+fs=( $(ls *.info) )
+is=( %info_files  )
+files=$(echo ${fs[*]} | sed 's/\.info//'g | sort | tr -d '\n')
+for i in $(seq 0 $(( ${#fs[*]} - 1 ))); do
+  if test "${fs[$i]}" != "${is[$i]}.info"; then
+    echo Please update %%info_files: ${fs[$i]} != ${is[$i]}.info >&2
+    break
+  fi
+done
 cd ..
 
 %if %{enable_lucid}
@@ -307,16 +309,23 @@ EOF
 
 %install
 cd build-gtk
-make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
+%make_install
+
 cd ..
 
 # Let alternatives manage the symlink
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
+# Remove emacs.pdmp from common
+rm %{buildroot}%{emacs_libexecdir}/emacs.pdmp
+
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
+
+# Install emacs.pdmp of the emacs with GTK+
+install -p -m 0644 build-gtk/src/emacs.pdmp %{buildroot}%{_bindir}/emacs-%{version}.pdmp
 
 %if %{enable_lucid}
 # Install the emacs with LUCID toolkit
@@ -443,7 +452,9 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %files
 %{_bindir}/emacs-%{version}
 %attr(0755,-,-) %ghost %{_bindir}/emacs
+%{_bindir}/emacs-%{version}.pdmp
 %{_datadir}/applications/emacs.desktop
+%{_datadir}/applications/emacsclient.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
@@ -498,6 +509,9 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
+* Tue Aug 18 2020 Maximiliano Sandoval <evan@eklitzke.org> - 1:28.0.50-1
+- Build for emacs 28.0.50 with pgtk and native-comp
+
 * Mon Jul 20 2020 Evan Klitzke <evan@eklitzke.org> - 1:27.0.91-1
 - Build for emacs 27
 
