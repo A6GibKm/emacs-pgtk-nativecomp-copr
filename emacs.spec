@@ -509,7 +509,7 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_includedir}/emacs-module.h
 
 %changelog
-* Tue Aug 18 2020 Maximiliano Sandoval <evan@eklitzke.org> - 1:28.0.50-1
+* Tue Aug 18 2020 Maximiliano Sandoval <msandova@protonmail.com> - 1:28.0.50-1
 - Build for emacs 28.0.50 with pgtk and native-comp
 
 * Mon Jul 20 2020 Evan Klitzke <evan@eklitzke.org> - 1:27.0.91-1
