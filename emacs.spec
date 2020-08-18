@@ -12,7 +12,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.50
-Release:       20200818.%{shortcommit}.1%{?dist}
+Release:       20200818.%{shortcommit}.2%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://github.com/fejfighter/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -33,6 +33,7 @@ Source10:      %{name}.appdata.xml
 # rhbz#713600
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
+Patch3:        flat-pgtk-fix.patch
 
 BuildRequires: gcc
 BuildRequires: atk-devel
@@ -202,6 +203,7 @@ Development header files for Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
+%patch3 -p1 -b .comp
 ./autogen.sh
 
 # We prefer our emacs.desktop file
