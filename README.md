@@ -1,6 +1,6 @@
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/)
 
-## Pure Gtk + native compilation builds of GNU Emacs
+## Pure Gtk and native compilation builds of GNU Emacs
 
 - [masm11/emacs](https://github.com/masm11/emacs)
 - [fejfighter/emacs](https://github.com/fejfighter/emacs)
@@ -8,7 +8,6 @@
 This package is mostly aligned with the GNU Emacs package from
 official Fedora repositories.
 - [https://src.fedoraproject.org/rpms/emacs](https://src.fedoraproject.org/rpms/emacs)
-- [https://src.fedoraproject.org/rpms/emacs/pull-request/4](https://src.fedoraproject.org/rpms/emacs/pull-request/4)
 
 ## Changes in Emacs 28
 - [`NEWS` file from `master`
@@ -41,12 +40,6 @@ for the full license text.
   ```sh
   $ dnf update emacs
   ```
-
-> **NOTE**: If the latest stable version is greater than the available
-> pretest, then the stable version from official repositories will get
-> installed or updated. For example when GNU Emacs `27.1` gets
-> released and last pretest was `27.0.91`, then version `27.1` will
-> get installed.
 
 ## Reporting issues
 If you face any issues while installing or updating, please create an
