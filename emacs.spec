@@ -30,7 +30,7 @@ Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
 Source9:       emacs.service
 Source10:      %{name}.appdata.xml
-# rhbz#713600
+
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
 Patch3:        flat-pgtk-fix.patch
