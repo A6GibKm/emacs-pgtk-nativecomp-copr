@@ -1,6 +1,6 @@
 %global _hardened_build 1
 
-%global commit      36b586dd62871c2f0a17b2172e035fc23c4dc7f2
+%global commit      b7adb08f960fe6568f702b8f328e65e3833ffc13
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 # disable these for now until .pdmp is fixed
@@ -12,7 +12,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.50
-Release:       20200818.%{shortcommit}.2%{?dist}
+Release:       20200819.%{shortcommit}.1%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://github.com/fejfighter/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
@@ -33,7 +33,6 @@ Source10:      %{name}.appdata.xml
 
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
-Patch3:        flat-pgtk-fix.patch
 
 BuildRequires: gcc
 BuildRequires: atk-devel
@@ -61,7 +60,6 @@ BuildRequires: gnutls-devel
 BuildRequires: librsvg2-devel
 BuildRequires: m17n-lib-devel
 BuildRequires: libotf-devel
-BuildRequires: ImageMagick-devel
 BuildRequires: libselinux-devel
 BuildRequires: alsa-lib-devel
 BuildRequires: gpm-devel
@@ -75,9 +73,9 @@ BuildRequires: gzip
 BuildRequires: desktop-file-utils
 BuildRequires: libacl-devel
 BuildRequires: harfbuzz-devel
-BuildRequires: lcms2-devel
 BuildRequires: jansson-devel
 BuildRequires: systemd-devel
+BuildRequires: lcms2-devel
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -203,7 +201,6 @@ Development header files for Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
-%patch3 -p1 -b .comp
 ./autogen.sh
 
 # We prefer our emacs.desktop file
@@ -240,10 +237,10 @@ ln -s ../configure .
 LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
-           --with-tiff --with-xft --with-xpm --with-gpm=no \
-           --with-xwidgets --with-modules --with-json \
-           --with-pgtk --with-gnutls --with-harfbuzz \
-           --with-cairo --with-nativecomp --enable-link-time-optimization
+            --with-tiff --with-xft --with-xpm --with-gpm=no \
+            --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
+            --with-pgtk  --with-nativecomp --enable-link-time-optimization
+
 %make_build bootstrap
 %{setarch} %make_build
 cd ..
@@ -453,14 +450,14 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
 %files
 %{_bindir}/emacs-%{version}
-%attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_bindir}/emacs-%{version}.pdmp
+%attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
 %{_datadir}/appdata/%{name}.appdata.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
-%{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
+%{_datadir}/icons/hicolor/scalable/apps/emacs.ico
 %{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document.svg
 %{_datadir}/glib-2.0/schemas/org.gnu.emacs.defaults.gschema.xml
 
@@ -514,11 +511,18 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 * Tue Aug 18 2020 Maximiliano Sandoval <msandova@protonmail.com> - 1:28.0.50-1
 - Build for emacs 28.0.50 with pgtk and native-comp
 
-* Mon Jul 20 2020 Evan Klitzke <evan@eklitzke.org> - 1:27.0.91-1
-- Build for emacs 27
+* Tue Aug 18 2020 Jan Synáček <jsynacek@redhat.com> - 1:27.1-2
+- use make macros (original patch provided by Tom Stellard)
+- https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
 
-* Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
-- Drop dependency on GConf2
+* Tue Aug 11 2020 Bhavin Gandhi <bhavin7392@gmail.com> - 1:27.1-1
+- emacs-27.1 is available (#1867841)
+- Add systemd-devel to support Type=notify in unit file
+- Build with Cairo and Jansson support
+- Remove ImageMagick dependency as it's no longer used
+
+* Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:26.3-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
 * Thu Apr 16 2020 Dan Čermák <dan.cermak@cgc-instruments.com> - 1:26.3-3
 - Drop dependency on GConf2
