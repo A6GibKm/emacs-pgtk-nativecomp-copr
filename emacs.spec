@@ -2,6 +2,8 @@
 
 %global commit      b7adb08f960fe6568f702b8f328e65e3833ffc13
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
+%global commit_date 20200822
+%global gitrel     .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
 %global enable_lucid 0
@@ -12,7 +14,7 @@ Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
 Version:       28.0.50
-Release:       20200819.%{shortcommit}.1%{?dist}
+Release:       1%{gitrel}%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
 Source0:       https://github.com/fejfighter/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
