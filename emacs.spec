@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      98066351d6ecc8726fd69b57ba05fd99836af43a
+%global commit      90fad36d16b926aec62a2e2a99d54b6a3532c165
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20200825
+%global commit_date    20200905
 %global gitrel     .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -417,6 +417,9 @@ cat el-*-files common-lisp-dir-files > el-filelist
 # Remove old icon
 rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
+# remove debug info
+rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/28.0.50
+
 %preun
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}
 
@@ -492,6 +495,7 @@ rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
+%{_libdir}/emacs/native-lisp
 %{_userunitdir}/emacs.service
 %attr(0644,root,root) %config(noreplace) %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
