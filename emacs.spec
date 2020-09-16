@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      90fad36d16b926aec62a2e2a99d54b6a3532c165
+%global commit      e3a8075182acc92e5328260f2bd612f08a2ce0eb
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date    20200905
+%global commit_date 20200916
 %global gitrel     .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -495,7 +495,7 @@ rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/28.0.50
 %{_datadir}/emacs/%{version}/etc
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
-%{_libdir}/emacs/native-lisp
+%{_libdir}/emacs/%{version}
 %{_userunitdir}/emacs.service
 %attr(0644,root,root) %config(noreplace) %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
