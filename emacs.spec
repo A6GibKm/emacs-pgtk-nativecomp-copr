@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      d0c622aaa7027ae54fbc4de929e8f100091094a5
+%global commit      83cdf24e274d199496a634c82976569fc9a75bf4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20201006
+%global commit_date 20201014
 %global gitrel      .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -243,7 +243,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
             --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
             --with-pgtk  --with-nativecomp --enable-link-time-optimization
 
-%make_build bootstrap
+%make_build NATIVE_FULL_AOT=1 bootstrap
 %{setarch} %make_build
 cd ..
 
