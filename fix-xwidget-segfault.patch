@@ -1,0 +1,26 @@
+From 2970d73a71d3c1dff016e98263c0becd12bf1781 Mon Sep 17 00:00:00 2001
+From: Jeff Walsh <fejfighter@gmail.com>
+Date: Thu, 15 Oct 2020 09:55:29 +0200
+Subject: [PATCH] Fix segfault in xwidget when there is no title
+
+* src/xwidget.c (Fxwidget_webkit_title): Pass emptry string when no
+title is returned (bug#43989).
+---
+ src/xwidget.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/xwidget.c b/src/xwidget.c
+index 154b3e9c82c..e63191ebda9 100644
+--- a/src/xwidget.c
++++ b/src/xwidget.c
+@@ -793,7 +793,9 @@ DEFUN ("xwidget-webkit-title",
+   WEBKIT_FN_INIT ();
+ #ifdef USE_GTK
+   WebKitWebView *wkwv = WEBKIT_WEB_VIEW (xw->widget_osr);
+-  return build_string (webkit_web_view_get_title (wkwv));
++  const gchar *title = webkit_web_view_get_title (wkwv);
++
++  return build_string (title ? title : "");
+ #elif defined NS_IMPL_COCOA
+   return nsxwidget_webkit_title (xw);
+ #endif
