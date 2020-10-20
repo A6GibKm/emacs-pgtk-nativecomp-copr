@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      83cdf24e274d199496a634c82976569fc9a75bf4
+%global commit      2a5c6fb044dc960f80285397819d6fd391bbc9ae
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20201016
+%global commit_date 20201020
 %global gitrel      .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -35,7 +35,6 @@ Source10:      %{name}.appdata.xml
 
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
-Patch3:        fix-xwidget-segfault.patch
 
 BuildRequires: gcc
 BuildRequires: atk-devel
@@ -204,7 +203,6 @@ Development header files for Emacs.
 
 %patch1 -p1 -b .spellchecker
 %patch2 -p1 -b .system-crypto-policies
-%patch3 -p1 -b .xwidget
 
 ./autogen.sh
 
