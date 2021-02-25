@@ -1,8 +1,8 @@
 diff -u a/lisp/textmodes/ispell.el b/lisp/textmodes/ispell.el
 --- a/lisp/textmodes/ispell.el
 +++ b/lisp/textmodes/ispell.el
-@@ -199,9 +199,9 @@
-   :group 'ispell)
+@@ -191,9 +191,9 @@
+   :type 'integer)
 
  (defcustom ispell-program-name
 -  (or (executable-find "aspell")
