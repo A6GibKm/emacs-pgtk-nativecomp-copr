@@ -31,7 +31,6 @@ Source6:       default.el
 Source7:       emacs-terminal.desktop
 Source8:       emacs-terminal.sh
 Source9:       emacs.service
-Source10:      %{name}.appdata.xml
 
 Patch1:        emacs-spellchecker.patch
 Patch2:        emacs-system-crypto-policies.patch
@@ -368,12 +367,6 @@ install -p -m 0644 %SOURCE4 %{buildroot}%{_sysconfdir}/skel/.emacs
 mkdir -p %{buildroot}/%{pkgconfig}
 install -p -m 0644 emacs.pc %{buildroot}/%{pkgconfig}
 
-# Install app data
-mkdir -p %{buildroot}/%{_datadir}/appdata
-cp -a %SOURCE10 %{buildroot}/%{_datadir}/appdata
-# Upstream ships its own appdata file, but it's quite terse.
-rm %{buildroot}/%{_datadir}/metainfo/emacs.appdata.xml
-
 # Install rpm macro definition file
 mkdir -p %{buildroot}%{_rpmconfigdir}/macros.d
 install -p -m 0644 macros.emacs %{buildroot}%{_rpmconfigdir}/macros.d/
@@ -460,7 +453,9 @@ rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/28.0.50
 %attr(0755,-,-) %ghost %{_bindir}/emacs
 %{_datadir}/applications/emacs.desktop
 %{_datadir}/applications/emacsclient.desktop
-%{_datadir}/appdata/%{name}.appdata.xml
+%{_datadir}/applications/emacs-mail.desktop
+%{_datadir}/applications/emacsclient-mail.desktop
+%{_datadir}/metainfo/%{name}.metainfo.xml
 %{_datadir}/icons/hicolor/*/apps/emacs.png
 %{_datadir}/icons/hicolor/scalable/apps/emacs.svg
 %{_datadir}/icons/hicolor/scalable/apps/emacs.ico
