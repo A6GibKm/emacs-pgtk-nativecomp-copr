@@ -2,7 +2,7 @@
 
 %global commit      0c847dcdf24798f4452b574f6df1f622f2410d14
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20210814
+%global commit_date 20210827
 %global gitrel      .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
