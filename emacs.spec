@@ -318,9 +318,6 @@ cd ..
 rm %{buildroot}%{_bindir}/emacs
 touch %{buildroot}%{_bindir}/emacs
 
-# Remove emacs.pdmp from common
-rm %{buildroot}%{emacs_libexecdir}/emacs.pdmp
-
 # Do not compress the files which implement compression itself (#484830)
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-compr.el.gz
 gunzip %{buildroot}%{_datadir}/emacs/%{version}/lisp/jka-cmpr-hook.el.gz
