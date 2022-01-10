@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      eb9197bdb8fb0528843cdf511a051b68fab34d29
+%global commit      4f50d964e51bbe5219f40df4353f4314c7ade985
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20211110
+%global commit_date 20220210
 %global gitrel      .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -13,11 +13,11 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       28.0.50
+Version:       29.0.50
 Release:       1%{gitrel}%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
-Source0:       https://github.com/flatwhatson/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
+Source0:       https://github.com/emacs-mirror/emacs/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 # generate the keyring via:
 # wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
 # gpg2 --import gnu-keyring.gpg
@@ -247,8 +247,8 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 %{setarch} %make_build
 cd ..
 
-# # Sorted list of info files
-%define info_files auth autotype bovine calc ccmode cl dbus dir dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
+# Sorted list of info files
+%define info_files ada-mode auth autotype bovine calc ccmode cl dbus dired-x ebrowse ede ediff edt efaq-w32 efaq eieio eintr elisp emacs-gnutls emacs-mime emacs epa erc ert eshell eudc eww flymake forms gnus htmlfontify idlwave ido info mairix-el message mh-e newsticker nxml-mode octave-mode org pcl-cvs pgg rcirc reftex remember sasl sc semantic ses sieve smtpmail speedbar srecode todo-mode tramp url vhdl-mode vip viper widget wisent woman
 
 # Since the list of info files has to be maintained, check if all info files
 # from the upstream tarball are actually present in %%info_files.
