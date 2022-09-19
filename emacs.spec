@@ -77,6 +77,7 @@ BuildRequires: harfbuzz-devel
 BuildRequires: jansson-devel
 BuildRequires: systemd-devel
 BuildRequires: lcms2-devel
+BuildRequires: systemd-rpm-macros
 
 BuildRequires: gtk3-devel
 BuildRequires: webkit2gtk3-devel
@@ -489,7 +490,7 @@ rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/28.0.50
 %{_datadir}/emacs/%{version}/site-lisp
 %{_libexecdir}/emacs
 %{_libdir}/emacs/%{version}
-%{_userunitdir}/emacs.service
+%config %{_userunitdir}/emacs.service
 %attr(0644,root,root) %config(noreplace) %{_datadir}/emacs/site-lisp/default.el
 %attr(0644,root,root) %config %{_datadir}/emacs/site-lisp/site-start.el
 %{pkgconfig}/emacs.pc
