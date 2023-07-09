@@ -1,8 +1,8 @@
 %global _hardened_build 1
 
-%global commit      a27b0f7f307ccf54fd5910a0655bd72b23e69fcf
+%global commit      a24e9e3fee59435422af0473b7ec585de2c13b4e
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
-%global commit_date 20230326
+%global commit_date 20230615
 %global gitrel      .%{commit_date}.git%{shortcommit}
 
 # disable these for now until .pdmp is fixed
@@ -13,7 +13,7 @@
 Summary:       GNU Emacs text editor
 Name:          emacs
 Epoch:         1
-Version:       29.0.50
+Version:       29.0.92
 Release:       1%{gitrel}%{?dist}
 License:       GPLv3+ and CC0-1.0
 URL:           http://www.gnu.org/software/emacs/
@@ -410,7 +410,7 @@ cat el-*-files common-lisp-dir-files > el-filelist
 rm %{buildroot}%{_datadir}/icons/hicolor/scalable/mimetypes/emacs-document23.svg
 
 # remove debug info
-rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/28.0.50
+rm -rf %{buildroot}%{prefix}/lib/debug/usr/libexec/emacs/${version}
 
 %preun
 %{_sbindir}/alternatives --remove emacs %{_bindir}/emacs-%{version}
