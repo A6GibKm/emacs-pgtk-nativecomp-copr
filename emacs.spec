@@ -54,6 +54,7 @@ BuildRequires: libXdmcp-devel
 BuildRequires: libXrender-devel
 BuildRequires: libXt-devel
 BuildRequires: libXpm-devel
+BuildRequires: libtree-sitter-devel
 BuildRequires: ncurses-devel
 BuildRequires: xorg-x11-proto-devel
 BuildRequires: zlib-devel
@@ -242,7 +243,7 @@ LDFLAGS=-Wl,-z,relro;  export LDFLAGS;
 %configure --with-dbus --with-gif --with-jpeg --with-png --with-rsvg \
             --with-tiff --with-xft --with-xpm --with-gpm=no \
             --with-xwidgets --with-modules --with-harfbuzz --with-cairo --with-json \
-            --with-pgtk --with-native-compilation --enable-link-time-optimization
+            --with-pgtk --with-native-compilation --enable-link-time-optimization --with-tree-sitter
 
 %make_build NATIVE_FULL_AOT=1 bootstrap
 %{setarch} %make_build
