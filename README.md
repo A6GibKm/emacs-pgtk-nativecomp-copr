@@ -1,5 +1,11 @@
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/deathwish/emacs-pgtk-nativecomp/package/emacs/)
 
+# NOTICE
+
+Since Fedora 40 has a build of emacs with pgtk and native comp, this is not
+maintained any more. If you make a pull request that makes sense I'll happily
+merge it, but that's all.
+
 ## Pure Gtk and native compilation builds of GNU Emacs
 
 - [masm11/emacs](https://github.com/masm11/emacs)
